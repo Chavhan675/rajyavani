@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile containing roles and basic info.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "role": { "type": "string", "enum": ["ADMIN", "EDITOR", "REPORTER", "USER"] },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "Article": {
+      "title": "Article",
+      "description": "A news article, which can be an AI draft or a published piece.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 300 },
+        "summary": { "type": "string", "maxLength": 1000 },
+        "content": { "type": "string", "maxLength": 50000 },
+        "status": { "type": "string", "enum": ["DRAFT", "REVIEW", "PUBLISHED", "ARCHIVED"] },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "category": { "type": "string", "maxLength": 100 },
+        "district": { "type": "string", "maxLength": 100 },
+        "taluka": { "type": "string", "maxLength": 100 },
+        "village": { "type": "string", "maxLength": 100 },
+        "tags": { "type": "array", "items": { "type": "string", "maxLength": 50 }, "maxLength": 10 },
+        "publishedAt": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "isDeveloping": { "type": "boolean" },
+        "aiGenerated": { "type": "boolean" },
+        "sourceUrl": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "imagePrompt": { "type": "string", "maxLength": 1000 },
+        "imageAlt": { "type": "string", "maxLength": 300 }
+      },
+      "required": ["title", "summary", "content", "status", "authorId", "authorName", "category", "createdAt", "updatedAt", "imageAlt"]
+    },
+    "Source": {
+      "title": "Source",
+      "description": "A news source RSS feed or portal configuration.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 200 },
+        "url": { "type": "string", "maxLength": 1000 },
+        "type": { "type": "string", "enum": ["RSS", "SCRAPE"] },
+        "category": { "type": "string", "maxLength": 100 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "url", "type", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles and roles."
+    },
+    "/articles/{articleId}": {
+      "schema": { "$ref": "#/entities/Article" },
+      "description": "Stores all news articles, drafts, and archives."
+    },
+    "/sources/{sourceId}": {
+      "schema": { "$ref": "#/entities/Source" },
+      "description": "Stores configured news sources for ingestion."
+    }
+  }
+}

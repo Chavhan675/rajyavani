@@ -1,0 +1,6 @@
+{
+  "name": "Rajyavani",
+  "description": "Maharashtra's No.1 AI-Powered Digital News Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

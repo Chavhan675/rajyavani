@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Mukta", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-red: #c91010;
+  --color-brand-saffron: #f58416;
+  --color-brand-black: #111111;
+  --color-brand-gray: #f4f4f5;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+html, body {
+  @apply font-sans text-brand-black bg-brand-gray antialiased;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* Professional News Article Editorial Typography & Structure */
+.article-editorial-content {
+  font-size: 1.125rem;
+  line-height: 1.95;
+  color: #1f2937;
+  letter-spacing: -0.01em;
+}
+
+.article-editorial-content p {
+  margin-bottom: 1.5rem;
+  text-align: justify;
+  font-weight: 400;
+}
+
+.article-editorial-content h3 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #111827;
+  margin-top: 2.25rem;
+  margin-bottom: 1rem;
+  padding-left: 0.875rem;
+  border-left: 4px solid #c91010;
+  line-height: 1.4;
+}
+
+.article-editorial-content h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-top: 1.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.article-editorial-content ul {
+  list-style-type: disc;
+  margin-left: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.article-editorial-content ol {
+  list-style-type: decimal;
+  margin-left: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.article-editorial-content li {
+  margin-bottom: 0.625rem;
+  line-height: 1.8;
+}
+
+.article-editorial-content blockquote {
+  border-left: 4px solid #f58416;
+  background-color: #fffbeb;
+  padding: 1.25rem 1.5rem;
+  margin: 1.75rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: normal;
+  color: #78350f;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Key Takeaways Box */
+.article-editorial-content .news-summary-box {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff7ed 100%);
+  border: 1px solid #fecaca;
+  border-left: 5px solid #c91010;
+  border-radius: 0.75rem;
+  padding: 1.5rem 1.75rem;
+  margin: 2.5rem 0 1.75rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.article-editorial-content .news-summary-box h4 {
+  color: #991b1b;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.article-editorial-content .news-summary-box ul {
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+}
+
+.article-editorial-content .news-summary-box li {
+  color: #374151;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* FAQ Box */
+.article-editorial-content .news-faq-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid #0284c7;
+  border-radius: 0.75rem;
+  padding: 1.5rem 1.75rem;
+  margin: 2.5rem 0 1.75rem 0;
+}
+
+.article-editorial-content .news-faq-box h4 {
+  color: #0369a1;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.article-editorial-content .faq-item {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.article-editorial-content .faq-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.article-editorial-content .faq-question {
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.article-editorial-content .faq-answer {
+  color: #475569;
+  font-weight: 400;
+  margin-bottom: 0;
+}

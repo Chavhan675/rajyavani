@@ -1,0 +1,786 @@
+import React, { useState, useEffect } from 'react';
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { Bot, AlertTriangle, Save, Loader2, CheckCircle2, Lock, LogIn, LogOut, Plus, Trash2 } from "lucide-react";
+import { useAuth } from '../lib/AuthContext';
+import { collection, addDoc, serverTimestamp, getDocs, getDoc, query, orderBy, limit, doc, writeBatch, where, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { getCategoryFallbackImage } from '../lib/defaultImages';
+
+import SEO from "../components/SEO";
+import Image from "../components/Image";
+
+export default function AdminPage() {
+  const { user, userRole, loading, signIn, signOut, getToken } = useAuth();
+  
+  const [rawFacts, setRawFacts] = useState("");
+  const [sources, setSources] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedDraft, setGeneratedDraft] = useState<any>(null);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isAutomating, setIsAutomating] = useState(false);
+  const [isUpgradingShortArticles, setIsUpgradingShortArticles] = useState(false);
+  const [upgradeProgressMessage, setUpgradeProgressMessage] = useState<string | null>(null);
+
+  const [automatorSources, setAutomatorSources] = useState<any[]>([]);
+  const [newSourceName, setNewSourceName] = useState("");
+  const [newSourceUrl, setNewSourceUrl] = useState("");
+
+  const handleUpgradeShortArticles = async () => {
+    if (isUpgradingShortArticles) return;
+    setIsUpgradingShortArticles(true);
+    setUpgradeProgressMessage("डेटाबेसमधील लहान बातम्या तपासत आहे...");
+
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'articles'),
+        where('status', '==', 'PUBLISHED'),
+        orderBy('publishedAt', 'desc'),
+        limit(20)
+      ));
+
+      const shortDocs: any[] = [];
+      snap.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        const textContent = (data.content || '').replace(/<[^>]+>/g, ' ');
+        const wordCount = textContent.trim().split(/\s+/).filter(Boolean).length;
+        if (wordCount < 600) {
+          shortDocs.push({ id: docSnap.id, ...data, wordCount });
+        }
+      });
+
+      if (shortDocs.length === 0) {
+        setUpgradeProgressMessage("सर्व बातम्या आधीच १०००+ शब्दांपेक्षा मोठ्या आहेत!");
+        setTimeout(() => setUpgradeProgressMessage(null), 4000);
+        return;
+      }
+
+      setUpgradeProgressMessage(`एकूण ${shortDocs.length} लहान बातम्या आढळल्या. प्रत्येकाचा १०००+ शब्दांत विस्तार सुरू आहे...`);
+
+      let completed = 0;
+      for (const item of shortDocs) {
+        try {
+          setUpgradeProgressMessage(`(${completed + 1}/${shortDocs.length}) "${item.title.substring(0, 30)}..." चे सविस्तर वृत्तात रूपांतर होत आहे...`);
+          
+          const res = await fetch('/api/expand-article', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: item.title,
+              summary: item.summary,
+              content: item.content,
+              category: item.category,
+              district: item.district,
+            }),
+          });
+
+          const resData = await res.json();
+          if (resData.success && resData.article) {
+            const articleRef = doc(db, 'articles', item.id);
+            await updateDoc(articleRef, {
+              title: resData.article.headline || item.title,
+              summary: resData.article.summary || item.summary,
+              content: resData.article.content,
+              tags: resData.article.tags || item.tags || [],
+              updatedAt: Date.now(),
+            });
+            completed++;
+          }
+        } catch (itemErr) {
+          console.error("Failed expanding article:", item.id, itemErr);
+        }
+      }
+
+      setUpgradeProgressMessage(`✅ यश! एकूण ${completed} बातम्यांचा १०००+ शब्दांत यशस्वी विस्तार झाला.`);
+      setTimeout(() => setUpgradeProgressMessage(null), 6000);
+    } catch (err: any) {
+      console.error("Bulk upgrade failed:", err);
+      setUpgradeProgressMessage(`त्रुटी: ${err.message || 'विस्तार अयशस्वी'}`);
+    } finally {
+      setIsUpgradingShortArticles(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userRole?.role && ['ADMIN', 'EDITOR'].includes(userRole.role)) {
+      const unsubscribe = onSnapshot(collection(db, 'sources'), (snapshot) => {
+        const sourceData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setAutomatorSources(sourceData);
+      });
+      return () => unsubscribe();
+    }
+  }, [userRole]);
+
+  const handleAddSource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSourceName || !newSourceUrl) return;
+    try {
+      await addDoc(collection(db, 'sources'), {
+        name: newSourceName,
+        url: newSourceUrl,
+        type: 'RSS',
+        isActive: true,
+        createdAt: Date.now()
+      });
+      setNewSourceName("");
+      setNewSourceUrl("");
+    } catch (e) {
+      console.error("Failed to add source", e);
+    }
+  };
+
+  const handleDeleteSource = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'sources', id));
+    } catch (e) {
+      console.error("Failed to delete source", e);
+    }
+  };
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rawFacts.trim()) {
+      setError("Please provide raw facts or press release content.");
+      return;
+    }
+
+    setIsGenerating(true);
+    setError("");
+    setGeneratedDraft(null);
+    setSaveSuccess(false);
+
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Authentication required");
+
+      const res = await fetch("/api/generate-article", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ rawFacts, sources }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to generate");
+      }
+
+      const data = await res.json();
+      setGeneratedDraft(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handlePublish = async (status: 'DRAFT' | 'PUBLISHED') => {
+    if (!generatedDraft || !user) return;
+    
+    setIsSaving(true);
+    setError("");
+    
+    try {
+      const articleData = {
+        title: (generatedDraft.headline || 'Untitled').substring(0, 300),
+        summary: (generatedDraft.summary || '').substring(0, 1000),
+        content: (generatedDraft.content || '').substring(0, 50000),
+        status: status,
+        authorId: user.uid,
+        authorName: user.displayName || user.email || 'Anonymous',
+        category: (generatedDraft.category || 'News').substring(0, 100),
+        district: (generatedDraft.district || '').substring(0, 100),
+        taluka: (generatedDraft.taluka || '').substring(0, 100),
+        village: (generatedDraft.village || '').substring(0, 100),
+        tags: Array.isArray(generatedDraft.tags) ? generatedDraft.tags.map(String).slice(0, 10) : [],
+        publishedAt: status === 'PUBLISHED' ? Date.now() : 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        isDeveloping: !!generatedDraft.isDeveloping,
+        aiGenerated: true,
+        imageUrl: (generatedDraft.imageUrl || getCategoryFallbackImage(generatedDraft.category, generatedDraft.headline)).substring(0, 1000),
+        imagePrompt: (generatedDraft.imagePrompt || '').substring(0, 1000),
+        imageAlt: (generatedDraft.imageAlt || generatedDraft.headline || '').substring(0, 300)
+      };
+      
+      await addDoc(collection(db, 'articles'), articleData);
+      setSaveSuccess(true);
+      setGeneratedDraft(null); // clear after save
+      setRawFacts("");
+      setSources("");
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to save article to database. " + (err.message || ''));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-brand-gray/50">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-brand-red" />
+        </main>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-brand-gray/50">
+        <Header />
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 max-w-md w-full text-center">
+            <Lock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Restricted Access</h2>
+            <p className="text-gray-600 mb-6">Please sign in to access the AI News Desk.</p>
+            <button 
+              onClick={signIn}
+              className="w-full bg-brand-red hover:bg-brand-saffron text-white font-bold py-3 px-4 rounded-md transition-colors flex items-center justify-center gap-2"
+            >
+              <LogIn className="w-5 h-5" />
+              Sign in with Google
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const hasAccess = userRole && ['ADMIN', 'EDITOR', 'REPORTER'].includes(userRole.role);
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen flex flex-col bg-brand-gray/50">
+        <Header />
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 max-w-md w-full text-center">
+            <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-6">Your account ({user.email}) does not have Editor or Reporter privileges.</p>
+            <button 
+              onClick={signOut}
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-md transition-colors flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-5 h-5" />
+              Sign Out
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-brand-gray/50">
+      <SEO title="AI डेस्क (Admin)" description="Editor dashboard" noindex={true} />
+      <Header />
+      
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { label: "Home", href: "/" },
+          { label: "AI News Desk" }
+        ]} />
+
+        <div className="mb-8 border-b pb-4">
+          <h1 className="text-3xl font-extrabold text-brand-black flex items-center gap-3">
+            <Bot className="w-8 h-8 text-brand-red" />
+            AI News Desk (Editor Panel)
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Submit raw facts, government press releases, or news observations. The AI will cross-check and draft a 100% original, plagiarism-free Marathi article for your review.
+          </p>
+        </div>
+
+        {/* Automator Control Panel */}
+        {userRole?.role === 'ADMIN' && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-brand-red to-brand-saffron p-6 rounded-t-xl text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold mb-1">24/7 AI News Collection Engine</h2>
+                <p className="text-white/80 text-sm">Automatically monitors trusted sources, deduplicates stories, and publishes verified news.</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={handleUpgradeShortArticles}
+                  disabled={isUpgradingShortArticles || isAutomating}
+                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold py-2 px-5 rounded-md transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap disabled:opacity-50 text-sm cursor-pointer"
+                >
+                  {isUpgradingShortArticles ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}
+                  {isUpgradingShortArticles ? 'विस्तार सुरू आहे...' : '⚡ लहान बातम्या १०००+ शब्दांत वाढवा'}
+                </button>
+
+                <button
+                  onClick={async () => {
+                    try {
+                    setIsAutomating(true);
+                    const t = await getToken();
+                    if (!t) return;
+                    
+                    // 1. Fetch recent articles for deduplication
+                    const recentSnapshot = await getDocs(query(
+                      collection(db, 'articles'),
+                      orderBy('publishedAt', 'desc'),
+                      limit(30)
+                    ));
+                    
+                    const recentArticles = recentSnapshot.docs.map(doc => ({
+                      id: doc.id,
+                      title: doc.data().title,
+                      summary: doc.data().summary,
+                      sourceUrl: doc.data().sourceUrl
+                    }));
+
+                    // 2. Fetch stale breaking articles to remove
+                    const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
+                    const staleSnapshot = await getDocs(query(
+                      collection(db, 'articles'),
+                      where('isDeveloping', '==', true),
+                      where('updatedAt', '<', twelveHoursAgo)
+                    ));
+
+                    if (!staleSnapshot.empty) {
+                      const batch = writeBatch(db);
+                      staleSnapshot.docs.forEach(docSnap => {
+                        const existingData = docSnap.data();
+                        const updatePayload: any = { isDeveloping: false, updatedAt: Date.now() };
+                        if (!existingData.authorId) updatePayload.authorId = user?.uid || 'system-automator';
+                        if (!existingData.authorName) updatePayload.authorName = user?.displayName || user?.email || 'Rajyavani System';
+                        if (!existingData.createdAt) updatePayload.createdAt = existingData.publishedAt || Date.now();
+                        
+                        updatePayload.title = String(existingData.title || 'Untitled').substring(0, 300);
+                        updatePayload.summary = String(existingData.summary || 'No summary').substring(0, 1000);
+                        updatePayload.content = String(existingData.content || 'No content').substring(0, 50000);
+                        updatePayload.category = String(existingData.category || 'Uncategorized').substring(0, 100);
+                        updatePayload.status = existingData.status || 'DRAFT';
+                        updatePayload.tags = Array.isArray(existingData.tags) ? existingData.tags.slice(0, 10) : [];
+                        updatePayload.imagePrompt = String(existingData.imagePrompt || '').substring(0, 1000);
+                        updatePayload.imageAlt = String(existingData.imageAlt || '').substring(0, 300);
+                        updatePayload.isDeveloping = false;
+                        updatePayload.aiGenerated = !!existingData.aiGenerated;
+
+                        batch.update(docSnap.ref, updatePayload);
+                      });
+                      await batch.commit();
+                    }
+
+                    // 2.5 Auto-archive old articles (older than 30 days)
+                    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+                    const archiveSnapshot = await getDocs(query(
+                      collection(db, 'articles'),
+                      where('status', '==', 'PUBLISHED'),
+                      where('publishedAt', '<', thirtyDaysAgo)
+                    ));
+
+                    if (!archiveSnapshot.empty) {
+                      const batch = writeBatch(db);
+                      archiveSnapshot.docs.forEach(docSnap => {
+                        const existingData = docSnap.data();
+                        const updatePayload: any = { status: 'ARCHIVED', updatedAt: Date.now() };
+                        if (!existingData.authorId) updatePayload.authorId = user?.uid || 'system-automator';
+                        if (!existingData.authorName) updatePayload.authorName = user?.displayName || user?.email || 'Rajyavani System';
+                        if (!existingData.createdAt) updatePayload.createdAt = existingData.publishedAt || Date.now();
+                        
+                        updatePayload.title = (existingData.title || 'Untitled').substring(0, 300);
+                        updatePayload.summary = (existingData.summary || 'No summary').substring(0, 1000);
+                        updatePayload.content = (existingData.content || 'No content').substring(0, 50000);
+                        updatePayload.category = (existingData.category || 'Uncategorized').substring(0, 100);
+                        updatePayload.tags = Array.isArray(existingData.tags) ? existingData.tags.slice(0, 10) : [];
+                        updatePayload.imagePrompt = (existingData.imagePrompt || '').substring(0, 1000);
+                        updatePayload.imageAlt = (existingData.imageAlt || '').substring(0, 300);
+                        updatePayload.isDeveloping = !!existingData.isDeveloping;
+                        updatePayload.aiGenerated = !!existingData.aiGenerated;
+                        
+                        // Fix any legacy nulls
+                        if (existingData.district === null) updatePayload.district = '';
+                        if (existingData.taluka === null) updatePayload.taluka = '';
+                        if (existingData.village === null) updatePayload.village = '';
+                        if (existingData.sourceUrl === null) updatePayload.sourceUrl = '';
+                        if (existingData.imagePrompt === null) updatePayload.imagePrompt = '';
+                        if (existingData.imageAlt === null) updatePayload.imageAlt = '';
+                        if (existingData.imageUrl === null) updatePayload.imageUrl = '';
+                        if (existingData.publishedAt === null) updatePayload.publishedAt = 0;
+
+                        batch.update(docSnap.ref, updatePayload);
+                      });
+                      await batch.commit();
+                    }
+
+                    // 3. Trigger backend to run Gemini and get operations
+                    const activeSources = automatorSources.filter(s => s.isActive !== false);
+                    const res = await fetch('/api/admin/trigger-automator', {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        recentArticles, 
+                        authorName: user?.displayName || user?.email || 'Rajyavani System',
+                        sources: activeSources 
+                      })
+                    });
+                    
+                    let data: any = {};
+                    try {
+                      data = await res.json();
+                    } catch (parseErr) {
+                      throw new Error(`Server returned status ${res.status} (${res.statusText})`);
+                    }
+
+                    if (!res.ok) {
+                      throw new Error(data.error || `Server responded with error ${res.status}`);
+                    }
+                    
+                    // 4. Apply operations locally
+                    if (data.operations && data.operations.length > 0) {
+                       for (const op of data.operations) {
+                          if (op.type === 'UPDATE') {
+                             const articleRef = doc(db, 'articles', op.targetId);
+                             const currentDoc = await getDoc(articleRef);
+                             if (currentDoc.exists()) {
+                               await addDoc(collection(articleRef, 'revisions'), {
+                                 ...currentDoc.data(),
+                                 archivedAt: Date.now()
+                               });
+                               
+                               // Prevent overwriting immortal fields if they already exist
+                               const existingData = currentDoc.data();
+                               if (existingData.authorId) {
+                                 delete op.data.authorId;
+                               } else {
+                                 op.data.authorId = user?.uid || 'system-automator';
+                               }
+                               if (existingData.authorName) {
+                                 delete op.data.authorName;
+                               } else {
+                                 op.data.authorName = user?.displayName || user?.email || 'Rajyavani System';
+                               }
+                               if (existingData.createdAt) {
+                                 delete op.data.createdAt;
+                               } else {
+                                 op.data.createdAt = existingData.publishedAt || Date.now();
+                               }
+                             }
+                             await updateDoc(articleRef, op.data);
+                          } else if (op.type === 'CREATE') {
+                             await addDoc(collection(db, 'articles'), op.data);
+                          }
+                       }
+                    }
+                    
+                    alert(`News Automator finished successfully! Processed ${data.operations?.length || 0} operations.`);
+                  } catch (e: any) {
+                    console.error(e);
+                    alert(`Error triggering automator: ${e.message || String(e)}`);
+                  } finally {
+                    setIsAutomating(false);
+                  }
+                }}
+                disabled={isAutomating || isUpgradingShortArticles}
+                className="bg-white text-brand-red font-bold py-2 px-6 rounded-md hover:bg-gray-100 transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap disabled:opacity-50 cursor-pointer text-sm"
+              >
+                {isAutomating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bot className="w-5 h-5" />}
+                {isAutomating ? 'Running...' : 'Run Collector Now'}
+              </button>
+              </div>
+            </div>
+
+            {upgradeProgressMessage && (
+              <div className="bg-amber-50 border-x border-b border-amber-200 px-6 py-3 text-sm font-semibold text-amber-900 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-amber-700" />
+                {upgradeProgressMessage}
+              </div>
+            )}
+            
+            <div className="bg-white border-x border-b border-gray-200 rounded-b-xl p-6">
+              <div className="flex items-center justify-between mb-4 border-b pb-2">
+                 <h3 className="font-bold text-gray-800">Configured Sources</h3>
+                 <button 
+                   onClick={async () => {
+                     const defaultSources = [
+                        { name: "ABP Majha", url: "https://news.google.com/rss/search?q=site:marathi.abplive.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "News18 Lokmat", url: "https://news.google.com/rss/search?q=site:lokmat.news18.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "TV9 Marathi", url: "https://news.google.com/rss/search?q=site:tv9marathi.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Zee 24 Taas", url: "https://news.google.com/rss/search?q=site:zeenews.india.com/marathi&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Saam TV", url: "https://news.google.com/rss/search?q=site:saamtv.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Jai Maharashtra", url: "https://news.google.com/rss/search?q=site:jaimaharashtranews.tv&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Lokmat", url: "https://news.google.com/rss/search?q=site:lokmat.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Sakal", url: "https://news.google.com/rss/search?q=site:esakal.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Loksatta", url: "https://news.google.com/rss/search?q=site:loksatta.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Maharashtra Times", url: "https://news.google.com/rss/search?q=site:maharashtratimes.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Pudhari", url: "https://news.google.com/rss/search?q=site:pudhari.news&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Divya Marathi", url: "https://news.google.com/rss/search?q=site:divyamarathi.bhaskar.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Saamana", url: "https://news.google.com/rss/search?q=site:saamana.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Deshonnati", url: "https://news.google.com/rss/search?q=site:deshonnati.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Deshdoot", url: "https://news.google.com/rss/search?q=site:deshdoot.com&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true },
+                        { name: "Ekmat", url: "https://news.google.com/rss/search?q=site:ekmat.in&hl=mr&gl=IN&ceid=IN:mr", type: "RSS", isActive: true }
+                     ];
+                     if(window.confirm('Add 16 Marathi news publishers to sources?')) {
+                       try {
+                         const batch = writeBatch(db);
+                         defaultSources.forEach(s => {
+                           // Check if already exists by URL loosely by user sight, but code wise just add them
+                           if(!automatorSources.find(as => as.url === s.url)) {
+                             const newRef = doc(collection(db, 'sources'));
+                             batch.set(newRef, { ...s, createdAt: Date.now() });
+                           }
+                         });
+                         await batch.commit();
+                         alert('Added default publishers successfully!');
+                       } catch(e) {
+                         alert('Failed to add sources: ' + e.message);
+                       }
+                     }
+                   }}
+                   className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded-md transition-colors"
+                 >
+                   Load Marathi Publishers
+                 </button>
+              </div>
+
+              {automatorSources.length === 0 ? (
+                <p className="text-gray-500 text-sm mb-4">No sources configured. The automator will fall back to default Google News RSS.</p>
+              ) : (
+                <ul className="space-y-3 mb-6">
+                  {automatorSources.map(source => (
+                    <li key={source.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-100">
+                      <div>
+                        <span className="font-semibold text-gray-800">{source.name}</span>
+                        <span className="ml-2 text-xs font-mono text-gray-500 bg-gray-200 px-2 py-0.5 rounded">{source.type}</span>
+                        <div className="text-sm text-brand-red truncate max-w-[200px] sm:max-w-md">{source.url}</div>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteSource(source.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors p-2"
+                        title="Remove source"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              
+              <form onSubmit={handleAddSource} className="flex flex-col sm:flex-row gap-3">
+                <input 
+                  type="text" 
+                  placeholder="Source Name (e.g. PTI RSS)" 
+                  className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-red"
+                  value={newSourceName}
+                  onChange={e => setNewSourceName(e.target.value)}
+                  required
+                />
+                <input 
+                  type="url" 
+                  placeholder="RSS/API URL" 
+                  className="flex-[2] px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-red"
+                  value={newSourceUrl}
+                  onChange={e => setNewSourceUrl(e.target.value)}
+                  required
+                />
+                <button type="submit" className="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-md font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                  <Plus className="w-4 h-4" /> Add
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Input Column */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-bold mb-4 border-l-4 border-brand-red pl-3">Input Raw Facts</h2>
+            <form onSubmit={handleGenerate} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Raw Facts / Events / Press Release *
+                </label>
+                <textarea 
+                  required
+                  rows={8}
+                  className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-brand-red focus:border-transparent text-sm"
+                  placeholder="E.g., Maharashtra government announced new scheme for farmers today in Mumbai. Subsidy of 5000 rs per acre..."
+                  value={rawFacts}
+                  onChange={(e) => setRawFacts(e.target.value)}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Source URLs / References (Optional)
+                </label>
+                <input 
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-brand-red focus:border-transparent text-sm"
+                  placeholder="https://maharashtra.gov.in/press-release"
+                  value={sources}
+                  onChange={(e) => setSources(e.target.value)}
+                />
+              </div>
+
+              {error && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm border border-red-200 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={isGenerating}
+                className="w-full bg-brand-red hover:bg-brand-saffron text-white font-bold py-3 px-4 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    AI is Analyzing & Drafting...
+                  </>
+                ) : (
+                  <>
+                    <Bot className="w-5 h-5" />
+                    Generate Original Draft
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Output Column */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
+            <h2 className="text-xl font-bold mb-4 border-l-4 border-brand-saffron pl-3 flex justify-between items-center">
+              <span>Generated Draft</span>
+              {generatedDraft && (
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1 font-medium">
+                  <CheckCircle2 className="w-3 h-3" /> Ready for Review
+                </span>
+              )}
+            </h2>
+
+            {!generatedDraft && !isGenerating && (
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-lg p-8">
+                <Bot className="w-12 h-12 mb-3 opacity-50" />
+                <p className="text-center text-sm">
+                  Generated news article will appear here.<br/>
+                  The AI ensures zero plagiarism and SEO formatting.
+                </p>
+              </div>
+            )}
+
+            {isGenerating && (
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-lg p-8">
+                <Loader2 className="w-10 h-10 mb-3 animate-spin text-brand-red" />
+                <p className="text-center text-sm font-medium text-gray-600 animate-pulse">
+                  Fact-checking sources...<br/>Writing original Marathi article...
+                </p>
+              </div>
+            )}
+
+            {generatedDraft && (
+              <div className="flex-1 flex flex-col gap-4 animate-in fade-in duration-500 overflow-y-auto">
+                
+                {generatedDraft.requiresHumanReview && (
+                  <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-md text-xs font-semibold flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-yellow-600" />
+                    <div>
+                      <span className="block font-bold mb-1">Human Review Highly Recommended</span>
+                      The AI detected potential ambiguities or conflicting facts in the provided source material. Please verify dates/names before publishing.
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Headline</label>
+                  <h3 className="text-xl font-bold text-gray-900">{generatedDraft.headline}</h3>
+                </div>
+
+                <div className="h-44 rounded-lg overflow-hidden border border-gray-200">
+                  <Image 
+                    src={generatedDraft.imageUrl} 
+                    category={generatedDraft.category} 
+                    alt={generatedDraft.headline}
+                    size="card"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Summary</label>
+                  <p className="text-sm font-medium text-gray-600 border-l-2 border-gray-300 pl-3">{generatedDraft.summary}</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                  <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-sm border border-gray-200">
+                    Category: {generatedDraft.category}
+                  </span>
+                  {generatedDraft.district && (
+                    <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-sm border border-gray-200">
+                      District: {generatedDraft.district}
+                    </span>
+                  )}
+                  {generatedDraft.content && (
+                    <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-sm font-bold flex items-center gap-1">
+                      📝 {generatedDraft.content.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length} शब्द (दीर्घ लेख)
+                    </span>
+                  )}
+                  {generatedDraft.isDeveloping && (
+                    <span className="bg-red-50 text-brand-red px-2 py-1 rounded-sm border border-red-200 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" /> Developing Story
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase">Article Content</label>
+                  <div 
+                    className="text-gray-800 text-sm leading-relaxed prose prose-sm max-w-none prose-p:mb-4"
+                    dangerouslySetInnerHTML={{ __html: generatedDraft.content }} 
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase">SEO Tags</label>
+                  <div className="flex flex-wrap gap-2">
+                    {generatedDraft.tags?.map((tag: string) => (
+                      <span key={tag} className="text-xs text-brand-saffron bg-brand-saffron/10 px-2 py-1 rounded-sm font-medium">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t flex justify-end gap-3">
+                  <button 
+                    onClick={() => handlePublish('DRAFT')}
+                    disabled={isSaving}
+                    className="px-4 py-2 text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                  >
+                    Save as Draft
+                  </button>
+                  <button 
+                    onClick={() => handlePublish('PUBLISHED')}
+                    disabled={isSaving || (userRole?.role === 'REPORTER')}
+                    className="bg-brand-black hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-md transition-colors flex items-center gap-2 text-sm shadow-sm disabled:opacity-50"
+                  >
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Approve & Publish
+                  </button>
+                </div>
+
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
