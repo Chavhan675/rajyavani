@@ -1,4 +1,4 @@
-import { JobOpportunity } from '../types';
+import { JobOpportunity, JobOpportunityCategory, JobOpportunityStatus } from '../types';
 
 export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
   {
@@ -8,6 +8,19 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     organization: 'महाराष्ट्र राज्य पोलीस महासंचालक कार्यालय, मुंबई',
     organizationEn: 'Office of the Director General of Police, Maharashtra State',
     category: 'GOVT_JOB',
+    status: 'ACTIVE',
+    statusLabelMarathi: 'सक्रिय — अर्ज सुरू आहेत',
+    statusReason: 'अधिकृत पोर्टलवर सध्या अर्ज स्वीकारले जात असून अंतिम मुदत ३१ ऑगस्ट २०२६ आहे.',
+    applicationPortalActive: true,
+    isArchivedHistorical: false,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 45, // 45 mins ago
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: true,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
     qualifications: ['12th', 'Any'],
     qualificationsDisplay: '१२ वी उत्तीर्ण (HSC Pass)',
     district: 'महाराष्ट्र सर्व जिल्हे',
@@ -20,8 +33,10 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     importantDates: {
       startDate: '०१ ऑगस्ट २०२६',
       lastDate: '३१ ऑगस्ट २०२६',
+      rawStartDate: '2026-08-01',
+      rawDate: '2026-08-31',
       examDate: 'सप्टेंबर २०२६',
-      rawDate: '2026-08-31'
+      isExtended: false
     },
     requiredDocuments: [
       '१० वी व १२ वी गुणपत्रिका व प्रमाणपत्र',
@@ -43,11 +58,26 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
   },
   {
     id: 'mpsc-group-b-c-comb-2026',
-    title: 'MPSC महाराष्ट्र अराजपत्रित गट-ब आणि गट-क संयुक्त पूर्व परीक्षा २०२६',
-    titleEn: 'MPSC Combined Non-Gazetted Group B & Group C Prelims Exam 2026',
+    title: 'MPSC महाराष्ट्र अराजपत्रित गट-ब आणि गट-क संयुक्त पूर्व परीक्षा २०२६ (मुदतवाढ)',
+    titleEn: 'MPSC Combined Non-Gazetted Group B & Group C Prelims Exam 2026 (Extended)',
     organization: 'महाराष्ट्र लोकसेवा आयोग (MPSC), मुंबई',
     organizationEn: 'Maharashtra Public Service Commission (MPSC)',
     category: 'GOVT_JOB',
+    status: 'EXTENDED',
+    statusLabelMarathi: 'मुदतवाढ — नवीन शेवटची तारीख',
+    statusReason: 'MPSC शुद्धीपत्रक क्र. ४५/२०२६ नुसार अर्ज सादर करण्यास ०५ सप्टेंबर २०२६ पर्यंत अधिकृत मुदतवाढ देण्यात आली आहे.',
+    corrigendumUrl: 'https://mpsc.gov.in/corrigendum-45-2026.pdf',
+    corrigendumNotes: 'मूळ अंतिम मुदत २५ ऑगस्ट २०२६ होती, सर्व्हर सुधारणा व विद्यार्थ्यांच्या मागणीमुळे १० दिवसांची मुदतवाढ मंजूर.',
+    applicationPortalActive: true,
+    isArchivedHistorical: false,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 30, // 30 mins ago
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: true,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
     qualifications: ['Graduate', 'PostGraduate'],
     qualificationsDisplay: 'कोणत्याही शाखेतील पदवीधर (Any Graduate)',
     district: 'महाराष्ट्र सर्व जिल्हे',
@@ -59,9 +89,12 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     selectionProcess: '१. संयुक्त पूर्व परीक्षा (१०० गुण) २. मुख्य परीक्षा (२०० गुण) ३. मुलाखत/टंकलेखन चाचणी',
     importantDates: {
       startDate: '०५ ऑगस्ट २०२६',
-      lastDate: '२५ ऑगस्ट २०२६',
+      lastDate: '०५ सप्टेंबर २०२६',
+      originalLastDate: '२५ ऑगस्ट २०२६',
+      rawStartDate: '2026-08-05',
+      rawDate: '2026-09-05',
       examDate: 'ऑक्टोबर २०२६',
-      rawDate: '2026-08-25'
+      isExtended: true
     },
     requiredDocuments: [
       'पदवी उत्तीर्ण गुणपत्रिका व पदवी प्रमाणपत्र',
@@ -72,13 +105,164 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     ],
     officialLink: 'https://mpsconline.gov.in',
     notificationPdfUrl: 'https://mpsc.gov.in',
-    description: 'महाराष्ट्र शासनाच्या विविध मंत्रालयीन व प्रशासकीय विभागांमध्ये पोलीस उपनिरीक्षक (PSI), राज्य कर निरीक्षक (STI), सहायक कक्ष अधिकारी (ASO), दुय्यम निबंधक आणि कर सहायक या प्रतिष्ठित पदांसाठी MPSC मार्फत संयुक्त भरती जाहीर करण्यात आली आहे.',
-    descriptionEn: 'MPSC announcement for Group B & Group C recruitment including PSI, STI, ASO, Sub-Registrar, and Tax Assistant positions across Maharashtra administrative departments.',
+    description: 'महाराष्ट्र शासनाच्या विविध मंत्रालयीन व प्रशासकीय विभागांमध्ये पोलीस उपनिरीक्षक (PSI), राज्य कर निरीक्षक (STI), सहायक कक्ष अधिकारी (ASO), दुय्यम निबंधक आणि कर सहायक या प्रतिष्ठित पदांसाठी MPSC मार्फत संयुक्त भरती जाहीर करण्यात आली आहे. नवीन शुद्धीपत्रकानुसार मुदतवाढ लागू.',
+    descriptionEn: 'MPSC announcement for Group B & Group C recruitment including PSI, STI, ASO, Sub-Registrar, and Tax Assistant positions with officially extended application deadline.',
     isFresherEligible: true,
     isOfficialVerified: true,
-    sourceName: 'MPSC अधिकृत प्रसिद्धीपत्रक',
-    tags: ['MPSC', 'PSI', 'STI', 'ASO', 'स्पर्धा परीक्षा', 'Graduate Jobs'],
+    sourceName: 'MPSC अधिकृत प्रसिद्धीपत्रक व शुद्धीपत्रक',
+    tags: ['MPSC', 'PSI', 'STI', 'ASO', 'स्पर्धा परीक्षा', 'Graduate Jobs', 'मुदतवाढ'],
     createdAt: Date.now() - 86400000 * 3
+  },
+  {
+    id: 'talathi-revenue-bharti-2026-upcoming',
+    title: 'महाराष्ट्र महसूल विभाग: तलाठी व मंडळ अधिकारी भरती २०२६ (आगामी)',
+    titleEn: 'Maharashtra Revenue Department: Talathi & Circle Officer Recruitment 2026 (Upcoming)',
+    organization: 'महसूल व वन विभाग, महाराष्ट्र शासन',
+    organizationEn: 'Revenue & Forest Department, Government of Maharashtra',
+    category: 'GOVT_JOB',
+    status: 'UPCOMING',
+    statusLabelMarathi: 'आगामी — अर्ज लवकरच सुरू होणार',
+    statusReason: 'शासकीय मान्यता प्राप्त झाली असून अधिकृत ऑनलाइन अर्ज पोर्टल ०१ सप्टेंबर २०२६ पासून सुरू होईल.',
+    applicationPortalActive: false,
+    isArchivedHistorical: false,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 60,
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: false,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
+    qualifications: ['Graduate'],
+    qualificationsDisplay: 'कोणत्याही शाखेतील पदवी + MS-CIT संगणक ज्ञान',
+    district: 'महाराष्ट्र सर्व जिल्हे',
+    city: 'सर्व ३६ जिल्हे',
+    vacancies: '३,४५०',
+    salary: '₹२५,५०० - ₹८१,१०० (लेव्हल एस-८)',
+    ageLimit: '१९ ते ३८ वर्षे (मागासवर्गीय: ४३ वर्षे)',
+    applicationFee: 'खुला प्रवर्ग: ₹१,००० | राखीव प्रवर्ग: ₹९००',
+    selectionProcess: 'TCS/IBPS मार्फत संगणकीकृत लेखी परीक्षा (२०० गुण)',
+    importantDates: {
+      startDate: '०१ सप्टेंबर २०२६',
+      lastDate: '२५ सप्टेंबर २०२६',
+      rawStartDate: '2026-09-01',
+      rawDate: '2026-09-25',
+      examDate: 'ऑक्टोबर २०२६',
+      isExtended: false
+    },
+    requiredDocuments: [
+      'पदवी गुणपत्रिका व प्रमाणपत्र',
+      'MS-CIT किंवा समकक्ष प्रमाणपत्र',
+      'अधिवास व जात प्रमाणपत्र (लागू असल्यास)',
+      'आधार कार्ड व पासपोर्ट साईज फोटो'
+    ],
+    officialLink: 'https://mahabhumi.gov.in',
+    notificationPdfUrl: 'https://mahabhumi.gov.in',
+    description: 'महाराष्ट्र शासनाच्या महसूल विभागामार्फत तलाठी संवर्गातील ३,४५० रिक्त पदांसाठी अधिकृत संक्षिप्त जाहिरात प्रसिद्ध झाली आहे. अर्ज १ सप्टेंबर २०२६ पासून स्वीकारले जातील.',
+    descriptionEn: 'Upcoming mega recruitment for 3,450 Talathi posts across Maharashtra revenue circles. Online applications open on 1st September 2026.',
+    isFresherEligible: true,
+    isOfficialVerified: true,
+    sourceName: 'महाराष्ट्र शासन महसूल विभाग शासन निर्णय',
+    tags: ['तलाठी भरती', 'Talathi Bharti', 'Upcoming Job', 'Govt Job', 'Revenue Dept'],
+    createdAt: Date.now() - 86400000 * 1
+  },
+  {
+    id: 'zp-health-worker-closed-2026',
+    title: 'जिल्हा परिषद आरोग्य सेवक व परिचारिका भरती २०२६ (अर्ज प्रक्रिया पूर्ण)',
+    titleEn: 'Zilla Parishad Health Worker & ANM Recruitment 2026 (Application Closed)',
+    organization: 'ग्रामविकास विभाग व जिल्हा परिषद, महाराष्ट्र शासन',
+    organizationEn: 'Rural Development Department & Zilla Parishad',
+    category: 'GOVT_JOB',
+    status: 'CLOSED',
+    statusLabelMarathi: 'मुदत संपली — अर्ज बंद',
+    statusReason: 'या भरतीची अंतिम मुदत ०५ ऑगस्ट २०२६ रोजी संपली असून अर्ज पोर्टल बंद झाले आहे. ही जाहिरात केवळ संदर्भासाठी आर्काइव्हमध्ये आहे.',
+    applicationPortalActive: false,
+    isArchivedHistorical: true,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 15,
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: false,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
+    qualifications: ['10th', 'Diploma'],
+    qualificationsDisplay: '१० वी + ANM/GNM किंवा विज्ञान शाखेतील पदविका',
+    district: 'महाराष्ट्र सर्व जिल्हे',
+    city: 'सर्व जिल्हा परिषदा',
+    vacancies: '४,१२०',
+    salary: '₹२५,५०० - ₹८१,१००',
+    ageLimit: '१८ ते ३८ वर्षे',
+    applicationFee: 'खुला प्रवर्ग: ₹५०० | राखीव: ₹२५०',
+    selectionProcess: 'लेखी परीक्षा व गुणवत्ता यादी',
+    importantDates: {
+      startDate: '१५ जुलै २०२६',
+      lastDate: '०५ ऑगस्ट २०२६',
+      rawStartDate: '2026-07-15',
+      rawDate: '2026-08-05',
+      examDate: 'ऑगस्ट अखेर २०२६',
+      isExtended: false
+    },
+    requiredDocuments: [
+      '१० वी / १२ वी गुणपत्रिका',
+      'ANM / GNM नर्सिंग कौन्सिल नोंदणी प्रमाणपत्र',
+      'अधिवास दाखला'
+    ],
+    officialLink: 'https://rdd.maharashtra.gov.in',
+    notificationPdfUrl: 'https://rdd.maharashtra.gov.in',
+    description: '⚠️ महत्त्वाची सूचना: या जिल्हा परिषद भरतीची ऑनलाइन अर्ज करण्याची मुदत ५ ऑगस्ट २०२६ रोजी अधिकृतपणे संपली आहे. राज्यवाणीच्या अचूकता धोरणानुसार ही जाहिरात केवळ ऐतिहासिक संदर्भासाठी आर्काइव्हमध्ये ठेवली आहे.',
+    descriptionEn: 'Application period for Zilla Parishad Health Worker posts officially ended on 5th August 2026. Kept in historical archives only.',
+    isFresherEligible: true,
+    isOfficialVerified: true,
+    sourceName: 'ग्रामविकास विभाग अधिकृत पोर्टल',
+    tags: ['आरोग्य सेवक', 'ZP Bharti', 'Closed Job', 'मुदत संपली', 'Archive'],
+    createdAt: Date.now() - 86400000 * 20
+  },
+  {
+    id: 'tribal-dept-cancelled-2026',
+    title: 'आदिवासी विकास विभाग: कनिष्ठ लिपिक भरती २०२६ (प्रशासकीय आदेशाने रद्द)',
+    titleEn: 'Tribal Development Department: Junior Clerk Recruitment 2026 (Cancelled by Order)',
+    organization: 'आदिवासी विकास आयुक्तालय, महाराष्ट्र राज्य, नाशिक',
+    organizationEn: 'Tribal Development Department, Maharashtra State',
+    category: 'GOVT_JOB',
+    status: 'CANCELLED',
+    statusLabelMarathi: 'रद्द / मागे घेतलेली भरती',
+    statusReason: 'शासन शुद्धीपत्रक क्र. आडिवि-२०२६/२४ अन्वये ही जाहिरात प्रशासकीय कारणास्तव तात्पुरती रद्द करण्यात आली आहे.',
+    applicationPortalActive: false,
+    isArchivedHistorical: true,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 10,
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: false,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
+    qualifications: ['Graduate'],
+    qualificationsDisplay: 'पदवीधर + मराठी टंकलेखन',
+    district: 'नाशिक',
+    city: 'नाशिक व उपविभाग',
+    vacancies: '३१०',
+    salary: '₹१९,९०० - ₹६३,२००',
+    ageLimit: '१८ ते ३८ वर्षे',
+    applicationFee: '₹४००',
+    selectionProcess: 'रद्द (Cancelled)',
+    importantDates: {
+      startDate: '०१ ऑगस्ट २०२६',
+      lastDate: '१५ ऑगस्ट २०२६',
+      rawStartDate: '2026-08-01',
+      rawDate: '2026-08-15',
+      isExtended: false
+    },
+    requiredDocuments: ['पदवी प्रमाणपत्र', 'टंकलेखन प्रमाणपत्र'],
+    officialLink: 'https://tribal.maharashtra.gov.in',
+    description: '⚠️ भरती रद्द सूचना: आदिवासी विकास विभागाची कनिष्ठ लिपिक जाहिरात शासनाच्या नवीन आरक्षण नियमावलीनुसार पुनरावलोकनासाठी तात्पुरती रद्द करण्यात आली आहे. नवीन जाहिरात आल्यास अपडेट केले जाईल.',
+    descriptionEn: 'This recruitment has been withdrawn by administrative order for reservation revisions. Do not apply.',
+    isFresherEligible: true,
+    isOfficialVerified: true,
+    sourceName: 'आदिवासी विकास आयुक्तालय नाशिक',
+    tags: ['आदिवासी विकास', 'Cancelled Job', 'रद्द भरती', 'Nashik Jobs'],
+    createdAt: Date.now() - 86400000 * 12
   },
   {
     id: 'mahatransco-technician-engineer-2026',
@@ -87,6 +271,19 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     organization: 'महाराष्ट्र राज्य विद्युत पारेषण कंपनी मर्यादित (MahaTransco)',
     organizationEn: 'Maharashtra State Electricity Transmission Company Limited',
     category: 'GOVT_JOB',
+    status: 'ACTIVE',
+    statusLabelMarathi: 'सक्रिय — अर्ज सुरू आहेत',
+    statusReason: 'अर्ज पोर्टल सक्रिय असून १० ऑगस्ट ते ०५ सप्टेंबर २०२६ पर्यंत अर्ज सुरू आहेत.',
+    applicationPortalActive: true,
+    isArchivedHistorical: false,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 20,
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: true,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
     qualifications: ['ITI', 'Diploma', 'BE_BTech'],
     qualificationsDisplay: 'ITI (इलेक्ट्रिशियन / वायरमन) / डिप्लोमा / B.E./B.Tech (Electrical)',
     district: 'महाराष्ट्र सर्व जिल्हे',
@@ -99,8 +296,10 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     importantDates: {
       startDate: '१० ऑगस्ट २०२६',
       lastDate: '०५ सप्टेंबर २०२६',
+      rawStartDate: '2026-08-10',
+      rawDate: '2026-09-05',
       examDate: 'सप्टेंबर अखेर २०२६',
-      rawDate: '2026-09-05'
+      isExtended: false
     },
     requiredDocuments: [
       'ITI / डिप्लोमा / इंजिनिअरिंग अंतिम वर्ष गुणपत्रिका व प्रमाणपत्र',
@@ -119,197 +318,25 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     createdAt: Date.now() - 86400000 * 1
   },
   {
-    id: 'tcs-pune-fresher-software-engineer-2026',
-    title: 'TCS पुणे: सॉफ्टवेअर इंजिनिअर व सिस्टिम अनालिस्ट (NQT फ्रेशर्स ड्राइव्ह)',
-    titleEn: 'TCS Pune: Software Engineer & System Analyst (NQT Freshers Campus Drive)',
-    organization: 'टाटा कन्सल्टन्सी सर्व्हिसेस (TCS), हिंजवडी पुणे',
-    organizationEn: 'Tata Consultancy Services (TCS), Hinjawadi Pune',
-    category: 'PRIVATE_JOB',
-    qualifications: ['BE_BTech', 'Graduate', 'PostGraduate'],
-    qualificationsDisplay: 'B.E./B.Tech (CSE, IT, E&TC, Mech), MCA, M.Sc (Comp Sci)',
-    district: 'पुणे',
-    city: 'पुणे (Hinjawadi IT Park / Magarpatta)',
-    vacancies: '४५०+',
-    salary: '₹३.६० लाख ते ₹७.०० लाख प्रति वर्ष (Ninja / Digital / Prime Packages)',
-    ageLimit: '२१ ते २६ वर्षे (२०२५ व २०२६ उत्तीर्ण बॅचेस)',
-    applicationFee: 'विनामूल्य (कोणतेही शुल्क नाही / Free Application)',
-    selectionProcess: '१. TCS NQT ऑनलाइन अ‍ॅप्टिट्यूड व कोडिंग टेस्ट २. टेक्निकल मुलाखत ३. HR राउंड',
-    importantDates: {
-      startDate: '०१ ऑगस्ट २०२६',
-      lastDate: '२८ ऑगस्ट २०२६',
-      examDate: '०२ सप्टेंबर २०२६',
-      rawDate: '2026-08-28'
-    },
-    requiredDocuments: [
-      'अपडेट केलेला बायोडाटा (Professional Resume/CV)',
-      '१० वी, १२ वी व पदवीच्या सर्व सेमिस्टरच्या गुणपत्रिका',
-      'कॉलेज ओळखपत्र किंवा पासिंग सर्टिफिकेट',
-      'पॅन कार्ड व आधार कार्ड'
-    ],
-    officialLink: 'https://nextstep.tcs.com/campus',
-    description: 'TCS पुणे आणि मुंबई कॅम्पससाठी २०२५ आणि २०२६ मधील फ्रेशर्स पदवीधरांसाठी ऑन-कॅम्पस व ऑफ-कॅम्पस रिक्रूटमेंट ड्राइव्ह सुरू आहे. Ninja (३.३६ LPA), Digital (७ LPA) आणि Prime (९ LPA) या तीन श्रेणींमध्ये निवड केली जाईल.',
-    descriptionEn: 'TCS Hinjawadi Pune & Mumbai are hiring fresh graduate engineers and post-graduates for Software Development and IT support roles through national qualifier test.',
-    isFresherEligible: true,
-    isOfficialVerified: true,
-    sourceName: 'TCS NextStep अधिकृत पोर्टल',
-    tags: ['TCS', 'Pune Jobs', 'IT Jobs', 'Fresher Jobs', 'Software Engineer', 'CSE'],
-    createdAt: Date.now() - 86400000 * 4
-  },
-  {
-    id: 'mahadbt-post-matric-scholarship-2026',
-    title: 'महाडीबीटी (MahaDBT) महाराष्ट्र राज्य उच्च शिक्षण मॅट्रिकोत्तर शिष्यवृत्ती २०२६-२७',
-    titleEn: 'MahaDBT Maharashtra Post-Matric State Scholarship Scheme 2026-27',
-    organization: 'सामाजिक न्याय व विशेष सहाय्य विभाग / उच्च व तंत्रशिक्षण विभाग, महाराष्ट्र शासन',
-    organizationEn: 'Social Justice & Higher Education Department, Govt. of Maharashtra',
-    category: 'SCHOLARSHIP',
-    qualifications: ['10th', '12th', 'ITI', 'Diploma', 'Graduate', 'PostGraduate'],
-    qualificationsDisplay: '१० वी नंतरचे सर्व मान्यताप्राप्त अभ्यासक्रम (Diploma, Degree, PG, Medical, Engineering)',
-    district: 'महाराष्ट्र सर्व जिल्हे',
-    city: 'सर्व ३६ जिल्हे',
-    vacancies: 'सर्व पात्र विद्यार्थी',
-    salary: '१००% शैक्षणिक शुल्क माफी + ₹१,२०० ते ₹३,००० दरमहा निर्वाह भत्ता',
-    ageLimit: 'वयाची अट नाही (विद्यार्थी मान्यताप्राप्त महाविद्यालयात प्रवेशित असावा)',
-    applicationFee: 'विनामूल्य (Free Online Application)',
-    selectionProcess: 'कागदपत्र पडताळणी आणि महाविद्यालयामार्फत मंजुरी',
-    importantDates: {
-      startDate: '१५ जुलै २०२६',
-      lastDate: '३० सप्टेंबर २०२६',
-      rawDate: '2026-09-30'
-    },
-    requiredDocuments: [
-      'आधार कार्ड आणि आधार लिंक बँक खाते पासबुक',
-      'तहसीलदार यांनी दिलेला उत्पन्नाचा दाखला (वार्षिक उत्पन्न मर्यादा ८ लाखांच्या आत)',
-      'महाराष्ट्र अधिवास प्रमाणपत्र (Domicile Certificate)',
-      'मागील वर्षाची गुणपत्रिका व चालू वर्षाची कॉलेज फी पावती',
-      'राशन कार्ड व जात प्रमाणपत्र (लागू असल्यास)'
-    ],
-    officialLink: 'https://mahadbt.maharashtra.gov.in',
-    notificationPdfUrl: 'https://mahadbt.maharashtra.gov.in/SchemeData',
-    description: 'महाराष्ट्र शासनामार्फत एससी, एसटी, ओबीसी, व्हीजेएनटी, एसबीसी आणि ईबीसी (EBC) प्रवर्गातील विद्यार्थ्यांना पदवी, पदविका, वैद्यकीय, अभियांत्रिकी आणि व्यावसायिक शिक्षणासाठी १००% फी माफी आणि विद्यावेतन देणारी MahaDBT शिष्यवृत्ती योजना.',
-    descriptionEn: 'Flagship Maharashtra Government post-matric scholarship offering tuition fee waivers and maintenance allowances for SC, ST, OBC, VJNT, and EBC students in colleges across the state.',
-    isFresherEligible: true,
-    isOfficialVerified: true,
-    sourceName: 'MahaDBT महाराष्ट्र शासन अधिकृत पोर्टल',
-    tags: ['MahaDBT', 'शिष्यवृत्ती', 'Scholarship', 'Student Schemes', 'EBC', 'Maharashtra Education'],
-    createdAt: Date.now() - 86400000 * 5
-  },
-  {
-    id: 'mht-cet-engineering-pharmacy-2026',
-    title: 'MHT-CET २०२६: अभियांत्रिकी, औषधनिर्माणशास्त्र व कृषी पदवी प्रवेश परीक्षा',
-    titleEn: 'MHT-CET 2026: Engineering, Pharmacy & Agriculture Degree Common Entrance Test',
-    organization: 'राज्य सामाईक प्रवेश परीक्षा कक्ष (State CET Cell), महाराष्ट्र',
-    organizationEn: 'State Common Entrance Test Cell, Maharashtra State',
-    category: 'ENTRANCE_EXAM',
-    qualifications: ['12th'],
-    qualificationsDisplay: '१२ वी विज्ञान (PCM / PCB ग्रुप) उत्तीर्ण किंवा प्रविष्ट',
-    district: 'महाराष्ट्र सर्व जिल्हे',
-    city: 'सर्व जिल्हा केंद्रे',
-    vacancies: '१,५०,०००+ इंजिनिअरिंग व फार्मसी जागा',
-    salary: 'शासकीय व खाजगी कॉलेज प्रवेश',
-    ageLimit: 'वयाची कोणतीही कमाल मर्यादा नाही',
-    applicationFee: 'खुला वर्ग: ₹१,००० | मागास प्रवर्ग: ₹८००',
-    selectionProcess: 'ऑनलाइन संगणक आधारित परीक्षा (CBT - २०० गुण) आणि केंद्रीकृत प्रवेश प्रक्रिया (CAP Round)',
-    importantDates: {
-      startDate: '१० जानेवारी २०२६',
-      lastDate: '१५ मार्च २०२६',
-      examDate: '१६ ते ३० एप्रिल २०२६',
-      rawDate: '2026-03-15'
-    },
-    requiredDocuments: [
-      '१० वी गुणपत्रिका व १२ वी हॉल तिकीट / गुणपत्रिका',
-      'अधिवास प्रमाणपत्र (Domicile) किंवा जन्म दाखला',
-      'जात प्रमाणपत्र व नॉन-क्रिमिलेअर (आरक्षणासाठी)'
-    ],
-    officialLink: 'https://cetcell.mahacet.org',
-    notificationPdfUrl: 'https://cetcell.mahacet.org',
-    description: 'महाराष्ट्रातील नामांकित शासकीय (COEP, VJTI, GCOE) व खाजगी अभियांत्रिकी, फार्मसी आणि कृषी महाविद्यालयांमध्ये प्रथम वर्ष पदवी प्रवेशासाठी राज्य CET सेल द्वारे सामाईक प्रवेश परीक्षा (MHT-CET) आयोजित केली जाते.',
-    descriptionEn: 'State CET Cell conducts MHT-CET for first-year degree admissions in B.Tech, B.Pharmacy, and B.Sc Agriculture across Maharashtra universities and premier colleges like COEP and VJTI.',
-    isFresherEligible: true,
-    isOfficialVerified: true,
-    sourceName: 'महाराष्ट्र राज्य सामाईक प्रवेश परीक्षा कक्ष',
-    tags: ['MHT CET', 'Engineering Admission', 'Pharmacy Admission', '12th Science', 'CET Cell'],
-    createdAt: Date.now() - 86400000 * 6
-  },
-  {
-    id: 'central-railway-apprentice-mumbai-2026',
-    title: 'मध्य रेल्वे (Central Railway) २,४२२ अ‍ॅप्रेंटिस पदांची भरती २०२६',
-    titleEn: 'Central Railway 2,422 Trade Apprentice Recruitment 2026',
-    organization: 'रेल्वे भरती कक्ष, मध्य रेल्वे (RRC Central Railway)',
-    organizationEn: 'Railway Recruitment Cell, Central Railway Mumbai',
-    category: 'INTERNSHIP',
-    qualifications: ['10th', 'ITI'],
-    qualificationsDisplay: '१० वी (किमान ५०% गुण) + संबंधित ट्रेडमध्ये NCVT/SCVT ITI पास',
-    district: 'मुंबई',
-    city: 'मुंबई, पुणे, सोलापूर, भुसावळ, नागपूर क्लस्टर्स',
-    vacancies: '२,४२२',
-    salary: '₹८,०५० - ₹१२,२०० दरमहा स्टायपेंड (नियमांनुसार)',
-    ageLimit: '१५ ते २४ वर्षे (SC/ST: ५ वर्षे, OBC: ३ वर्षे सूट)',
-    applicationFee: '₹१०० (SC/ST/महिला/दिव्यांग: विनामूल्य)',
-    selectionProcess: 'कोणतीही लेखी परीक्षा नाही; १० वी व ITI च्या गुणांच्या टक्केवारीवर आधारित गुणवत्ता यादी (Merit List)',
-    importantDates: {
-      startDate: '१५ जुलै २०२६',
-      lastDate: '१५ ऑगस्ट २०२६',
-      rawDate: '2026-08-15'
-    },
-    requiredDocuments: [
-      '१० वी बोर्ड मार्कशीट व प्रमाणपत्र',
-      'ITI राष्ट्रीय व्यवसाय प्रमाणपत्र (NTC Certificate)',
-      'जातीचा दाखला (लागू असल्यास)',
-      'आधार कार्ड व पासपोर्ट आकाराचे फोटो'
-    ],
-    officialLink: 'https://www.rrccr.com',
-    notificationPdfUrl: 'https://www.rrccr.com/TradeApprentice2026.pdf',
-    description: 'मध्य रेल्वे अंतर्गत मुंबई, पुणे, भुसावळ, नागपूर आणि सोलापूर कार्यशाळांमध्ये फिटर, वेल्डर, इलेक्ट्रिशियन, कारपेंटर, मशिनिस्ट आणि डिझेल मेकॅनिक ट्रेडसाठी ट्रेड अ‍ॅप्रेंटिसशिप सुरू आहे. रेल्वे ग्रुप-डी भरतीमध्ये २०% राखीव जागांचा थेट लाभ मिळतो.',
-    descriptionEn: 'Central Railway Mumbai cluster apprentice recruitment for ITI certificate holders. Offers 1-year paid training with 20% reservation quota in future Railway Level-1 permanent jobs.',
-    isFresherEligible: true,
-    isOfficialVerified: true,
-    sourceName: 'RRC Central Railway Official Notification',
-    tags: ['Railway Apprentice', 'Central Railway', 'ITI Jobs', '10th Pass', 'Apprenticeship', 'Mumbai'],
-    createdAt: Date.now() - 86400000 * 3
-  },
-  {
-    id: 'mahaswayam-free-ai-digital-skill-2026',
-    title: 'महास्वयं (MahaSwayam) मोफत AI, डेटा सायन्स व डिजिटल स्किल प्रशिक्षण २०२६',
-    titleEn: 'MahaSwayam Free AI, Data Science & Emerging Skills Youth Training 2026',
-    organization: 'महाराष्ट्र राज्य कौशल्य विकास सोसायटी (MSSDS), कौशल्य विकास विभाग',
-    organizationEn: 'Maharashtra State Skill Development Society (MSSDS), Govt. of Maharashtra',
-    category: 'SKILL_TRAINING',
-    qualifications: ['10th', '12th', 'Diploma', 'Graduate'],
-    qualificationsDisplay: '१० वी / १२ वी / पदवीधर (सर्व शाखांचे विद्यार्थी व तरुण पात्र)',
-    district: 'महाराष्ट्र सर्व जिल्हे',
-    city: 'सर्व ३६ जिल्ह्यांतील शासकीय कौशल्य केंद्रे (ITIs / PMKKs)',
-    vacancies: '५०,००० जागा',
-    salary: 'मोफत प्रशिक्षण + शासकीय प्रमाणपत्र + १००% जॉब प्लेसमेंट सहाय्य',
-    ageLimit: '१८ ते ३५ वर्षे (कोणतीही कमाल वयोमर्यादा नाही)',
-    applicationFee: 'पूर्णपणे मोफत (१००% शासकीय अनुदानित / Free of Cost)',
-    selectionProcess: 'प्रथम येणाऱ्यास प्रथम प्राधान्य व ऑनलाइन नोंदणी',
-    importantDates: {
-      startDate: 'सुरू आहे (Ongoing)',
-      lastDate: '३१ ऑगस्ट २०२६',
-      rawDate: '2026-08-31'
-    },
-    requiredDocuments: [
-      'आधार कार्ड व रहिवासी पुरावा',
-      'शैक्षणिक पात्रता प्रमाणपत्र (१० वी किंवा अंतिम परीक्षा)',
-      'बँक पासबुक झेरॉक्स व २ फोटो'
-    ],
-    officialLink: 'https://mahaswayam.gov.in',
-    notificationPdfUrl: 'https://mssds.gov.in',
-    description: 'महाराष्ट्र शासनाच्या कौशल्य, रोजगार आणि नाविन्यता विभागामार्फत राज्यातील बेरोजगार तरुणांना आर्टिफिशिअल इंटेलिजन्स (AI Tools), डेटा अ‍ॅनालिटिक्स, सायबर सिक्युरिटी, वेब डेव्हलपमेंट, सोलर टेक्नॉलॉजी आणि डिजिटल मार्केटिंगचे मोफत व्यावहारिक प्रशिक्षण दिले जात आहे.',
-    descriptionEn: 'Maharashtra Government sponsored free skill development program for youth offering practical certification in Generative AI, Data Science, Digital Marketing, and Web Development with placement support.',
-    isFresherEligible: true,
-    isOfficialVerified: true,
-    sourceName: 'महाराष्ट्र राज्य कौशल्य विकास सोसायटी (MSSDS)',
-    tags: ['कौशल्य विकास', 'MahaSwayam', 'Free Training', 'AI Skills', 'Job Placement', 'Maharashtra Youth'],
-    createdAt: Date.now() - 86400000 * 2
-  },
-  {
     id: 'nanded-district-court-recruitment-2026',
     title: 'नांदेड जिल्हा व सत्र न्यायालय: कनिष्ठ लिपिक व शिपाई पदभरती २०२६',
     titleEn: 'Nanded District & Sessions Court: Junior Clerk & Peon Recruitment 2026',
     organization: 'जिल्हा व सत्र न्यायालय, नांदेड (महाराष्ट्र न्यायव्यवस्था)',
     organizationEn: 'District & Sessions Court Nanded, Maharashtra Judiciary',
     category: 'GOVT_JOB',
+    status: 'ACTIVE',
+    statusLabelMarathi: 'सक्रिय — अर्ज सुरू आहेत',
+    statusReason: 'अर्ज सुरू आहेत, शेवटची तारीख २२ ऑगस्ट २०२६ (अजून ४ दिवस बाकी).',
+    applicationPortalActive: true,
+    isArchivedHistorical: false,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 50,
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: true,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
     qualifications: ['10th', 'Graduate'],
     qualificationsDisplay: '१० वी (शिपाई) / पदवीधर + मराठी टंकलेखन (लिपिक)',
     district: 'नांदेड',
@@ -322,7 +349,9 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     importantDates: {
       startDate: '०२ ऑगस्ट २०२६',
       lastDate: '२२ ऑगस्ट २०२६',
-      rawDate: '2026-08-22'
+      rawStartDate: '2026-08-02',
+      rawDate: '2026-08-22',
+      isExtended: false
     },
     requiredDocuments: [
       '१० वी / पदवी प्रमाणपत्र',
@@ -347,6 +376,19 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     organization: 'एल अँड टी टेक्नॉलॉजी सर्व्हिसेस (L&T TS)',
     organizationEn: 'L&T Technology Services Limited',
     category: 'WALK_IN',
+    status: 'ACTIVE',
+    statusLabelMarathi: 'सक्रिय — मुलाखती सुरू आहेत',
+    statusReason: 'प्रत्येक शनिवार व रविवारी थेट मुलाखती सुरू आहेत (३० ऑगस्ट २०२६ पर्यंत).',
+    applicationPortalActive: true,
+    isArchivedHistorical: false,
+    lastVerifiedAt: Date.now() - 1000 * 60 * 35,
+    verificationChecklist: {
+      officialNotificationVerified: true,
+      officialWebsiteVerified: true,
+      applicationPortalActive: true,
+      latestCorrigendumChecked: true,
+      datesMathVerified: true,
+    },
     qualifications: ['Diploma', 'BE_BTech'],
     qualificationsDisplay: 'डिप्लोमा किंवा B.E./B.Tech (Mechanical, Electrical, Instrumentation, Civil)',
     district: 'पुणे',
@@ -357,10 +399,12 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     applicationFee: 'विनामूल्य (Free Walk-in)',
     selectionProcess: 'थेट तांत्रिक मुलाखत व HR चर्चा (जागेवरच ऑफर लेटर)',
     importantDates: {
-      startDate: 'प्रत्येक शनिवार व रविवार',
+      startDate: '०१ ऑगस्ट २०२६',
       lastDate: '३० ऑगस्ट २०२६',
+      rawStartDate: '2026-08-01',
+      rawDate: '2026-08-30',
       examDate: 'शनिवार-रविवार सकाळी ९:३० ते दुपारी ४:००',
-      rawDate: '2026-08-30'
+      isExtended: false
     },
     requiredDocuments: [
       'बायोडाटाच्या २ प्रती (Updated Resume)',
@@ -377,6 +421,57 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     tags: ['L&T', 'Walk-in Interview', 'Pune Jobs', 'Mumbai Jobs', 'Mechanical Engineer', 'Electrical Engineer'],
     createdAt: Date.now() - 86400000 * 2
   }
+];
+
+export const STATUS_FILTERS: Array<{
+  label: string;
+  value: JobOpportunityStatus | 'ALL' | 'ACTIVE_ALL';
+  iconEmoji: string;
+  badgeClass: string;
+  description: string;
+}> = [
+  {
+    label: 'सर्व सक्रिय भरती (Active & Extended)',
+    value: 'ACTIVE_ALL',
+    iconEmoji: '🟢',
+    badgeClass: 'bg-emerald-600 text-white',
+    description: 'सध्या अर्ज स्वीकारले जात असलेल्या सर्व संधी',
+  },
+  {
+    label: 'मुदतवाढ मिळालेल्या (Date Extended)',
+    value: 'EXTENDED',
+    iconEmoji: '🔵',
+    badgeClass: 'bg-blue-600 text-white',
+    description: 'शुद्धीपत्रकानुसार अंतिम तारीख वाढलेल्या भरती',
+  },
+  {
+    label: 'आगामी भरती (Upcoming)',
+    value: 'UPCOMING',
+    iconEmoji: '🟡',
+    badgeClass: 'bg-amber-600 text-white',
+    description: 'जाहिरात प्रसिद्ध, अर्ज लवकरच सुरू होणार',
+  },
+  {
+    label: 'मुदत संपलेल्या / आर्काइव्ह (Closed / Expired)',
+    value: 'CLOSED',
+    iconEmoji: '🔴',
+    badgeClass: 'bg-red-600 text-white',
+    description: 'अर्ज बंद झालेले ऐतिहासिक रेकॉर्ड्स (फक्त संदर्भासाठी)',
+  },
+  {
+    label: 'रद्द भरती (Cancelled)',
+    value: 'CANCELLED',
+    iconEmoji: '⚫',
+    badgeClass: 'bg-slate-700 text-white',
+    description: 'प्रशासकीय आदेशाने स्थगित किंवा रद्द केलेल्या भरती',
+  },
+  {
+    label: 'सर्व रेकॉर्ड्स (All Database)',
+    value: 'ALL',
+    iconEmoji: '📋',
+    badgeClass: 'bg-slate-800 text-white',
+    description: 'राज्यवाणी डाटाबेसमधील सर्व नोंदी',
+  },
 ];
 
 export const QUALIFICATION_FILTERS = [

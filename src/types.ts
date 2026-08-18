@@ -44,6 +44,24 @@ export interface NewsArticle {
   keyTakeaways?: string[];
   faqList?: Array<{ question: string; answer: string }>;
   factCheckingScore?: number; // 0-100
+  
+  // Job Recruitment Verification metadata (for नोकरी / शिक्षण category)
+  jobDetails?: {
+    status: JobOpportunityStatus;
+    statusLabelMarathi?: string;
+    organization?: string;
+    vacancies?: string | number;
+    startDate?: string;
+    lastDate?: string;
+    rawDate?: string;
+    originalLastDate?: string;
+    isExtended?: boolean;
+    officialPortalUrl?: string;
+    applicationPortalActive?: boolean;
+    corrigendumUrl?: string;
+    corrigendumNotes?: string;
+    lastVerifiedAt?: number;
+  };
 }
 
 export interface CollectionCycle {
@@ -122,6 +140,13 @@ export type JobOpportunityCategory =
   | 'WALK_IN'
   | 'CAMPUS_DRIVE';
 
+export type JobOpportunityStatus = 
+  | 'ACTIVE'      // 🟢 Applications Open
+  | 'UPCOMING'    // 🟡 Applications Not Started
+  | 'CLOSED'      // 🔴 Application Closed / Expired
+  | 'CANCELLED'   // ⚫ Cancelled / Withdrawn / Postponed
+  | 'EXTENDED';   // 🔵 Date Extended - Verify New Deadline
+
 export interface JobOpportunity {
   id: string;
   title: string;
@@ -129,6 +154,13 @@ export interface JobOpportunity {
   organization: string;
   organizationEn: string;
   category: JobOpportunityCategory;
+  
+  // Verification & Dynamic Recruitment Status (Strict 5-State Rule)
+  status: JobOpportunityStatus;
+  statusLabelMarathi?: string;
+  statusReason?: string;
+  isArchivedHistorical?: boolean; // If closed, preserved for history but excluded from active feed
+  
   qualifications: string[];
   qualificationsDisplay: string;
   district: string;
@@ -141,9 +173,25 @@ export interface JobOpportunity {
   importantDates: {
     startDate?: string;
     lastDate: string;
+    rawDate?: string;          // ISO string e.g. 2026-08-31 for automated mathematical checks
+    rawStartDate?: string;     // ISO string e.g. 2026-08-01
+    originalLastDate?: string; // Stored if deadline was extended
+    isExtended?: boolean;
     examDate?: string;
-    rawDate?: string;
   };
+  corrigendumUrl?: string;
+  corrigendumNotes?: string;
+  applicationPortalActive?: boolean; // Live portal accepting applications (true/false)
+  lastVerifiedAt?: number;           // Re-checked timestamp (updated every 3-hour cycle)
+  
+  verificationChecklist?: {
+    officialNotificationVerified: boolean;
+    officialWebsiteVerified: boolean;
+    applicationPortalActive: boolean;
+    latestCorrigendumChecked: boolean;
+    datesMathVerified: boolean;
+  };
+  
   requiredDocuments: string[];
   officialLink: string;
   notificationPdfUrl?: string;

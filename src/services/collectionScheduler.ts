@@ -1,7 +1,9 @@
 import { adminDb } from '../lib/firebase-admin.js';
 import { executeNewsCollectionCycle, CollectionEngineResult } from './newsCollectorEngine.js';
 import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from './trustedSources.js';
-import { CollectionCycle, NewsArticle } from '../types.js';
+import { CollectionCycle, NewsArticle, JobOpportunity } from '../types.js';
+import { computeVerifiedJobStatus } from './jobVerificationService.js';
+import { VERIFIED_JOBS_DATA } from '../data/jobsData.js';
 
 interface SchedulerState {
   isRunning: boolean;
@@ -97,6 +99,78 @@ export async function persistArticlesToFirestore(articles: NewsArticle[]): Promi
 }
 
 /**
+ * Automatically audits all active and upcoming job listings in the database every 3 hours.
+ * Compares current date with application last date, detects expired recruitments, and auto-marks them as CLOSED.
+ */
+export async function auditJobRecruitmentsInDatabase(): Promise<{
+  totalAudited: number;
+  activeCount: number;
+  extendedCount: number;
+  closedCount: number;
+}> {
+  console.log('[CollectionScheduler] 🔍 Starting 3-Hour Job Recruitment Verification Audit...');
+  let totalAudited = 0;
+  let activeCount = 0;
+  let extendedCount = 0;
+  let closedCount = 0;
+
+  try {
+    const jobsSnapshot = await adminDb.collection('jobs').get();
+    const batch = adminDb.batch();
+    const now = Date.now();
+
+    if (!jobsSnapshot.empty) {
+      jobsSnapshot.forEach(doc => {
+        const job = doc.data() as JobOpportunity;
+        const verification = computeVerifiedJobStatus(job);
+        totalAudited++;
+
+        if (verification.status === 'ACTIVE') activeCount++;
+        if (verification.status === 'EXTENDED') extendedCount++;
+        if (verification.status === 'CLOSED') closedCount++;
+
+        if (job.status !== verification.status || !job.lastVerifiedAt) {
+          batch.update(doc.ref, {
+            status: verification.status,
+            statusLabelMarathi: verification.statusLabelMarathi,
+            statusReason: verification.notes,
+            lastVerifiedAt: now,
+            applicationPortalActive: verification.isAcceptingApplications,
+            isArchivedHistorical: verification.status === 'CLOSED' || verification.status === 'CANCELLED',
+            updatedAt: now
+          });
+        }
+      });
+
+      await batch.commit();
+      console.log(`[CollectionScheduler] 💼 Job Audit Completed: ${totalAudited} checked (${activeCount} Active, ${extendedCount} Extended, ${closedCount} Closed).`);
+    } else {
+      // If Firestore jobs collection is empty, populate with verified jobs dataset
+      console.log('[CollectionScheduler] 💼 Seeding and verifying initial jobs data in Firestore...');
+      for (const job of VERIFIED_JOBS_DATA) {
+        const verification = computeVerifiedJobStatus(job);
+        const docRef = adminDb.collection('jobs').doc(job.id);
+        batch.set(docRef, {
+          ...job,
+          status: verification.status,
+          statusLabelMarathi: verification.statusLabelMarathi,
+          statusReason: verification.notes,
+          lastVerifiedAt: now,
+          applicationPortalActive: verification.isAcceptingApplications,
+          isArchivedHistorical: verification.status === 'CLOSED' || verification.status === 'CANCELLED'
+        }, { merge: true });
+        totalAudited++;
+      }
+      await batch.commit();
+    }
+  } catch (err: any) {
+    console.warn('[CollectionScheduler] Notice auditing jobs in Firestore:', err.message);
+  }
+
+  return { totalAudited, activeCount, extendedCount, closedCount };
+}
+
+/**
  * Saves cycle metrics record to Firestore 'news_collection_cycles'
  */
 export async function persistCycleRecord(cycle: CollectionCycle): Promise<void> {
@@ -173,7 +247,14 @@ export async function runNewsCollectionCycle(triggeredBy: 'AUTOMATIC_3HR_SCHEDUL
       await persistArticlesToFirestore(result.newArticles);
       await persistCycleRecord(result.cycle);
 
-      // 4. Update in-memory state
+      // 4. Run 3-Hour Job Recruitment Verification Audit
+      try {
+        await auditJobRecruitmentsInDatabase();
+      } catch (jobErr: any) {
+        console.warn('[CollectionScheduler] Job audit notice:', jobErr.message);
+      }
+
+      // 5. Update in-memory state
       state.lastCycleAt = result.cycle.completedAt || Date.now();
       state.lastCycleRecord = result.cycle;
       state.totalArticlesCount += result.newArticles.length;

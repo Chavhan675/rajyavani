@@ -89,6 +89,25 @@ const batchCollectionSchema: Schema = {
           isDeveloping: {
             type: Type.BOOLEAN,
             description: "True if breaking / ongoing story."
+          },
+          jobDetails: {
+            type: Type.OBJECT,
+            description: "Recruitment verification metadata (if category is नोकरी, शिक्षण, or career related).",
+            properties: {
+              status: {
+                type: Type.STRING,
+                description: "Strict recruitment status: 'ACTIVE' (सक्रिय - अर्ज सुरू), 'UPCOMING' (आगामी - लवकरच सुरू), 'CLOSED' (मुदत संपली - अर्ज बंद), 'CANCELLED' (रद्द), 'EXTENDED' (मुदतवाढ)."
+              },
+              organization: { type: Type.STRING },
+              vacancies: { type: Type.STRING },
+              startDate: { type: Type.STRING },
+              lastDate: { type: Type.STRING },
+              rawDate: { type: Type.STRING, description: "ISO date format YYYY-MM-DD for math comparison." },
+              originalLastDate: { type: Type.STRING, description: "Previous deadline if extended." },
+              isExtended: { type: Type.BOOLEAN },
+              officialPortalUrl: { type: Type.STRING },
+              corrigendumNotes: { type: Type.STRING }
+            }
           }
         },
         required: ["headline", "summary", "content", "category", "tags", "verificationStatus"]
@@ -109,7 +128,7 @@ const batchCollectionSchema: Schema = {
 
 /**
  * System prompt ensuring strict 1,000+ words Marathi reporting, anti-fake-news verification,
- * District -> Taluka -> Village level hierarchy coverage, deduplication, and rich structured HTML.
+ * District -> Taluka -> Village level hierarchy coverage, strict job recruitment verification, deduplication, and rich structured HTML.
  */
 const engineSystemPrompt = `You are the Chief Editor and Senior Investigative Newsroom Director of 'Rajyavani' (राज्यवाणी), Maharashtra's premier digital news organization.
 
@@ -128,7 +147,17 @@ CRITICAL EDITORIAL & GEOGRAPHIC GUIDELINES:
    - Prefer official government announcements, collectorate circulars, police briefings, and established agencies.
    - Do NOT invent false stories or unverified sensational claims.
    - If multiple feeds report the same event, combine all verified facts into ONE comprehensive article.
-4. MANDATORY HTML CONTENT STRUCTURE FOR EVERY ARTICLE:
+4. STRICT JOB RECRUITMENT VERIFICATION SYSTEM (अतिशय महत्त्वाचे — DO NOT PUBLISH OUTDATED OR CLOSED JOB RECRUITMENT NEWS AS ACTIVE):
+   - Whenever finding or writing about any government or private job/recruitment news:
+     a. Check latest official information: official recruitment notification, official organization website, application portal, latest corrigendum/updated notification.
+     b. Check dates carefully: compare current date (August 2026) with officially announced dates.
+     c. DO NOT assume a job is active just because an old article appears on Google or other news websites.
+     d. If application last date has passed: DO NOT mark or publish as active. Mark status as 'CLOSED' (मुदत संपली - अर्ज बंद). State clearly in the headline, summary, and content that applications are closed and the article is preserved for historical reference/archive only.
+     e. If application has not started yet: Mark status as 'UPCOMING' (आगामी - अर्ज लवकरच सुरू).
+     f. If deadline was extended: Detect latest corrigendum, mark status as 'EXTENDED' (मुदतवाढ), display the new verified last date, and mention previous deadline in history.
+     g. If recruitment was cancelled or withdrawn: Mark status as 'CANCELLED' (रद्द).
+     h. Only mark as 'ACTIVE' (सक्रिय) if the latest official source confirms applications are currently being accepted within the open date window.
+5. MANDATORY HTML CONTENT STRUCTURE FOR EVERY ARTICLE:
    - Lead Paragraph: 5 Ws and 1 H (काय, कुठे, कधी, का, कसे, कोण).
    - <h3>सविस्तर घटना आणि कारणे (Detailed Event Explanation)</h3>: Full incident breakdown.
    - <h3>घटनास्थळ आणि भौगोलिक संदर्भ (Location Details)</h3>: Detailed Village, Taluka, District, and regional terrain context.

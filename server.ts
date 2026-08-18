@@ -7,6 +7,9 @@ import { requireAuth, AuthRequest } from "./src/middleware/auth.js";
 import { adminAuth, adminDb } from "./src/lib/firebase-admin.js";
 import fs from "fs";
 import { generateContentWithRetry } from "./src/services/geminiClient.js";
+import { auditJobRecruitmentsInDatabase } from "./src/services/collectionScheduler.js";
+import { computeVerifiedJobStatus, auditAndRecheckJobs } from "./src/services/jobVerificationService.js";
+import { VERIFIED_JOBS_DATA } from "./src/data/jobsData.js";
 
 // Load config for REST calls
 const firebaseConfig = JSON.parse(fs.readFileSync("./firebase-applet-config.json", "utf-8"));
@@ -779,6 +782,83 @@ app.post("/api/admin/trigger-automator", requireAuth, async (req: AuthRequest, r
   } catch (error) {
     console.error("Error triggering automator:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Jobs API: Get verified jobs with strict status verification filter
+app.get("/api/jobs", async (req, res) => {
+  try {
+    const { status, category, district } = req.query;
+
+    let jobs: any[] = [];
+    try {
+      const snap = await adminDb.collection("jobs").get();
+      if (!snap.empty) {
+        snap.forEach(doc => jobs.push(doc.data()));
+      }
+    } catch (e: any) {
+      console.warn("Notice loading jobs from Firestore:", e.message);
+    }
+
+    // Fallback to verified memory dataset if Firestore empty
+    if (jobs.length === 0) {
+      jobs = [...VERIFIED_JOBS_DATA];
+    }
+
+    // Compute real-time verified status for every job against current date
+    const verifiedJobs = jobs.map(j => {
+      const v = computeVerifiedJobStatus(j);
+      return {
+        ...j,
+        status: v.status,
+        statusLabelMarathi: v.statusLabelMarathi,
+        statusReason: v.notes,
+        applicationPortalActive: v.isAcceptingApplications,
+        isArchivedHistorical: v.status === 'CLOSED' || v.status === 'CANCELLED'
+      };
+    });
+
+    let filtered = verifiedJobs;
+
+    if (status === 'ACTIVE_ALL') {
+      filtered = filtered.filter(j => j.status === 'ACTIVE' || j.status === 'EXTENDED');
+    } else if (status && status !== 'ALL') {
+      filtered = filtered.filter(j => j.status === status);
+    }
+
+    if (category && category !== 'ALL') {
+      filtered = filtered.filter(j => j.category === category);
+    }
+
+    if (district && district !== 'ALL') {
+      filtered = filtered.filter(j => j.district === 'महाराष्ट्र सर्व जिल्हे' || (j.district || '').includes(String(district)));
+    }
+
+    res.json({
+      success: true,
+      count: filtered.length,
+      jobs: filtered,
+      auditTimestamp: Date.now()
+    });
+  } catch (error: any) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Jobs API: Trigger instant verification audit
+app.post("/api/jobs/audit", async (req, res) => {
+  try {
+    const stats = await auditJobRecruitmentsInDatabase();
+    res.json({
+      success: true,
+      message: "Recruitment verification audit executed successfully.",
+      stats,
+      auditedAt: Date.now()
+    });
+  } catch (error: any) {
+    console.error("Error running jobs audit:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

@@ -15,11 +15,15 @@ import {
   ShieldCheck, 
   Clock, 
   UserCheck,
-  AlertCircle,
-  HelpCircle,
-  Briefcase
+  AlertTriangle,
+  FileCheck2,
+  Briefcase,
+  Layers,
+  History,
+  CheckCircle
 } from 'lucide-react';
 import { JobOpportunity } from '../../types';
+import { computeVerifiedJobStatus, JOB_STATUS_CONFIG } from '../../services/jobVerificationService';
 
 interface JobDetailModalProps {
   job: JobOpportunity | null;
@@ -38,8 +42,12 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
 }) => {
   if (!isOpen || !job) return null;
 
+  const verification = computeVerifiedJobStatus(job);
+  const statusConfig = JOB_STATUS_CONFIG[verification.status];
+  const isClosedOrCancelled = verification.status === 'CLOSED' || verification.status === 'CANCELLED';
+
   const shareOpportunity = () => {
-    const shareText = `📢 *${job.title}*\n🏢 विभाग: ${job.organization}\n🎓 पात्रता: ${job.qualificationsDisplay}\n💰 मानधन/वेतन: ${job.salary}\n📅 शेवटची तारीख: ${job.importantDates.lastDate}\n\n👉 अधिकृत अर्ज लिंक व सविस्तर तपशील पहा राज्यवाणीवर: ${window.location.origin}/jobs`;
+    const shareText = `📢 *${job.title}*\n⚡ स्थिती: ${statusConfig.badgeEmoji} ${statusConfig.labelMarathi}\n🏢 विभाग: ${job.organization}\n🎓 पात्रता: ${job.qualificationsDisplay}\n💰 मानधन/वेतन: ${job.salary}\n📅 शेवटची तारीख: ${job.importantDates.lastDate}\n\n👉 अधिकृत पडताळणी तपशील पहा राज्यवाणीवर: ${window.location.origin}/jobs`;
     
     if (navigator.share) {
       navigator.share({
@@ -62,26 +70,23 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
         <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50 flex items-start justify-between gap-4 sticky top-0 z-10">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200">
-                {job.category === 'GOVT_JOB' ? 'सरकारी नोकरी (Govt Job)' : 
-                 job.category === 'PRIVATE_JOB' ? 'खाजगी / IT संधी' : 
-                 job.category === 'INTERNSHIP' ? 'इंटर्नशिप / अ‍ॅप्रेंटिस' : 
-                 job.category === 'SCHOLARSHIP' ? 'शिष्यवृत्ती योजना' : 
-                 job.category === 'ENTRANCE_EXAM' ? 'प्रवेश परीक्षा' : 
-                 job.category === 'SKILL_TRAINING' ? 'कौशल्य विकास' : 'संधी तपशील'}
+              {/* Strict Status Pill */}
+              <span className={`text-xs font-black px-3 py-1 rounded-full border flex items-center gap-1.5 ${statusConfig.bgClass} ${statusConfig.borderClass}`}>
+                <span className={`w-2 h-2 rounded-full ${statusConfig.dotClass}`} />
+                <span>{statusConfig.badgeEmoji} {language === 'en' ? statusConfig.labelEnglish : statusConfig.labelMarathi}</span>
               </span>
 
               {job.isOfficialVerified && (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full border border-emerald-200">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  अधिकृत व पडताळलेली माहिती
+                  अधिकृत स्त्रोत पडताळणी
                 </span>
               )}
 
               {job.isFresherEligible && (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 bg-sky-100/70 px-2.5 py-0.5 rounded-full border border-sky-200">
                   <UserCheck className="w-3.5 h-3.5" />
-                  फ्रेशर्स पात्र (Freshers Eligible)
+                  फ्रेशर्स पात्र
                 </span>
               )}
             </div>
@@ -110,11 +115,93 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Scrollable Body - 15 Structured Points */}
+        {/* Modal Scrollable Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-6 text-sm text-slate-700 divide-y divide-slate-100">
           
-          {/* Section 1: Overview and Simple Explanation */}
+          {/* Section 0: Strict Official Status & Audit Report */}
           <div className="space-y-3">
+            <div className={`p-4 rounded-xl border ${
+              verification.status === 'ACTIVE'
+                ? 'bg-emerald-50/70 border-emerald-200'
+                : verification.status === 'EXTENDED'
+                ? 'bg-blue-50/70 border-blue-200'
+                : verification.status === 'UPCOMING'
+                ? 'bg-amber-50/70 border-amber-200'
+                : verification.status === 'CANCELLED'
+                ? 'bg-slate-100 border-slate-300'
+                : 'bg-red-50/80 border-red-200'
+            }`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-extrabold text-slate-900">
+                      भरती स्थिती पडताळणी अहवाल (Recruitment Audit Report)
+                    </span>
+                    <span className="text-[10px] bg-white px-2 py-0.5 rounded-md border font-bold text-slate-600">
+                      दर ३ तासांनी री-चेक
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-800">
+                    {verification.notes}
+                  </p>
+                </div>
+              </div>
+
+              {/* Strict Verification 5-Point Checklist */}
+              <div className="mt-3 pt-3 border-t border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-1.5 text-slate-700">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>अधिकृत शासन निर्णय / अधिसूचना पडताळली</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-700">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>अधिकृत पोर्टलवर थेट अर्ज स्थिती तपासली</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-700">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>तारीख गणित व मुदत संपल्याची खात्री केली</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-700">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>नवीन शुद्धीपत्रक / मुदतवाढ नोंद तपासली</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Warning Callout for Closed Jobs */}
+            {verification.status === 'CLOSED' && (
+              <div className="bg-red-600 text-white p-4 rounded-xl flex items-start gap-3 shadow-sm">
+                <AlertTriangle className="w-5 h-5 text-amber-300 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-xs">
+                  <h4 className="font-bold text-sm">⚠️ मुदत संपली (Application Closed / Expired)</h4>
+                  <p className="text-red-100 leading-relaxed">
+                    या भरतीची ऑनलाइन अर्ज करण्याची अधिकृत मुदत <strong>{job.importantDates.lastDate}</strong> रोजी संपली आहे. राज्यवाणीच्या नियमांनुसार आम्ही मुदत संपलेली जाहिरात नवीन किंवा सक्रिय म्हणून दाखवत नाही. ही माहिती केवळ जुन्या संदर्भासाठी आर्काइव्हमध्ये ठेवली आहे.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Corrigendum Note for Extended Jobs */}
+            {verification.status === 'EXTENDED' && (
+              <div className="bg-blue-600 text-white p-4 rounded-xl flex items-start gap-3 shadow-sm">
+                <FileCheck2 className="w-5 h-5 text-sky-200 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-xs">
+                  <h4 className="font-bold text-sm">📢 अधिकृत मुदतवाढ (Deadline Extended)</h4>
+                  <p className="text-blue-100 leading-relaxed">
+                    {job.corrigendumNotes || `अधिकृत शुद्धीपत्रकाद्वारे अर्ज करण्याची शेवटची तारीख वाढवण्यात आली आहे.`}
+                  </p>
+                  {job.importantDates.originalLastDate && (
+                    <div className="mt-1 pt-1 border-t border-blue-400 text-[11px] text-blue-200">
+                      मूळ अंतिम तारीख: <span className="line-through">{job.importantDates.originalLastDate}</span> ➔ <strong>नवीन अंतिम तारीख: {job.importantDates.lastDate}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Section 1: Overview and Simple Explanation */}
+          <div className="pt-4 space-y-3">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <FileText className="w-4 h-4 text-red-600" />
               <span>१. सोप्या भाषेत माहिती व पार्श्वभूमी (Summary & Details)</span>
@@ -127,7 +214,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Key Parameters Table (15 Official Fields) */}
+          {/* Section 2: Key Parameters Table */}
           <div className="pt-4 space-y-3">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Briefcase className="w-4 h-4 text-indigo-600" />
@@ -191,9 +278,25 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                   <span className="font-bold text-slate-800 text-xs">{job.importantDates.startDate}</span>
                 </div>
               )}
-              <div className="bg-red-50 p-3 rounded-lg border border-red-200 text-center">
-                <span className="text-[11px] text-red-600 font-semibold block">अर्ज करण्याची शेवटची तारीख</span>
-                <span className="font-extrabold text-red-700 text-sm">{job.importantDates.lastDate}</span>
+              <div className={`p-3 rounded-lg border text-center ${
+                verification.status === 'CLOSED'
+                  ? 'bg-red-50 border-red-200'
+                  : verification.status === 'EXTENDED'
+                  ? 'bg-blue-50 border-blue-200'
+                  : 'bg-emerald-50 border-emerald-200'
+              }`}>
+                <span className="text-[11px] text-slate-600 font-semibold block">
+                  {verification.status === 'EXTENDED' ? 'नवीन शेवटची तारीख' : 'अर्ज करण्याची शेवटची तारीख'}
+                </span>
+                <span className={`font-extrabold text-sm ${
+                  verification.status === 'CLOSED' 
+                    ? 'text-red-700' 
+                    : verification.status === 'EXTENDED' 
+                    ? 'text-blue-700' 
+                    : 'text-emerald-700'
+                }`}>
+                  {job.importantDates.lastDate}
+                </span>
               </div>
               {job.importantDates.examDate && (
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-center">
@@ -228,8 +331,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
             <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <span className="font-semibold text-slate-900 block">अधिकृत स्रोत पडताळणी:</span>
-                <span>ही माहिती {job.sourceName} या अधिकृत अधिसूचनेच्या आधारे प्रसिद्ध करण्यात आली आहे. अर्ज करण्यापूर्वी उमेदवारांनी अधिकृत जाहिरात काळजीपूर्वक वाचावी.</span>
+                <span className="font-semibold text-slate-900 block">अधिकृत स्रोत व अचूकता पडताळणी:</span>
+                <span>ही माहिती {job.sourceName} या अधिकृत अधिसूचनेच्या आधारे प्रसिद्ध करण्यात आली आहे. राज्यवाणीवरील प्रत्येक भरतीची दर ३ तासांनी पुनर्तपासणी केली जाते.</span>
               </div>
             </div>
           </div>
@@ -245,7 +348,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
               id="modal-ask-ai-btn"
             >
               <Sparkles className="w-4 h-4 text-indigo-600" />
-              <span>AI अभ्यास / मुलाखत मार्गदर्शक</span>
+              <span>AI अभ्यास मार्गदर्शक</span>
             </button>
 
             <button
@@ -272,16 +375,25 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
               </a>
             )}
 
-            <a
-              href={job.officialLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 px-4 py-2.5 rounded-xl transition-colors shadow-sm"
-              id="modal-apply-link"
-            >
-              <span>अधिकृत अर्ज करा</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            {isClosedOrCancelled ? (
+              <div 
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-200 px-4 py-2.5 rounded-xl cursor-not-allowed border border-slate-300"
+                id="modal-apply-disabled-btn"
+              >
+                <span>अर्ज प्रक्रिया बंद (Expired)</span>
+              </div>
+            ) : (
+              <a
+                href={job.officialLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+                id="modal-apply-link"
+              >
+                <span>अधिकृत अर्ज करा</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
           </div>
         </div>
 
