@@ -1,7 +1,8 @@
-import { Globe, Menu, Search, User, X, MapPin, ChevronDown } from "lucide-react";
+import { Globe, Menu, Search, User, X, MapPin, ChevronDown, LogIn, LogOut, Bot } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
+import { useAuth } from "../lib/AuthContext";
 
 const languages = ["मराठी", "English", "हिंदी", "বাংলা", "ਪੰਜਾਬੀ", "ગુજરાती", "தமிழ்", "తెలుగు"];
 
@@ -20,8 +21,10 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDistrictDropdownOpen, setIsDistrictDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { user, userRole, signIn, signOut } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +40,8 @@ export default function Header() {
     setIsMobileMenuOpen(false);
     navigate(`/district/${slug}`);
   };
+
+  const hasAdminAccess = userRole && ['ADMIN', 'EDITOR', 'REPORTER'].includes(userRole.role);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
@@ -151,10 +156,61 @@ export default function Header() {
             >
               {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
             </button>
-            <Link to="/admin" className="hidden sm:flex items-center space-x-1 bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors border border-gray-200">
-              <User className="w-4 h-4" />
-              <span>AI डेस्क</span>
-            </Link>
+            
+            {hasAdminAccess && (
+              <Link to="/admin" className="hidden sm:flex items-center space-x-1 bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors border border-gray-200">
+                <Bot className="w-4 h-4 text-brand-red" />
+                <span>AI डेस्क</span>
+              </Link>
+            )}
+
+            {/* User Login/Profile */}
+            <div className="relative">
+              {user ? (
+                <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-red text-white font-bold text-sm shadow-sm cursor-pointer border border-brand-red/20"
+                >
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
+                  ) : (
+                    <span>{user.email?.charAt(0).toUpperCase() || 'U'}</span>
+                  )}
+                </button>
+              ) : (
+                <button 
+                  onClick={signIn}
+                  className="hidden sm:flex items-center space-x-1 bg-brand-red text-white px-3 py-1.5 rounded-full text-sm font-semibold hover:bg-brand-saffron transition-colors cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>लॉगिन</span>
+                </button>
+              )}
+
+              {/* Profile Dropdown */}
+              {isProfileOpen && user && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg p-2 z-50">
+                  <div className="px-3 py-2 border-b border-gray-50 mb-1">
+                    <p className="text-sm font-bold text-gray-900 truncate">{user.displayName || 'User'}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                  
+                  {hasAdminAccess && (
+                    <Link to="/admin" onClick={() => setIsProfileOpen(false)} className="flex sm:hidden items-center w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
+                      <Bot className="w-4 h-4 mr-2 text-brand-red" /> AI डेस्क (Admin)
+                    </Link>
+                  )}
+
+                  <button 
+                    onClick={() => { signOut(); setIsProfileOpen(false); }}
+                    className="flex items-center w-full text-left px-3 py-2 text-sm text-red-600 font-semibold hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    बाहेर पडा (Logout)
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
@@ -191,6 +247,16 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Mobile Login Button (if not logged in) */}
+              {!user && (
+                <button
+                  onClick={() => { signIn(); setIsMobileMenuOpen(false); }}
+                  className="flex items-center px-3 py-2 text-sm font-bold text-brand-red hover:bg-red-50 rounded-lg text-left"
+                >
+                  <LogIn className="w-4 h-4 mr-2" /> लॉगिन / नोंदणी
+                </button>
+              )}
             </div>
 
             {/* Mobile District Selector */}

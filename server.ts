@@ -273,8 +273,8 @@ CRITICAL EDITORIAL MANDATE (STRICT MINIMUM 1,000 WORDS):
 The output MUST be a JSON object adhering to the schema.`;
 
     const response = await generateContentWithRetry({
-      model: "gemini-3.7-flash",
-      preferredModels: ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"],
+      model: "gemini-3.1-flash-lite",
+      preferredModels: ["gemini-3.1-flash-lite", "gemini-3.7-flash", "gemini-flash-latest"],
       contents: expandPrompt,
       config: {
         responseMimeType: "application/json",
@@ -462,9 +462,13 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  // Increase timeouts to allow for long Gemini API responses
+  server.keepAliveTimeout = 300000;
+  server.headersTimeout = 305000;
 }
 
 startServer();
