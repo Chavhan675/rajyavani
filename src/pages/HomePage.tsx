@@ -91,9 +91,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-brand-gray/50">
       <SEO 
-        title="ताज्या बातम्या, महाराष्ट्र आणि देश"
-        description="राज्यवाणी (Rajyavani) - महाराष्ट्रातील प्रत्येक ३६ जिल्ह्यांच्या ताज्या बातम्या, स्थानिक वृत्तवाहिन्या आणि डिजिटल पोर्टलवरून पडताळलेले सविस्तर वृत्त."
-        canonical="https://rajyavani.com/"
+        title="महाराष्ट्राचे नं. १ डिजिटल वृत्तपत्र | ताज्या बातम्या"
+        description="राज्यवाणी (Rajyavani) - महाराष्ट्रातील सर्व ३६ जिल्ह्यांच्या ताज्या बातम्या, स्थानिक घडामोडी, राजकारण, शेती आणि विश्लेषण."
+        canonical="https://rajyavani.vercel.app/"
       />
       <Header />
       <BreakingNewsTicker articles={articlesToUse} />

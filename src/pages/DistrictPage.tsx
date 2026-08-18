@@ -210,7 +210,7 @@ export default function DistrictPage() {
       <SEO 
         title={`${currentDistrict.nameMarathi} जिल्हा ताज्या बातम्या | ${currentDistrict.nameEnglish} News`}
         description={`${currentDistrict.nameMarathi} जिल्ह्यातील ताज्या घडामोडी, स्थानिक राजकारण, शेती, प्रशासन आणि गुन्हेगारीच्या सविस्तर बातम्या. प्रमुख स्रोत: ${currentDistrict.website}.`}
-        canonical={`https://rajyavani.com/district/${currentDistrict.slug}`}
+        canonical={`https://rajyavani.vercel.app/district/${currentDistrict.slug}`}
       />
       <Header />
 

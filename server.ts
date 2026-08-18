@@ -11,6 +11,16 @@ import { generateContentWithRetry } from "./src/services/geminiClient.js";
 // Load config for REST calls
 const firebaseConfig = JSON.parse(fs.readFileSync("./firebase-applet-config.json", "utf-8"));
 
+export const SUPER_ADMIN_EMAILS = [
+  'chavhanakash675@gmail.com',
+  'admin@rajyavani.com'
+];
+
+export function isSuperAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  return SUPER_ADMIN_EMAILS.includes(email.trim().toLowerCase());
+}
+
 async function getUserRoleREST(uid: string, token: string) {
   try {
     const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents/users/${uid}`;
@@ -98,12 +108,13 @@ const articleSchema: Schema = {
 
 app.post("/api/generate-article", requireAuth, async (req: AuthRequest, res: any) => {
   try {
-    // Only Reporters, Editors, and Admins can generate articles
+    const isOwner = isSuperAdminEmail(req.user?.email);
     const rawToken = req.headers.authorization!.split('Bearer ')[1];
     const userRole = await getUserRoleREST(req.user!.uid, rawToken);
     
-    if (!userRole || userRole === 'USER') {
-        return res.status(403).json({ error: "Insufficient permissions to generate articles" });
+    // Super Admin / Owner always has unconditional access
+    if (!isOwner && (!userRole || userRole === 'USER')) {
+      return res.status(403).json({ error: "Insufficient permissions to generate articles" });
     }
     const { rawFacts, sources } = req.body;
     
@@ -303,6 +314,90 @@ import { runNewsAutomator } from "./src/services/newsAutomator.js";
 import { resolveWorkingArticleImage, verifyImageUrl } from "./src/services/imageManager.js";
 import { getCategoryFallbackImage } from "./src/lib/defaultImages.js";
 import { MAHARASHTRA_DISTRICTS, getDistrictBySlug, getDistrictByName } from "./src/data/maharashtraDistricts.js";
+import { generateSitemapXml, generateGoogleNewsSitemapXml, generateRobotsTxt, writeStaticSitemapFiles } from "./src/services/sitemapGenerator.js";
+
+// Helper to determine accurate public base URL from request or fallback
+function getEffectiveBaseUrl(req: express.Request): string {
+  const host = req.get('host') || 'rajyavani.vercel.app';
+  const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+  
+  // If request comes with a vercel.app or rajyavani.com domain, prefer that
+  if (host.includes('rajyavani.vercel.app')) {
+    return 'https://rajyavani.vercel.app';
+  }
+  if (host.includes('rajyavani.com')) {
+    return 'https://rajyavani.com';
+  }
+  return `${protocol}://${host}`;
+}
+
+// Dynamic Sitemap.xml endpoint
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const baseUrl = getEffectiveBaseUrl(req);
+    const xml = await generateSitemapXml(baseUrl);
+    res.header("Content-Type", "application/xml; charset=utf-8");
+    res.header("Cache-Control", "public, max-age=3600, s-maxage=14400");
+    res.send(xml);
+  } catch (err: any) {
+    console.error("Error generating sitemap.xml:", err);
+    res.status(500).send("Error generating sitemap");
+  }
+});
+
+// Dynamic Google News Sitemap endpoint (for Google News crawler)
+app.get("/news-sitemap.xml", async (req, res) => {
+  try {
+    const baseUrl = getEffectiveBaseUrl(req);
+    const xml = await generateGoogleNewsSitemapXml(baseUrl);
+    res.header("Content-Type", "application/xml; charset=utf-8");
+    res.header("Cache-Control", "public, max-age=1800, s-maxage=7200");
+    res.send(xml);
+  } catch (err: any) {
+    console.error("Error generating news-sitemap.xml:", err);
+    res.status(500).send("Error generating news sitemap");
+  }
+});
+
+// Dynamic robots.txt endpoint
+app.get("/robots.txt", (req, res) => {
+  try {
+    const baseUrl = getEffectiveBaseUrl(req);
+    const txt = generateRobotsTxt(baseUrl);
+    res.header("Content-Type", "text/plain; charset=utf-8");
+    res.send(txt);
+  } catch (err) {
+    res.status(500).send("Error generating robots.txt");
+  }
+});
+
+// Admin endpoint to manually write/sync static public sitemap files
+app.post("/api/admin/sitemap/generate", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const rawToken = req.headers.authorization!.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const { customDomain } = req.body;
+    const domain = customDomain && customDomain.startsWith('http') ? customDomain : 'https://rajyavani.vercel.app';
+    const result = await writeStaticSitemapFiles(domain);
+
+    res.json({
+      success: true,
+      domain,
+      sitemapUrl: `${domain}/sitemap.xml`,
+      newsSitemapUrl: `${domain}/news-sitemap.xml`,
+      robotsTxtUrl: `${domain}/robots.txt`
+    });
+  } catch (err: any) {
+    console.error("Error generating static sitemap files:", err);
+    res.status(500).json({ error: err.message || "Failed to generate sitemap files" });
+  }
+});
 
 // Endpoint to list all 36 Maharashtra districts with their media sources
 app.get("/api/districts", (req, res) => {
@@ -423,12 +518,13 @@ app.get("/api/images/proxy", async (req: any, res: any) => {
 // Admin endpoint to trigger news automator manually
 app.post("/api/admin/trigger-automator", requireAuth, async (req: AuthRequest, res: any) => {
   try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
     const authHeader = req.headers.authorization || '';
     const rawToken = authHeader.split('Bearer ')[1];
     
     const userRole = await getUserRoleREST(req.user!.uid, rawToken);
     
-    if (userRole !== 'ADMIN' && req.user!.email !== 'chavhanakash675@gmail.com') {
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
         return res.status(403).json({ error: "Only admins can trigger the automator" });
     }
 

@@ -9,7 +9,8 @@ import SEO from '../components/SEO';
 import Image from '../components/Image';
 import AdUnit from '../components/AdUnit';
 import { getCategoryFallbackImage } from '../lib/defaultImages';
-import { MapPin, Clock, User, Tag, Share2, AlertTriangle, Loader2, ChevronRight, Home, Sparkles, Newspaper } from 'lucide-react';
+import { MapPin, Clock, User, Tag, Share2, AlertTriangle, Loader2, ChevronRight, Home, Sparkles, Newspaper, Bookmark } from 'lucide-react';
+import BookmarkButton from '../components/BookmarkButton';
 import { format } from 'date-fns';
 
 export default function ArticlePage() {
@@ -119,7 +120,7 @@ export default function ArticlePage() {
     );
   }
 
-  const articleUrl = `https://rajyavani.com/article/${article.id}`;
+  const articleUrl = `https://rajyavani.vercel.app/article/${article.id}`;
   const locationParts = [article.village, article.taluka, article.district, "महाराष्ट्र"].filter(Boolean);
 
   // Compute word count and reading time in Marathi
@@ -191,6 +192,10 @@ export default function ArticlePage() {
         image={article.imageUrl || getCategoryFallbackImage(article.category, article.title)}
         type="article"
         canonical={articleUrl}
+        authorName={article.authorName || "राज्यवाणी संपादकीय मंडळ"}
+        datePublished={new Date(article.publishedAt || article.createdAt || Date.now()).toISOString()}
+        dateModified={article.updatedAt ? new Date(article.updatedAt).toISOString() : new Date(article.publishedAt || article.createdAt || Date.now()).toISOString()}
+        category={article.category || "महाराष्ट्र"}
       />
       <Header />
       
@@ -291,8 +296,9 @@ export default function ArticlePage() {
               </div>
             </Link>
             
-            {/* Social Share Button */}
+            {/* Social Share & Bookmark Buttons */}
             <div className="flex items-center space-x-2">
+              <BookmarkButton articleId={article.id || id || ''} showText className="px-3 py-1.5 border border-gray-300 text-xs font-semibold shadow-sm" />
               <button 
                 onClick={() => navigator.clipboard.writeText(articleUrl).then(() => alert('बातमीची लिंक कॉपी झाली आहे!'))} 
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-md text-xs font-semibold hover:bg-gray-100 hover:text-brand-red transition-colors shadow-sm"
@@ -366,9 +372,44 @@ export default function ArticlePage() {
 
         {/* Article Editorial Body */}
         <article 
-          className="article-editorial-content mb-12 text-gray-900" 
+          className="article-editorial-content mb-8 text-gray-900" 
           dangerouslySetInnerHTML={{ __html: article.content }} 
         />
+
+        {/* Editorial Standards & Transparency Card */}
+        <div className="my-8 p-5 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-gray-700 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200/80 pb-3">
+            <div className="flex items-center gap-2 font-bold text-gray-900">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>राज्यवाणी संपादकीय पडताळणी मानके (Editorial Standards)</span>
+            </div>
+            <Link 
+              to="/editorial-policy" 
+              className="text-brand-red font-semibold hover:underline"
+            >
+              संपादकीय धोरण वाचा →
+            </Link>
+          </div>
+
+          <p className="leading-relaxed text-gray-600">
+            ही बातमी राज्यवाणी संपादकीय मंडळाद्वारे अधिकृत शासकीय निवेदने, स्थानिक वार्ताहर आणि विश्वासार्ह स्रोतांच्या आधारे पडताळण्यात आली आहे. आमचा उद्देश वाचकांना वस्तुनिष्ठ, तथ्यपूर्ण आणि पक्षपातविरहित वृत्त देणे आहे.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-gray-500">
+            <div className="flex items-center gap-4">
+              <span>वार्ताहर/संपादक: <strong className="text-gray-800">{article.authorName}</strong></span>
+              <span>•</span>
+              <span>स्थान: <strong className="text-gray-800">{locationParts.join(', ')}</strong></span>
+            </div>
+
+            <Link
+              to={`/contact?type=correction&article=${encodeURIComponent(article.title)}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 hover:border-brand-red text-gray-700 hover:text-brand-red rounded-lg font-bold transition-colors"
+            >
+              <span>⚠️ बातमीत चूक आढळली? दुरुस्ती सुचवा</span>
+            </Link>
+          </div>
+        </div>
 
         {/* Tags Section */}
         {article.tags && article.tags.length > 0 && (

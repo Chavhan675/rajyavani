@@ -7,11 +7,34 @@
       "properties": {
         "uid": { "type": "string", "maxLength": 128 },
         "email": { "type": "string", "maxLength": 256 },
-        "role": { "type": "string", "enum": ["ADMIN", "EDITOR", "REPORTER", "USER"] },
-        "displayName": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["SUPER_ADMIN", "ADMIN", "USER"] },
+        "displayName": { "type": "string", "maxLength": 200 },
+        "photoURL": { "type": "string", "maxLength": 1000 },
+        "preferredDistrict": { "type": "string", "maxLength": 100 },
+        "preferredCategory": { "type": "string", "maxLength": 100 },
+        "isSuspended": { "type": "boolean" },
+        "twoFactorEnabled": { "type": "boolean" },
+        "lastLoginAt": { "type": "number" },
+        "bookmarks": { "type": "array", "items": { "type": "string", "maxLength": 128 } },
         "createdAt": { "type": "number" }
       },
       "required": ["uid", "email", "role", "createdAt"]
+    },
+    "AuthAuditLog": {
+      "title": "AuthAuditLog",
+      "description": "Audit trail recording authentication activities.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "action": { "type": "string", "maxLength": 100 },
+        "method": { "type": "string", "maxLength": 50 },
+        "success": { "type": "boolean" },
+        "role": { "type": "string", "maxLength": 50 },
+        "userAgent": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["email", "action", "success", "timestamp"]
     },
     "Article": {
       "title": "Article",
@@ -54,12 +77,31 @@
         "createdAt": { "type": "number" }
       },
       "required": ["name", "url", "type", "createdAt"]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Stores general site settings and SEO verification.",
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string", "maxLength": 200 },
+        "tagline": { "type": "string", "maxLength": 300 },
+        "contactEmail": { "type": "string", "maxLength": 256 },
+        "googleVerification": { "type": "string", "maxLength": 200 },
+        "enableAds": { "type": "boolean" },
+        "emergencyBannerText": { "type": "string", "maxLength": 500 },
+        "emergencyBannerActive": { "type": "boolean" },
+        "updatedAt": { "type": "number" }
+      }
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/User" },
       "description": "Stores user profiles and roles."
+    },
+    "/auth_audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AuthAuditLog" },
+      "description": "Stores authentication audit trail."
     },
     "/articles/{articleId}": {
       "schema": { "$ref": "#/entities/Article" },
@@ -68,6 +110,10 @@
     "/sources/{sourceId}": {
       "schema": { "$ref": "#/entities/Source" },
       "description": "Stores configured news sources for ingestion."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/SiteSettings" },
+      "description": "Stores portal configuration and SEO settings."
     }
   }
 }

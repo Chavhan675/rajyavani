@@ -3,4 +3,5 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://rajyavani.com/sitemap.xml
+Sitemap: https://rajyavani.vercel.app/sitemap.xml
+Sitemap: https://rajyavani.vercel.app/news-sitemap.xml

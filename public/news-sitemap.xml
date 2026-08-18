@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  <url>
+    <loc>https://rajyavani.vercel.app/</loc>
+    <news:news>
+      <news:publication>
+        <news:name>राज्यवाणी (Rajyavani)</news:name>
+        <news:language>mr</news:language>
+      </news:publication>
+      <news:publication_date>2026-08-18T00:00:00Z</news:publication_date>
+      <news:title>राज्यवाणी - महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र</news:title>
+    </news:news>
+  </url>
+</urlset>

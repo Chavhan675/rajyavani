@@ -1,28 +1,156 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
   <url>
-    <loc>https://rajyavani.com/</loc>
+    <loc>https://rajyavani.vercel.app/</loc>
     <changefreq>always</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- Official Transparency, Trust & Legal Pages -->
   <url>
-    <loc>https://rajyavani.com/about</loc>
+    <loc>https://rajyavani.vercel.app/about</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://rajyavani.com/privacy-policy</loc>
+    <loc>https://rajyavani.vercel.app/contact</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://rajyavani.com/editorial-policy</loc>
+    <loc>https://rajyavani.vercel.app/privacy-policy</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://rajyavani.com/fact-checking</loc>
+    <loc>https://rajyavani.vercel.app/terms</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/disclaimer</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/editorial-policy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/correction-policy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/cookie-policy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/fact-checking</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Primary Categories -->
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%AE%E0%A4%B9%E0%A4%BE%E0%A4%B0%E0%A4%BE%E0%A4%B7%E0%A5%8D%E0%A4%9F%E0%A5%8D%E0%A4%B0</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%B0%E0%A4%BE%E0%A4%9C%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A4%A3</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%B6%E0%A5%87%E0%A4%A4%E0%A5%80</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%97%E0%A5%81%E0%A4%A8%E0%A5%8D%E0%A4%B9%E0%A5%87%E0%A4%97%E0%A4%BE%E0%A4%B0%E0%A5%80</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%B6%E0%A4%BF%E0%A4%95%E0%A5%8D%E0%A4%97%E0%A4%A3</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%A8%E0%A5%8B%E0%A4%95%E0%A4%B0%E0%A5%80</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%BE%E0%A4%AA%E0%A4%BE%E0%A4%B0</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%95%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%A1%E0%A4%BE</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%AE%E0%A4%A8%E0%A5%8B%E0%A4%B0%E0%A4%82%E0%A4%9C%E0%A4%A8</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%A4%E0%A4%82%E0%A4%A4%E0%A5%8D%E0%A4%B0%E0%A4%9C%E0%A5%8D%E0%A4%9E%E0%A4%BE%E0%A4%A8</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%86%E0%A4%B0%E0%A5%8B%E0%A4%97%E0%A5%8D%E0%A4%AF</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://rajyavani.vercel.app/category/%E0%A4%B9%E0%A4%B5%E0%A4%BE%E0%A4%AE%E0%A4%BE%E0%A4%A8</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 36 Districts of Maharashtra -->
+  <url><loc>https://rajyavani.vercel.app/district/pune</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/mumbai-city</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/mumbai-suburban</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/thane</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/nagpur</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/nashik</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/chhatrapati-sambhajinagar</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/solapur</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/kolhapur</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/amravati</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/nanded</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/jalgaon</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/ahilyanagar</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/satara</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/sangli</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/latur</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/dhule</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/chandrapur</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/parbhani</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/jalna</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/beed</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/buldhana</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/yavatmal</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/osmanabad</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/nandurbar</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/wardha</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/bhandara</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/gondia</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/gadchiroli</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/washim</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/hingoli</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/ratnagiri</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/sindhudurg</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/raigad</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/palghar</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rajyavani.vercel.app/district/akola</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
 </urlset>
