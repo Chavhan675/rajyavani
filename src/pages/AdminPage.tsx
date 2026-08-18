@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { Bot, AlertTriangle, Save, Loader2, CheckCircle2, Lock, LogIn, LogOut, Plus, Trash2, Newspaper, Users, ShieldAlert, Settings, Sparkles, RefreshCw, Zap } from "lucide-react";
+import { Bot, AlertTriangle, Save, Loader2, CheckCircle2, Lock, LogIn, LogOut, Plus, Trash2, Newspaper, Users, ShieldAlert, Settings, Sparkles, RefreshCw, Zap, Home } from "lucide-react";
 import { useAuth } from '../lib/AuthContext';
 import { collection, addDoc, serverTimestamp, getDocs, getDoc, query, orderBy, limit, doc, writeBatch, where, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -15,12 +15,13 @@ import UserManagementTab from '../components/admin/UserManagementTab';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
 import SiteSettingsTab from '../components/admin/SiteSettingsTab';
 import ArticlesManagementTab from '../components/admin/ArticlesManagementTab';
+import AutomatedCollectorDashboard from '../components/admin/AutomatedCollectorDashboard';
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const { user, userRole, isSuperAdmin, loading, setAuthModalOpen, setAuthModalTab, openAuthModal, signOut, getToken } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<'ai-desk' | 'articles' | 'automation' | 'users' | 'audit' | 'settings'>('ai-desk');
+  const [activeTab, setActiveTab] = useState<'collector' | 'ai-desk' | 'articles' | 'users' | 'audit' | 'settings'>('collector');
   const [rawFacts, setRawFacts] = useState("");
   const [sources, setSources] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -327,6 +328,15 @@ export default function AdminPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <Link
+                to="/"
+                id="admin-home-btn"
+                className="text-xs bg-white hover:bg-red-50 text-gray-700 hover:text-brand-red border border-gray-200 hover:border-brand-red/30 font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs transition-all"
+                title="मुख्यपृष्ठावर जा"
+              >
+                <Home className="w-3.5 h-3.5 text-brand-red" />
+                <span>मुख्यपृष्ठ (Home)</span>
+              </Link>
               <span className="text-xs bg-amber-100 text-amber-900 border border-amber-300 font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 सुपर अ‍ॅडमीन (Owner)
@@ -338,6 +348,18 @@ export default function AdminPage() {
         {/* Tab Navigation */}
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar border-b border-gray-100">
           <button
+            onClick={() => setActiveTab('collector')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === 'collector'
+                ? 'bg-brand-red text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            <span>⚡ ३-तास स्वयंचलित संकलन (3-Hr Automator)</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('ai-desk')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer ${
               activeTab === 'ai-desk'
@@ -346,7 +368,7 @@ export default function AdminPage() {
             }`}
           >
             <Bot className="w-4 h-4" />
-            <span>AI डेस्क व संकलन (AI Desk)</span>
+            <span>AI पत्रकार डेस्क (Manual AI Desk)</span>
           </button>
 
           <button
@@ -397,6 +419,11 @@ export default function AdminPage() {
             <span>वेबसाइट व SEO सेटिंग्ज (Settings)</span>
           </button>
         </div>
+
+        {/* Tab 0: 3-Hour Continuous News Collection & Verification Engine */}
+        {activeTab === 'collector' && (
+          <AutomatedCollectorDashboard />
+        )}
 
         {/* Tab 1: AI News Desk & 24/7 Automator */}
         {activeTab === 'ai-desk' && (

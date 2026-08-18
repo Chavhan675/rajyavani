@@ -51,7 +51,7 @@ export default function NewsGrid({ title, articles }: NewsGridProps) {
             </div>
             <div className="p-5 flex-1 flex flex-col">
               <div className="flex items-center space-x-2 mb-3 text-xs font-medium text-gray-700">
-                {article.authorAvatar ? (
+                {article.authorAvatar && article.authorAvatar.trim() !== '' ? (
                   <img 
                     src={article.authorAvatar} 
                     alt={article.author} 
@@ -59,7 +59,7 @@ export default function NewsGrid({ title, articles }: NewsGridProps) {
                     onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
                   />
                 ) : null}
-                <div className={`w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center ${article.authorAvatar ? 'hidden' : ''}`}>
+                <div className={`w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center ${article.authorAvatar && article.authorAvatar.trim() !== '' ? 'hidden' : ''}`}>
                   <User className="w-3 h-3 text-gray-500" />
                 </div>
                 <span>{article.author}</span>

@@ -28,6 +28,58 @@ export interface NewsArticle {
   isTrending?: boolean;
   aiGenerated: boolean;
   views: number;
+  
+  // Verification & Multi-Source Audit fields
+  sourceName?: string;
+  sourceUrl?: string;
+  verificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED';
+  verificationNotes?: string;
+  duplicateEventId?: string;
+  cycleId?: string;
+  isArchived?: boolean;
+  state?: string;
+  district?: string;
+  taluka?: string;
+  village?: string;
+  keyTakeaways?: string[];
+  faqList?: Array<{ question: string; answer: string }>;
+  factCheckingScore?: number; // 0-100
+}
+
+export interface CollectionCycle {
+  id: string;
+  startedAt: number;
+  completedAt?: number;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  durationMs?: number;
+  sourcesChecked: number;
+  storiesFound: number;
+  storiesVerified: number;
+  storiesRejected: number;
+  duplicatesMerged: number;
+  articlesPublished: number;
+  maharashtraCount: number;
+  nationalCount: number;
+  districtCoverage: Record<string, number>;
+  cycleScheduledTime?: string;
+  triggeredBy: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL';
+  errors?: string[];
+  logNotes?: string[];
+}
+
+export interface NewsSourceConfig {
+  id: string;
+  name: string;
+  nameMarathi: string;
+  type: 'GOV_PORTAL' | 'DGIPR' | 'PIB' | 'RSS' | 'DISTRICT_COLLECTORATE' | 'POLICE_BUREAU' | 'NEWS_AGENCY';
+  url: string;
+  region: 'MAHARASHTRA' | 'NATIONAL' | 'DISTRICT';
+  district?: string;
+  category?: string;
+  trustScore: number;
+  enabled: boolean;
+  lastCheckedAt?: number;
+  status: 'ACTIVE' | 'ERROR' | 'IDLE';
 }
 
 export type UserRoleType = 'SUPER_ADMIN' | 'ADMIN' | 'USER';

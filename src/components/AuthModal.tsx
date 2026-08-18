@@ -170,13 +170,31 @@ export default function AuthModal() {
           </button>
         </div>
 
+        {/* Role Permissions Information Note */}
+        <div className="bg-amber-50/80 border-b border-amber-100 px-4 py-2 text-[11px] text-amber-900 flex items-center justify-between gap-2">
+          <span>
+            👑 <strong>सुपर अ‍ॅडमीन:</strong> chavhanakash675@gmail.com | 👤 <strong>इतर सर्व:</strong> साधे वाचक (Simple User)
+          </span>
+        </div>
+
         {/* Modal Body */}
         <div className="p-6">
           {/* Status Banners */}
           {error && (
             <div className="mb-4 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-red-700 text-xs sm:text-sm animate-in fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <div className="flex-1">
+                <p>{error}</p>
+                {error.includes('नोंदणीकृत') && (
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('register')}
+                    className="mt-1 text-xs font-bold text-brand-red underline cursor-pointer"
+                  >
+                    नवीन खाते तयार करण्यासाठी येथे क्लिक करा →
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -191,9 +209,18 @@ export default function AuthModal() {
           {authModalTab === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                  ईमेल पत्ता (Email)
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    ईमेल पत्ता (Email)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setEmail('chavhanakash675@gmail.com')}
+                    className="text-[10px] font-bold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 cursor-pointer"
+                  >
+                    👑 सुपर अ‍ॅडमीन भरा
+                  </button>
+                </div>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
                   <input
@@ -201,7 +228,7 @@ export default function AuthModal() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="उदा. name@example.com"
+                    placeholder="उदा. name@example.com किंवा chavhanakash675@gmail.com"
                     className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50/80 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red transition-all"
                   />
                 </div>

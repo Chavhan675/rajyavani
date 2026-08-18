@@ -4,7 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import dotenv from "dotenv";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.js";
-import { adminAuth } from "./src/lib/firebase-admin.js";
+import { adminAuth, adminDb } from "./src/lib/firebase-admin.js";
 import fs from "fs";
 import { generateContentWithRetry } from "./src/services/geminiClient.js";
 
@@ -505,7 +505,7 @@ app.get("/api/districts", (req, res) => {
 // Endpoint to generate/collect 1000+ word Marathi news for a specific district using its designated media sources
 app.post("/api/district-news/generate", async (req, res) => {
   try {
-    const { districtSlug, districtName, websiteSource, youtubeChannel, division } = req.body;
+    const { districtSlug, districtName, websiteSource, youtubeChannel, division, taluka, village } = req.body;
 
     const districtInfo = getDistrictBySlug(districtSlug) || getDistrictByName(districtName) || MAHARASHTRA_DISTRICTS.find(d => d.slug === districtSlug || d.nameMarathi === districtName);
 
@@ -513,9 +513,18 @@ app.post("/api/district-news/generate", async (req, res) => {
     const webPartner = districtInfo?.website || websiteSource || "स्थानिक वार्तापत्र";
     const ytPartner = districtInfo?.youtubeChannel || youtubeChannel || "मराठी न्यूज नेटवर्क";
     const divName = districtInfo?.division || division || "महाराष्ट्र";
+    const availableTalukas = districtInfo?.talukas || [];
+    const targetTaluka = taluka || (availableTalukas.length > 0 ? availableTalukas[Math.floor(Math.random() * availableTalukas.length)] : "");
+    const targetVillage = village || "";
 
     const districtPrompt = `You are the Chief Investigative Bureau Head and Senior Journalist for 'राज्यवाणी' (Rajyavani) in Maharashtra.
-Your task is to report and write a high-impact, authentic, and EXHAUSTIVE MARATHI NEWS ARTICLE of MINIMUM 1,000 WORDS (1,000 to 2,500+ words) specifically for ${distName} (${districtInfo?.nameEnglish || ''}) district in ${divName} division.
+Your task is to report and write a high-impact, authentic, and EXHAUSTIVE MARATHI NEWS ARTICLE of MINIMUM 1,000 WORDS (1,000 to 2,500+ words) for ${distName} (${districtInfo?.nameEnglish || ''}) district in ${divName} division.
+
+GEOGRAPHIC COVERAGE MANDATE (DISTRICT → TALUKA → VILLAGE-LEVEL):
+- Complete Administrative Chain: महाराष्ट्र → जिल्हा: ${distName} → तालुका: ${targetTaluka || 'कोणताही प्रमुख तालुका'} → गाव/स्थानिक परिसर${targetVillage ? `: ${targetVillage}` : ''}.
+- Available Talukas in ${distName}: ${availableTalukas.join(', ')}.
+- CRITICAL: Do NOT restrict reporting only to the district headquarters or main city. You MUST dive into the taluka and village/rural level.
+- Cover real local affairs: Gram Panchayat & Panchayat Samiti actions, APMC market prices, canal/irrigation water releases, taluka civil hospitals, ZP primary schools, rural connectivity/roads, village electricity issues, local farmers' challenges, or taluka police station crime/investigation reports.
 
 MEDIA ATTRIBUTION & SOURCES FOR THIS DISTRICT:
 - Primary Regional Website / News Portal: ${webPartner}
@@ -523,11 +532,10 @@ MEDIA ATTRIBUTION & SOURCES FOR THIS DISTRICT:
 
 CRITICAL REPORTING MANDATES:
 1. STRICT MINIMUM 1,000 WORDS in the 'content' field.
-2. Focus deeply on authentic regional affairs in ${distName}: Local infrastructure, agriculture/irrigation (शेती व धरणे), district administration/collectorate decisions (जिल्हाधिकारी कार्यालय व प्रशासन), police/crime investigations (पोलीस अधीक्षक कार्यालय), civic/zilla parishad projects, or economic developments.
+2. Clearly set 'district' to '${distName}', 'taluka' to '${targetTaluka || ''}', and 'village' to the relevant village/area in Marathi.
 3. Systematically answer all 14 journalistic questions with rich subheadings (<h3>), detailed multi-paragraph context, quotes (<blockquote>), bullet statistics (<ul><li>), an interactive FAQ box (<div class="news-faq-box">), and Key Takeaways box (<div class="news-summary-box">).
 4. Set 'category' appropriately (e.g. 'महाराष्ट्र', 'शेती', 'राजकारण', 'प्रशासन', 'क्राईम').
-5. Set 'district' strictly to '${distName}'.
-6. Set 'tags' with 5-8 relevant Marathi tags including '${distName}', '${divName}', 'स्थानिक घडामोडी'.
+5. Set 'tags' with 5-8 relevant Marathi tags including '${distName}', '${targetTaluka || distName}', '${divName}', 'स्थानिक घडामोडी'.
 
 Return a JSON object conforming strictly to the schema.`;
 
@@ -548,6 +556,9 @@ Return a JSON object conforming strictly to the schema.`;
       if (!result.imageUrl) {
         result.imageUrl = getCategoryFallbackImage(result.category, result.headline);
       }
+      if (!result.district) result.district = distName;
+      if (!result.taluka && targetTaluka) result.taluka = targetTaluka;
+      if (!result.village && targetVillage) result.village = targetVillage;
       res.json({ success: true, article: result, district: districtInfo });
     } else {
       throw new Error("No response received from Gemini for district news");
@@ -613,6 +624,136 @@ app.get("/api/images/proxy", async (req: any, res: any) => {
   }
 });
 
+import { start3HourNewsScheduler, getSchedulerStatus, runNewsCollectionCycle } from "./src/services/collectionScheduler.js";
+import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from "./src/services/trustedSources.js";
+
+// Endpoint to get 3-Hour Continuous News Engine Status & Telemetry
+app.get("/api/collector/status", (req, res) => {
+  try {
+    const status = getSchedulerStatus();
+    res.json({ success: true, status });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Endpoint to fetch trusted sources list
+app.get("/api/collector/sources", (req, res) => {
+  res.json({
+    success: true,
+    sources: TRUSTED_NEWS_SOURCES,
+    districts: MAHARASHTRA_36_DISTRICTS
+  });
+});
+
+// Endpoint for Super Admin to manually trigger a 100+ news collection cycle
+app.post("/api/collector/trigger", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच हे चक्र सुरू करू शकतात." });
+    }
+
+    console.log(`[Server] Manual collection cycle triggered by ${req.user?.email}`);
+    // Run asynchronously or await
+    const result = await runNewsCollectionCycle('ADMIN_MANUAL');
+    res.json(result);
+  } catch (err: any) {
+    console.error("Error triggering collection cycle:", err);
+    res.status(500).json({ error: err.message || "संकलन चक्र अयशस्वी झाले." });
+  }
+});
+
+// Endpoint to search news archive by Date, District, Taluka, Village, Category, State, Keyword
+app.get("/api/archive/search", async (req, res) => {
+  try {
+    const { district, taluka, village, state, category, keyword, startDate, endDate, limit } = req.query;
+    let queryRef: any = adminDb.collection('articles').where('status', '==', 'PUBLISHED');
+
+    if (category && category !== 'ALL') {
+      queryRef = queryRef.where('category.name', '==', category);
+    }
+    if (district && district !== 'ALL') {
+      queryRef = queryRef.where('district', '==', district);
+    }
+    if (state && state !== 'ALL') {
+      queryRef = queryRef.where('state', '==', state);
+    }
+
+    const queryLimit = Math.min(200, parseInt(limit as string) || 60);
+    const snapshot = await queryRef.orderBy('createdAt', 'desc').limit(queryLimit).get();
+
+    let articles: any[] = [];
+    snapshot.forEach((doc: any) => {
+      articles.push({ id: doc.id, ...doc.data() });
+    });
+
+    // In-memory filter for Taluka
+    if (taluka && taluka !== 'ALL' && typeof taluka === 'string') {
+      const targetTaluka = taluka.toLowerCase();
+      articles = articles.filter(a => {
+        const itemTaluka = (a.taluka || a.location?.taluka || '').toLowerCase();
+        const fullText = `${a.title || ''} ${a.summary || ''} ${a.content || ''}`.toLowerCase();
+        return itemTaluka.includes(targetTaluka) || fullText.includes(targetTaluka);
+      });
+    }
+
+    // In-memory filter for Village
+    if (village && typeof village === 'string' && village.trim() !== '') {
+      const targetVillage = village.trim().toLowerCase();
+      articles = articles.filter(a => {
+        const itemVillage = (a.village || a.location?.village || '').toLowerCase();
+        const fullText = `${a.title || ''} ${a.summary || ''} ${a.content || ''}`.toLowerCase();
+        return itemVillage.includes(targetVillage) || fullText.includes(targetVillage);
+      });
+    }
+
+    // In-memory filter for Date Range
+    if (startDate && typeof startDate === 'string') {
+      const startMs = new Date(startDate).getTime();
+      if (!isNaN(startMs)) {
+        articles = articles.filter(a => {
+          const pubMs = typeof a.publishedAt === 'number' ? a.publishedAt : new Date(a.publishedAt || a.createdAt).getTime();
+          return pubMs >= startMs;
+        });
+      }
+    }
+
+    if (endDate && typeof endDate === 'string') {
+      const endMs = new Date(endDate + 'T23:59:59').getTime();
+      if (!isNaN(endMs)) {
+        articles = articles.filter(a => {
+          const pubMs = typeof a.publishedAt === 'number' ? a.publishedAt : new Date(a.publishedAt || a.createdAt).getTime();
+          return pubMs <= endMs;
+        });
+      }
+    }
+
+    // In-memory keyword filtering
+    if (keyword && typeof keyword === 'string' && keyword.trim() !== '') {
+      const kw = keyword.trim().toLowerCase();
+      articles = articles.filter(a =>
+        (a.title || '').toLowerCase().includes(kw) ||
+        (a.summary || '').toLowerCase().includes(kw) ||
+        (a.content || '').toLowerCase().includes(kw) ||
+        (a.district || '').toLowerCase().includes(kw) ||
+        (a.taluka || '').toLowerCase().includes(kw) ||
+        (a.village || '').toLowerCase().includes(kw) ||
+        (Array.isArray(a.tags) && a.tags.some((t: string) => t.toLowerCase().includes(kw)))
+      );
+    }
+
+    res.json({ success: true, count: articles.length, articles });
+  } catch (err: any) {
+    console.error("Error searching archive:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Admin endpoint to trigger news automator manually
 app.post("/api/admin/trigger-automator", requireAuth, async (req: AuthRequest, res: any) => {
   try {
@@ -658,6 +799,8 @@ async function startServer() {
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    // Start 24/7 3-Hour News Continuous Scheduler
+    start3HourNewsScheduler();
   });
 
   // Increase timeouts to allow for long Gemini API responses

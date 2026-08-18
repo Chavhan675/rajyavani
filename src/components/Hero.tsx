@@ -60,7 +60,7 @@ export default function Hero({ articles }: HeroProps) {
             
             <div className="flex flex-wrap items-center text-gray-300 text-xs font-medium gap-y-2 gap-x-5">
               <div className="flex items-center space-x-2">
-                {mainArticle.authorAvatar ? (
+                {mainArticle.authorAvatar && mainArticle.authorAvatar.trim() !== '' ? (
                   <img 
                     src={mainArticle.authorAvatar} 
                     alt={mainArticle.author} 
@@ -68,7 +68,7 @@ export default function Hero({ articles }: HeroProps) {
                     onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
                   />
                 ) : null}
-                <div className={`w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center ${mainArticle.authorAvatar ? 'hidden' : ''}`}>
+                <div className={`w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center ${mainArticle.authorAvatar && mainArticle.authorAvatar.trim() !== '' ? 'hidden' : ''}`}>
                   <User className="w-3 h-3 text-white" />
                 </div>
                 <span className="text-white">{mainArticle.author}</span>
@@ -119,7 +119,7 @@ export default function Hero({ articles }: HeroProps) {
                 
                 <div className="flex flex-col space-y-3 mt-auto">
                   <div className="flex items-center space-x-2 text-xs font-medium text-gray-600">
-                    {article.authorAvatar ? (
+                    {article.authorAvatar && article.authorAvatar.trim() !== '' ? (
                       <img 
                         src={article.authorAvatar} 
                         alt={article.author} 
@@ -127,7 +127,7 @@ export default function Hero({ articles }: HeroProps) {
                         onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
                       />
                     ) : null}
-                    <div className={`w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center ${article.authorAvatar ? 'hidden' : ''}`}>
+                    <div className={`w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center ${article.authorAvatar && article.authorAvatar.trim() !== '' ? 'hidden' : ''}`}>
                       <User className="w-3 h-3" />
                     </div>
                     <span>{article.author}</span>

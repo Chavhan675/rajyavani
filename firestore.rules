@@ -132,6 +132,12 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    // NEWS COLLECTION CYCLES (3-Hour Automation Telemetry)
+    match /news_collection_cycles/{cycleId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
     // SITE SETTINGS
     match /settings/{settingId} {
       allow read: if true;

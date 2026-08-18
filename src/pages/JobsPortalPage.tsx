@@ -16,8 +16,11 @@ import {
   RefreshCw,
   HelpCircle,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Home,
+  ArrowLeft
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
@@ -118,6 +121,29 @@ export default function JobsPortalPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
         
+        {/* Navigation Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200 shadow-xs">
+          <Link
+            to="/"
+            id="jobs-back-home-btn"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-red text-white hover:bg-red-700 font-bold text-sm rounded-xl shadow-xs hover:shadow transition-all group"
+            title="मुख्यपृष्ठावर परत जा"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <Home className="w-4 h-4" />
+            <span>मुख्यपृष्ठावर जा (Go to Home Page)</span>
+          </Link>
+
+          <nav className="flex items-center space-x-2 text-xs font-semibold text-gray-500" aria-label="Breadcrumb">
+            <Link to="/" className="hover:text-brand-red flex items-center gap-1 transition-colors">
+              <Home className="w-3.5 h-3.5 text-gray-400" />
+              <span>मुख्यपृष्ठ</span>
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-300" />
+            <span className="text-brand-red font-bold">नोकरी व विद्यार्थी महामार्ग</span>
+          </nav>
+        </div>
+
         {/* Top Hero / Portal Header */}
         <div className="bg-gradient-to-r from-red-700 via-red-800 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
           <div className="relative z-10 max-w-3xl space-y-3">

@@ -12,13 +12,13 @@ const languages = ["मराठी", "English", "हिंदी"];
 // Primary Main Categories as requested
 const primaryNavItems = [
   { name: "मुख्यपृष्ठ", path: "/" },
+  { name: "📚 बातमी संग्रह", path: "/archive", isHighlight: true },
   { name: "🎓 विद्यार्थी व नोकरी", path: "/jobs", isSpecial: true },
   { name: "महाराष्ट्र", path: "/category/महाराष्ट्र" },
   { name: "राजकारण", path: "/category/राजकारण" },
   { name: "शेती", path: "/category/शेती" },
   { name: "गुन्हेगारी", path: "/category/गुन्हेगारी" },
   { name: "शिक्षण", path: "/category/शिक्षण" },
-  { name: "नोकरी", path: "/jobs" },
   { name: "व्यापार", path: "/category/व्यापार" },
   { name: "क्रीडा", path: "/category/क्रीडा" },
   { name: "मनोरंजन", path: "/category/मनोरंजन" },
@@ -212,7 +212,7 @@ export default function Header() {
                   className="flex items-center justify-center w-9 h-9 rounded-full bg-brand-red text-white font-bold text-sm shadow-sm cursor-pointer border-2 border-white hover:opacity-90 transition-opacity"
                   aria-label="User Profile"
                 >
-                  {user.photoURL ? (
+                  {user.photoURL && user.photoURL.trim() !== '' ? (
                     <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
                   ) : (
                     <span>{(user.displayName?.charAt(0) || user.email?.charAt(0) || 'U').toUpperCase()}</span>

@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { getCategoryFallbackImage } from '../lib/defaultImages.js';
 
+export { getCategoryFallbackImage };
+
 // Setup local cache directory inside public or storage
 const CACHE_DIR = path.join(process.cwd(), 'public', 'cached-news-images');
 if (!fs.existsSync(CACHE_DIR)) {

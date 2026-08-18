@@ -65,6 +65,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-xs">
               {[
+                { name: "📚 बातमी संग्रह (Archive)", path: "/archive" },
                 { name: "🎓 विद्यार्थी व नोकरी", path: "/jobs" },
                 { name: "महाराष्ट्र", path: "/category/महाराष्ट्र" },
                 { name: "राजकारण", path: "/category/राजकारण" },

@@ -24,15 +24,21 @@ export default function Image({
   // 1: proxy endpoint /api/images/proxy?url=...
   // 2: curated high-resolution category image
   // 3: zero-network SVG editorial placeholder
-  const [stage, setStage] = useState<number>(() => (src ? 0 : 2));
-  const [currentSrc, setCurrentSrc] = useState<string>('');
+  const getInitialSrc = () => {
+    if (src && typeof src === 'string' && src.trim() !== '') {
+      return src.trim();
+    }
+    return getCategoryFallbackImage(category, alt);
+  };
+
+  const [stage, setStage] = useState<number>(() => (src && typeof src === 'string' && src.trim() !== '' ? 0 : 2));
+  const [currentSrc, setCurrentSrc] = useState<string>(getInitialSrc);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    // Whenever src changes, reset stage to 0 or 2
-    if (src && src.trim() !== '') {
+    if (src && typeof src === 'string' && src.trim() !== '') {
       setStage(0);
-      setCurrentSrc(src);
+      setCurrentSrc(src.trim());
     } else {
       setStage(2);
       setCurrentSrc(getCategoryFallbackImage(category, alt));
@@ -51,7 +57,7 @@ export default function Image({
       setStage(2);
       const fallback = getCategoryFallbackImage(category, alt);
       setCurrentSrc(fallback);
-    } else if (stage === 2) {
+    } else {
       // Try stage 3: Standalone SVG placeholder (always renders, no network needed)
       setStage(3);
       const svgPlaceholder = getSvgEditorialPlaceholder(alt, category);
@@ -59,6 +65,14 @@ export default function Image({
       setIsLoaded(true);
     }
   };
+
+  const resolvedSrc = (currentSrc && currentSrc.trim() !== '')
+    ? currentSrc 
+    : getCategoryFallbackImage(category, alt);
+
+  if (!resolvedSrc || resolvedSrc.trim() === '') {
+    return null;
+  }
 
   return (
     <div className={`relative overflow-hidden bg-gray-100 ${className}`}>
@@ -68,7 +82,7 @@ export default function Image({
       )}
 
       <img
-        src={currentSrc || getCategoryFallbackImage(category, alt)}
+        src={resolvedSrc}
         alt={alt || "बातमी चित्र"}
         loading="lazy"
         decoding="async"

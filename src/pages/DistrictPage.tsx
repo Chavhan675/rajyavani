@@ -27,7 +27,13 @@ import {
   Radio, 
   RefreshCw,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Compass,
+  Navigation,
+  Search,
+  X,
+  Building2,
+  Home
 } from 'lucide-react';
 
 export default function DistrictPage() {
@@ -42,8 +48,16 @@ export default function DistrictPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [activeDivision, setActiveDivision] = useState<string>('all');
+  const [selectedTaluka, setSelectedTaluka] = useState<string>('ALL');
+  const [villageSearch, setVillageSearch] = useState<string>('');
 
   const divisions = ['all', 'पश्चिम महाराष्ट्र', 'विदर्भ', 'मराठवाडा', 'उत्तर महाराष्ट्र', 'कोकण'];
+
+  // Reset taluka when district changes
+  useEffect(() => {
+    setSelectedTaluka('ALL');
+    setVillageSearch('');
+  }, [currentDistrict.slug]);
 
   const fetchDistrictArticles = async () => {
     setLoading(true);
@@ -131,7 +145,7 @@ export default function DistrictPage() {
     fetchDistrictArticles();
   }, [currentDistrict.slug]);
 
-  // On-demand generation for this specific district using its specific sources
+  // On-demand generation for this specific district / taluka / village using verified sources
   const handleGenerateDistrictNews = async () => {
     if (isGenerating) return;
     setIsGenerating(true);
@@ -144,6 +158,8 @@ export default function DistrictPage() {
         body: JSON.stringify({
           districtSlug: currentDistrict.slug,
           districtName: currentDistrict.nameMarathi,
+          taluka: selectedTaluka !== 'ALL' ? selectedTaluka : undefined,
+          village: villageSearch.trim() || undefined,
           websiteSource: currentDistrict.website,
           youtubeChannel: currentDistrict.youtubeChannel,
           division: currentDistrict.division
@@ -158,8 +174,8 @@ export default function DistrictPage() {
           content: data.article.content,
           category: data.article.category || 'महाराष्ट्र',
           district: currentDistrict.nameMarathi,
-          taluka: data.article.taluka || '',
-          village: data.article.village || '',
+          taluka: data.article.taluka || (selectedTaluka !== 'ALL' ? selectedTaluka : ''),
+          village: data.article.village || villageSearch.trim(),
           tags: data.article.tags || [currentDistrict.nameMarathi, 'महाराष्ट्र', 'स्थानिक घडामोडी'],
           status: 'PUBLISHED',
           publishedAt: Date.now(),
@@ -204,6 +220,27 @@ export default function DistrictPage() {
   const filteredDistricts = activeDivision === 'all' 
     ? MAHARASHTRA_DISTRICTS 
     : MAHARASHTRA_DISTRICTS.filter(d => d.division === activeDivision);
+
+  // Filter articles by selected Taluka and Village
+  const displayedArticles = articles.filter(art => {
+    if (selectedTaluka !== 'ALL') {
+      const artTaluka = (art.taluka || art.location?.taluka || '').toLowerCase();
+      const text = `${art.title} ${art.summary} ${art.content}`.toLowerCase();
+      const target = selectedTaluka.toLowerCase();
+      if (!artTaluka.includes(target) && !text.includes(target)) {
+        return false;
+      }
+    }
+    if (villageSearch.trim()) {
+      const targetVillage = villageSearch.trim().toLowerCase();
+      const artVillage = (art.village || art.location?.village || '').toLowerCase();
+      const text = `${art.title} ${art.summary} ${art.content}`.toLowerCase();
+      if (!artVillage.includes(targetVillage) && !text.includes(targetVillage)) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-gray/30">
@@ -374,6 +411,106 @@ export default function DistrictPage() {
           </div>
         </div>
 
+        {/* Taluka & Village Administrative Deep Coverage Bar */}
+        <div className="bg-gradient-to-r from-amber-50/70 via-white to-red-50/50 rounded-2xl p-5 shadow-xs border border-amber-200/80 mb-8 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-100">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-amber-500/10 text-amber-700 rounded-xl">
+                <Compass className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-gray-900 flex items-center gap-1.5">
+                  <span>तालुका व ग्रामीण परिसर शोध ({currentDistrict.nameMarathi} जिल्हा)</span>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                    {currentDistrict.talukas?.length || 0} तालुके
+                  </span>
+                </h3>
+                <p className="text-[11px] text-gray-600 font-medium">
+                  केवळ जिल्हा मुख्यालयापुरते मर्यादित न राहता तालुका आणि गाव पातळीवरील पडताळणीकृत बातम्या.
+                </p>
+              </div>
+            </div>
+
+            {/* Village Search Input inside District */}
+            <div className="relative min-w-[240px]">
+              <input
+                type="text"
+                value={villageSearch}
+                onChange={(e) => setVillageSearch(e.target.value)}
+                placeholder="गाव / स्थानिक परिसर शोधा..."
+                className="w-full pl-8 pr-7 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
+              />
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
+              {villageSearch && (
+                <button
+                  onClick={() => setVillageSearch('')}
+                  className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 p-0.5 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Taluka Quick Pills */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              onClick={() => setSelectedTaluka('ALL')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                selectedTaluka === 'ALL'
+                  ? 'bg-amber-600 text-white shadow-sm'
+                  : 'bg-white text-gray-700 hover:bg-amber-50 border border-gray-200'
+              }`}
+            >
+              सर्व तालुके
+            </button>
+            {(currentDistrict.talukas || []).map((talukaName) => (
+              <button
+                key={talukaName}
+                onClick={() => setSelectedTaluka(talukaName)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  selectedTaluka === talukaName
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'bg-white text-gray-700 hover:bg-amber-50 border border-gray-200'
+                }`}
+              >
+                {talukaName}
+              </button>
+            ))}
+          </div>
+
+          {/* Targeted Generation Trigger if Taluka or Village selected */}
+          {(selectedTaluka !== 'ALL' || villageSearch.trim()) && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-white rounded-xl border border-amber-200 animate-in fade-in text-xs">
+              <div className="flex items-center gap-2 text-amber-900 font-bold">
+                <Navigation className="w-4 h-4 text-amber-600" />
+                <span>
+                  निवडलेले क्षेत्र: <strong>महाराष्ट्र › {currentDistrict.nameMarathi}</strong>
+                  {selectedTaluka !== 'ALL' && <span> › <strong className="text-amber-700">{selectedTaluka} तालुका</strong></span>}
+                  {villageSearch.trim() && <span> › <strong className="text-emerald-700">{villageSearch.trim()} गाव</strong></span>}
+                </span>
+              </div>
+              <button
+                onClick={handleGenerateDistrictNews}
+                disabled={isGenerating}
+                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-red-600 hover:opacity-95 text-white font-black rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>संकलित होत आहे...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                    <span>⚡ या तालुक्याची/गावाची सविस्तर बातमी मिळवा</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* News Stream for the Selected District */}
         <section className="mb-12">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 border-b border-gray-200 gap-2">
@@ -381,13 +518,20 @@ export default function DistrictPage() {
               <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-brand-red inline-block"></span>
                 {currentDistrict.nameMarathi} जिल्हा विशेष वृत्त
+                {selectedTaluka !== 'ALL' && (
+                  <span className="text-sm font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200">
+                    तालुका: {selectedTaluka}
+                  </span>
+                )}
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                केवळ {currentDistrict.nameMarathi} परिसरातील पडताळणी केलेले सविस्तर वृत्त (१,०००+ शब्द)
+                {selectedTaluka !== 'ALL'
+                  ? `${currentDistrict.nameMarathi} जिल्ह्यातील ${selectedTaluka} तालुका व स्थानिक परिसरातील पडताळणी केलेले सविस्तर वृत्त (१,०००+ शब्द)`
+                  : `केवळ ${currentDistrict.nameMarathi} परिसरातील पडताळणी केलेले सविस्तर वृत्त (१,०००+ शब्द)`}
               </p>
             </div>
             <div className="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full self-start sm:self-auto">
-              📝 एकूण बातम्या: {articles.length}
+              📝 एकूण बातम्या: {displayedArticles.length}
             </div>
           </div>
 
@@ -395,10 +539,10 @@ export default function DistrictPage() {
             <div className="flex justify-center items-center py-20 bg-white rounded-2xl border border-gray-100">
               <Loader2 className="w-8 h-8 animate-spin text-brand-red" />
             </div>
-          ) : articles.length > 0 ? (
+          ) : displayedArticles.length > 0 ? (
             <NewsGrid 
               title="" 
-              articles={articles} 
+              articles={displayedArticles} 
             />
           ) : (
             <div className="bg-white rounded-2xl border border-gray-200 p-8 sm:p-12 text-center shadow-sm">
@@ -406,10 +550,10 @@ export default function DistrictPage() {
                 <MapPin className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">
-                {currentDistrict.nameMarathi} जिल्ह्याची बातमी लवकरच उपलब्ध होईल
+                {selectedTaluka !== 'ALL' ? `${selectedTaluka} तालुक्याची बातमी लवकरच उपलब्ध होईल` : `${currentDistrict.nameMarathi} जिल्ह्याची बातमी लवकरच उपलब्ध होईल`}
               </h3>
               <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                आमची AI यंत्रणा {currentDistrict.website} आणि {currentDistrict.youtubeChannel} वरून या जिल्ह्याच्या बातम्या संकलित करत आहे.
+                आमची AI यंत्रणा {currentDistrict.website} आणि {currentDistrict.youtubeChannel} वरून या भागातील स्थानिक बातम्या संकलित करत आहे.
               </p>
               <button
                 onClick={handleGenerateDistrictNews}
@@ -424,7 +568,7 @@ export default function DistrictPage() {
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    ⚡ {currentDistrict.nameMarathi}साठी बातमी आताच तयार करा
+                    ⚡ {selectedTaluka !== 'ALL' ? `${selectedTaluka} तालुक्यासाठी` : `${currentDistrict.nameMarathi}साठी`} बातमी आताच तयार करा
                   </>
                 )}
               </button>

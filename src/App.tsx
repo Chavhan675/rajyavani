@@ -37,6 +37,7 @@ export default function App() {
             {/* Core News Pages */}
             <Route path="/" element={<HomePage />} />
             <Route path="/article/:id" element={<ArticlePage />} />
+            <Route path="/archive" element={<ArchivePage />} />
             <Route path="/category/:category" element={<ArchivePage />} />
             <Route path="/district/:slug" element={<DistrictPage />} />
             <Route path="/location/district/:name" element={<DistrictPage />} />
