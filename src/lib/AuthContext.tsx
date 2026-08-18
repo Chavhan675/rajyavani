@@ -66,7 +66,7 @@ interface AuthContextType {
   // Actions
   loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   registerWithEmail: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   sendVerificationEmail: () => Promise<{ success: boolean; error?: string }>;
   updateProfileData: (data: { displayName?: string; photoURL?: string; preferredDistrict?: string; preferredCategory?: string; twoFactorEnabled?: boolean }) => Promise<{ success: boolean; error?: string }>;
@@ -158,9 +158,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [resetInactivityTimer]);
 
   useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
-      console.warn("Redirect sign in result check:", err);
-    });
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result && result.user) {
+          const isOwner = result.user.email && SUPER_ADMIN_EMAILS.includes(result.user.email.toLowerCase());
+          await logAuthActivity({
+            userId: result.user.uid,
+            email: result.user.email || '',
+            action: 'LOGIN_SUCCESS',
+            method: 'GOOGLE',
+            success: true,
+            role: isOwner ? 'SUPER_ADMIN' : 'USER'
+          });
+          setAuthModalOpen(false);
+        }
+      })
+      .catch((err) => {
+        console.warn("Redirect sign in result check:", err);
+      });
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -356,34 +371,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // 3. Google One-Click Login
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
     try {
       const result = await signInWithPopup(auth, googleAuthProvider);
+      const isOwner = result.user.email && SUPER_ADMIN_EMAILS.includes(result.user.email.toLowerCase());
       await logAuthActivity({
         userId: result.user.uid,
         email: result.user.email || '',
         action: 'LOGIN_SUCCESS',
         method: 'GOOGLE',
         success: true,
-        role: SUPER_ADMIN_EMAILS.includes((result.user.email || '').toLowerCase()) ? 'SUPER_ADMIN' : 'USER'
+        role: isOwner ? 'SUPER_ADMIN' : 'USER'
       });
       setAuthModalOpen(false);
+      return { success: true };
     } catch (error: any) {
-      console.warn("Popup sign in failed, attempting redirect login:", error);
+      console.warn("Google popup sign in notice:", error);
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+
       if (
         error.code === 'auth/popup-blocked' ||
-        error.code === 'auth/popup-closed-by-user' ||
         error.code === 'auth/cancelled-popup-request' ||
         error.code === 'auth/operation-not-supported-in-this-environment'
       ) {
-        try {
-          await signInWithRedirect(auth, googleAuthProvider);
-        } catch (redirectErr) {
-          console.error("Error signing in with Google Redirect:", redirectErr);
+        if (!isIframe) {
+          try {
+            await signInWithRedirect(auth, googleAuthProvider);
+            return { success: true };
+          } catch (redirectErr: any) {
+            console.error("Google redirect sign in error:", redirectErr);
+          }
         }
-      } else {
-        console.error("Error signing in with Google", error);
+        return { 
+          success: false, 
+          error: "ब्राउझरने Google लॉगिन पॉपअप ब्लॉक केले आहे. कृपया ब्राउझरमध्ये 'Allow Popups' निवडा किंवा वरील ईमेल/पासवर्ड पर्यायाने लॉगिन करा अथवा अ‍ॅप स्वतंत्र टॅबमध्ये उघडा." 
+        };
       }
+
+      if (error.code === 'auth/popup-closed-by-user') {
+        return { success: false, error: "Google लॉगिन विंडो बंद करण्यात आली. कृपया पुन्हा प्रयत्न करा किंवा ईमेलने लॉगिन करा." };
+      }
+      
+      if (error.code === 'auth/unauthorized-domain') {
+        return { success: false, error: "हा डोमेन अधिकृत (Authorized Domain) नाही. कृपया खालील ईमेल आणि पासवर्डने सुरक्षित लॉगिन करा." };
+      }
+
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        return { success: false, error: "हा ईमेल आधीच नोंदणीकृत आहे. कृपया ईमेल व पासवर्डने लॉगिन करा." };
+      }
+
+      if (error.code === 'auth/network-request-failed') {
+        return { success: false, error: "नेटवर्क समस्या. कृपया तुमचे इंटरनेट कनेक्शन तपासा." };
+      }
+
+      return { 
+        success: false, 
+        error: error.message || "Google लॉगिन अयशस्वी झाले. कृपया ईमेल आणि पासवर्ड पर्याय वापरा." 
+      };
     }
   };
 

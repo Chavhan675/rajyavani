@@ -399,6 +399,104 @@ app.post("/api/admin/sitemap/generate", requireAuth, async (req: AuthRequest, re
   }
 });
 
+// AI Career, Exam, Resume & Job Assistant for Maharashtra Students & Job Seekers
+app.post("/api/career-ai", async (req, res) => {
+  try {
+    const { prompt, history, language = "mr", opportunityContext } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    const systemInstruction = `You are the Senior AI Career & Student Counselor for 'Rajyavani' (राज्यवाणी) - Maharashtra's premier digital news publication and student career portal.
+Your goal is to provide maximum practical, actionable, highly structured, and empathetic guidance to students, freshers, job seekers, and professionals across all 36 districts of Maharashtra.
+
+Core Responsibilities:
+1. Explain opportunities simply in Marathi (or bilingual Marathi+English as appropriate) with clean markdown, bullet points, checklists, and exact next steps.
+2. Provide concrete eligibility criteria, age limits, syllabus breakdowns, study plans, and official portals (e.g. mpsconline.gov.in, mahatransco.in, policerecruitment2026.mahait.org, mahadbt.maharashtra.gov.in, cetcell.mahacet.org, mahaswayam.gov.in).
+3. If the user asks for a study plan (e.g., MPSC, Police Bharti, Banking, SSC, CET), provide a realistic, weekly/daily timetable with subject-wise weightage and recommended books/resources in Maharashtra.
+4. If the user asks about CSE/IT/Engineering jobs or internships in Pune, Mumbai, Nagpur, etc., outline exact skills (React, Node, Python, Java, Cloud, AI tools), top hiring companies, campus drive tips, and salary expectations.
+5. If the user asks for Resume / Interview preparation, provide tailored resume bullets, common technical & HR interview questions, and mock interview answers.
+6. Clearly distinguish between official government rules and private company expectations.
+7. Always maintain an encouraging, practical, village-youth-friendly tone so students from rural and semi-urban Maharashtra feel empowered.
+
+Formatting:
+- Use clean Markdown with bold headings (###, ####), bullet points, and numbered lists.
+- Avoid overly dense single paragraphs.
+- Keep language simple and respectful.`;
+
+    let contextText = "";
+    if (opportunityContext) {
+      contextText = `\nCurrent Job / Opportunity in Focus:
+Title: ${opportunityContext.title || ''}
+Organization: ${opportunityContext.organization || ''}
+Eligibility: ${opportunityContext.qualificationsDisplay || ''}
+Salary: ${opportunityContext.salary || ''}
+Location: ${opportunityContext.district || ''}
+Official Link: ${opportunityContext.officialLink || ''}\n`;
+    }
+
+    let historyText = "";
+    if (Array.isArray(history) && history.length > 0) {
+      historyText = history.slice(-4).map((h: any) => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}`).join("\n");
+      historyText = `\nPrevious Conversation:\n${historyText}\n`;
+    }
+
+    const fullPrompt = `${systemInstruction}
+${contextText}${historyText}
+User Query: "${prompt}"
+
+Provide an exhaustive, practical response tailored to Maharashtra students and job seekers.`;
+
+    const response = await generateContentWithRetry({
+      model: "gemini-3.7-flash",
+      preferredModels: ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"],
+      contents: fullPrompt,
+      config: {
+        temperature: 0.3,
+        maxOutputTokens: 2048,
+      }
+    });
+
+    const replyText = response.text || "माहिती मिळवण्यात अडचण आली आहे, कृपया पुन्हा प्रयत्न करा.";
+
+    // Generate context-aware follow-up suggestion chips
+    let suggestions = [
+      "१० वी / १२ वी नंतरच्या सरकारी नोकऱ्या कोणत्या?",
+      "पुण्यामध्ये IT / CSE फ्रेशर्ससाठी नोकऱ्या दाखवा",
+      "MPSC परीक्षेसाठी ३० दिवसांचे स्टडी टाईमटेबल द्या",
+      "महाराष्ट्र पोलीस भरती मैदानी व लेखी तयारी कशी करावी?"
+    ];
+
+    if (prompt.toLowerCase().includes("mpsc") || prompt.toLowerCase().includes("police") || prompt.includes("पोलीस") || prompt.includes("एमपीएससी")) {
+      suggestions = [
+        "या परीक्षेसाठी सर्वात महत्त्वाचे संदर्भ पुस्तके कोणती?",
+        "मागील वर्षांच्या प्रश्नपत्रिकांचा सराव कसा करावा?",
+        "परीक्षेचा सविस्तर अभ्यासक्रम (Syllabus) सांगा",
+        "चालू घडामोडींची (Current Affairs) तयारी कशी करावी?"
+      ];
+    } else if (prompt.toLowerCase().includes("cse") || prompt.toLowerCase().includes("it") || prompt.toLowerCase().includes("pune") || prompt.includes("पुणे") || prompt.includes("सॉफ्टवेअर")) {
+      suggestions = [
+        "फ्रेशर्ससाठी चांगला रिज्युमे (Resume) कसा बनवावा?",
+        "TCS, Infosys साठी कोडिंग व अ‍ॅप्टिट्यूड राउंड कसा क्रॅक करावा?",
+        "पुण्यातील टॉप IT कंपन्यांची यादी",
+        "२०२६ मध्ये शिकण्यासाठी सर्वोत्तम AI स्किल्स कोणती?"
+      ];
+    }
+
+    res.json({
+      success: true,
+      reply: replyText,
+      suggestions
+    });
+
+  } catch (error: any) {
+    console.error("Error in /api/career-ai:", error);
+    res.status(500).json({ error: error.message || "Failed to process career assistant query" });
+  }
+});
+
+
 // Endpoint to list all 36 Maharashtra districts with their media sources
 app.get("/api/districts", (req, res) => {
   res.json({ success: true, districts: MAHARASHTRA_DISTRICTS });

@@ -10,6 +10,7 @@ import ArticlePage from "./pages/ArticlePage";
 import ArchivePage from "./pages/ArchivePage";
 import DistrictPage from "./pages/DistrictPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import JobsPortalPage from "./pages/JobsPortalPage";
 
 // Component to track pageviews on route change in SPA
 function GoogleAnalyticsTracker() {
@@ -43,6 +44,11 @@ export default function App() {
             <Route path="/tag/:tag" element={<ArchivePage />} />
             <Route path="/author/:authorId" element={<ArchivePage />} />
             <Route path="/search" element={<ArchivePage />} />
+
+            {/* Dedicated Maharashtra Students & Jobs Portal */}
+            <Route path="/jobs" element={<JobsPortalPage />} />
+            <Route path="/students-jobs" element={<JobsPortalPage />} />
+            <Route path="/careers" element={<JobsPortalPage />} />
             
             {/* Admin & Desk */}
             <Route path="/admin" element={<AdminPage />} />

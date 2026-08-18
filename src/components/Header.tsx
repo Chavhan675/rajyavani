@@ -12,12 +12,13 @@ const languages = ["मराठी", "English", "हिंदी"];
 // Primary Main Categories as requested
 const primaryNavItems = [
   { name: "मुख्यपृष्ठ", path: "/" },
+  { name: "🎓 विद्यार्थी व नोकरी", path: "/jobs", isSpecial: true },
   { name: "महाराष्ट्र", path: "/category/महाराष्ट्र" },
   { name: "राजकारण", path: "/category/राजकारण" },
   { name: "शेती", path: "/category/शेती" },
   { name: "गुन्हेगारी", path: "/category/गुन्हेगारी" },
   { name: "शिक्षण", path: "/category/शिक्षण" },
-  { name: "नोकरी", path: "/category/नोकरी" },
+  { name: "नोकरी", path: "/jobs" },
   { name: "व्यापार", path: "/category/व्यापार" },
   { name: "क्रीडा", path: "/category/क्रीडा" },
   { name: "मनोरंजन", path: "/category/मनोरंजन" },

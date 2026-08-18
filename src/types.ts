@@ -60,3 +60,57 @@ export interface AuthAuditLog {
   timestamp: number;
 }
 
+export type JobOpportunityCategory = 
+  | 'GOVT_JOB' 
+  | 'PRIVATE_JOB' 
+  | 'INTERNSHIP' 
+  | 'SCHOLARSHIP' 
+  | 'ENTRANCE_EXAM' 
+  | 'SKILL_TRAINING'
+  | 'WALK_IN'
+  | 'CAMPUS_DRIVE';
+
+export interface JobOpportunity {
+  id: string;
+  title: string;
+  titleEn: string;
+  organization: string;
+  organizationEn: string;
+  category: JobOpportunityCategory;
+  qualifications: string[];
+  qualificationsDisplay: string;
+  district: string;
+  city?: string;
+  vacancies: string | number;
+  salary: string;
+  ageLimit: string;
+  applicationFee: string;
+  selectionProcess: string;
+  importantDates: {
+    startDate?: string;
+    lastDate: string;
+    examDate?: string;
+    rawDate?: string;
+  };
+  requiredDocuments: string[];
+  officialLink: string;
+  notificationPdfUrl?: string;
+  description: string;
+  descriptionEn?: string;
+  isFresherEligible: boolean;
+  isOfficialVerified: boolean;
+  sourceName: string;
+  tags: string[];
+  createdAt: number;
+  updatedAt?: number;
+}
+
+export interface CareerChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  suggestions?: string[];
+}
+
+
