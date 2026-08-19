@@ -296,13 +296,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await updateProfile(userCredential.user, { displayName: name });
       }
 
-      // Send email verification link
-      try {
-        await sendEmailVerification(userCredential.user);
-      } catch (verErr) {
-        console.warn("Verification email sending notice:", verErr);
-      }
-
       const isOwner = SUPER_ADMIN_EMAILS.includes(email.toLowerCase());
       const role: UserRoleType = isOwner ? 'SUPER_ADMIN' : 'USER';
 
