@@ -161,6 +161,7 @@ export default function DistrictPage() {
           taluka: selectedTaluka !== 'ALL' ? selectedTaluka : undefined,
           village: villageSearch.trim() || undefined,
           websiteSource: currentDistrict.website,
+          newsPortals: currentDistrict.newsPortals || [],
           youtubeChannel: currentDistrict.youtubeChannel,
           division: currentDistrict.division
         })
@@ -329,8 +330,10 @@ export default function DistrictPage() {
                   <span className="text-[11px] uppercase font-bold text-gray-400 tracking-wider block">
                     प्रमुख प्रादेशिक वेब पोर्टल
                   </span>
-                  <span className="text-sm font-bold text-white truncate block">
-                    {currentDistrict.website}
+                  <span className="text-sm font-bold text-white block">
+                    {currentDistrict.newsPortals && currentDistrict.newsPortals.length > 0 
+                      ? currentDistrict.newsPortals.join(' | ') 
+                      : currentDistrict.website}
                   </span>
                 </div>
               </div>

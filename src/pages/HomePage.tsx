@@ -147,7 +147,7 @@ export default function HomePage() {
 
               {/* Grid of top verified opportunities */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {VERIFIED_JOBS_DATA.slice(0, 3).map((job) => (
+                {VERIFIED_JOBS_DATA.filter(job => job.status === 'ACTIVE' || job.status === 'EXTENDED' || job.status === 'UPCOMING').slice(0, 3).map((job) => (
                   <Link
                     key={job.id}
                     to="/jobs"

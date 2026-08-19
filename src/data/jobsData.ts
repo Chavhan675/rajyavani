@@ -2,22 +2,22 @@ import { JobOpportunity, JobOpportunityCategory, JobOpportunityStatus } from '..
 
 export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
   {
-    id: 'maha-police-bharti-2026',
-    title: 'महाराष्ट्र पोलीस शिपाई व चालक भरती २०२६ (१७,४७१ पदे)',
-    titleEn: 'Maharashtra Police Constable & Driver Recruitment 2026 (17,471 Posts)',
+    id: 'maha-police-bharti-2024',
+    title: 'महाराष्ट्र पोलीस शिपाई व चालक भरती २०२४ (१७,४७१ पदे)',
+    titleEn: 'Maharashtra Police Constable & Driver Recruitment 2024 (17,471 Posts)',
     organization: 'महाराष्ट्र राज्य पोलीस महासंचालक कार्यालय, मुंबई',
     organizationEn: 'Office of the Director General of Police, Maharashtra State',
     category: 'GOVT_JOB',
-    status: 'ACTIVE',
-    statusLabelMarathi: 'सक्रिय — अर्ज सुरू आहेत',
-    statusReason: 'अधिकृत पोर्टलवर सध्या अर्ज स्वीकारले जात असून अंतिम मुदत ३१ ऑगस्ट २०२६ आहे.',
-    applicationPortalActive: true,
-    isArchivedHistorical: false,
+    status: 'CLOSED',
+    statusLabelMarathi: 'मुदत संपली — अर्ज बंद',
+    statusReason: 'या भरतीची अधिकृत अंतिम तारीख एप्रिल २०२४ मध्येच संपली आहे.',
+    applicationPortalActive: false,
+    isArchivedHistorical: true,
     lastVerifiedAt: Date.now() - 1000 * 60 * 45, // 45 mins ago
     verificationChecklist: {
       officialNotificationVerified: true,
       officialWebsiteVerified: true,
-      applicationPortalActive: true,
+      applicationPortalActive: false,
       latestCorrigendumChecked: true,
       datesMathVerified: true,
     },
@@ -31,11 +31,11 @@ export const VERIFIED_JOBS_DATA: JobOpportunity[] = [
     applicationFee: 'खुला प्रवर्ग: ₹४५० | मागास प्रवर्ग: ₹३५०',
     selectionProcess: '१. मैदानी चाचणी (५० गुण) २. लेखी परीक्षा (१०० गुण) ३. कागदपत्र पडताळणी',
     importantDates: {
-      startDate: '०१ ऑगस्ट २०२६',
-      lastDate: '३१ ऑगस्ट २०२६',
-      rawStartDate: '2026-08-01',
-      rawDate: '2026-08-31',
-      examDate: 'सप्टेंबर २०२६',
+      startDate: '०५ मार्च २०२४',
+      lastDate: '१५ एप्रिल २०२४',
+      rawStartDate: '2024-03-05',
+      rawDate: '2024-04-15',
+      examDate: 'सध्या परीक्षा प्रक्रिया सुरू (२०२५-२०२६)',
       isExtended: false
     },
     requiredDocuments: [

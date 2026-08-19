@@ -128,6 +128,11 @@ export default function JobsPortalPage() {
       }
 
       return true;
+    }).sort((a, b) => {
+      // Sort by start date (latest first), fallback to end date (latest first)
+      const dateA = new Date(a.importantDates.rawStartDate || a.importantDates.rawDate || 0).getTime();
+      const dateB = new Date(b.importantDates.rawStartDate || b.importantDates.rawDate || 0).getTime();
+      return dateB - dateA;
     });
   }, [jobsDataList, searchQuery, selectedStatus, selectedCategory, selectedDistrict, selectedQualification, fresherOnly]);
 
@@ -265,19 +270,46 @@ export default function JobsPortalPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleRunInstantAudit}
-              disabled={isAuditing}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                isAuditing
-                  ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                  : 'bg-slate-900 hover:bg-red-700 text-white shadow-xs'
-              }`}
-              id="run-instant-audit-btn"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin text-amber-400' : ''}`} />
-              <span>{isAuditing ? 'पडताळणी सुरू आहे...' : 'सर्व भरती री-चेक करा (Audit Now)'}</span>
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  if ('Notification' in window) {
+                    if (Notification.permission === 'granted') {
+                      alert('You are already receiving notifications for new recruitments!');
+                    } else if (Notification.permission !== 'denied') {
+                      Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                          alert('Successfully subscribed to real-time recruitment notifications!');
+                        }
+                      });
+                    } else {
+                      alert('Notifications are blocked. Please enable them in your browser settings.');
+                    }
+                  } else {
+                    alert('Your browser does not support notifications.');
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                id="enable-notifications-btn"
+              >
+                <div className="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></div>
+                <span>अलर्ट्स मिळवा (Get Alerts)</span>
+              </button>
+
+              <button
+                onClick={handleRunInstantAudit}
+                disabled={isAuditing}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  isAuditing
+                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                    : 'bg-slate-900 hover:bg-red-700 text-white shadow-xs'
+                }`}
+                id="run-instant-audit-btn"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin text-amber-400' : ''}`} />
+                <span>{isAuditing ? 'पडताळणी सुरू आहे...' : 'सर्व भरती री-चेक करा (Audit Now)'}</span>
+              </button>
+            </div>
           </div>
 
           {auditFeedback && (
