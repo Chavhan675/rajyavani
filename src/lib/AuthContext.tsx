@@ -1,9 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { 
   User, 
-  signInWithPopup, 
-  signInWithRedirect, 
-  getRedirectResult, 
   signOut as firebaseSignOut, 
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -13,7 +10,7 @@ import {
   sendPasswordResetEmail,
   sendEmailVerification
 } from 'firebase/auth';
-import { auth, googleAuthProvider, db } from './firebase';
+import { auth, db } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, addDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 export type UserRoleType = 'SUPER_ADMIN' | 'USER';
@@ -66,7 +63,6 @@ interface AuthContextType {
   // Actions
   loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   registerWithEmail: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   sendVerificationEmail: () => Promise<{ success: boolean; error?: string }>;
   updateProfileData: (data: { displayName?: string; photoURL?: string; preferredDistrict?: string; preferredCategory?: string; twoFactorEnabled?: boolean }) => Promise<{ success: boolean; error?: string }>;
@@ -158,26 +154,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [resetInactivityTimer]);
 
   useEffect(() => {
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result && result.user) {
-          const isOwner = result.user.email && SUPER_ADMIN_EMAILS.includes(result.user.email.toLowerCase());
-          await logAuthActivity({
-            userId: result.user.uid,
-            email: result.user.email || '',
-            action: 'LOGIN_SUCCESS',
-            method: 'GOOGLE',
-            success: true,
-            role: isOwner ? 'SUPER_ADMIN' : 'USER'
-          });
-          setAuthModalOpen(false);
-        }
-      })
-      .catch((err) => {
-        console.warn("Redirect sign in result check:", err);
-      });
-
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      const isSuperAdminEmail = currentUser?.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+      if (currentUser && !currentUser.emailVerified && !isSuperAdminEmail) {
+        await firebaseSignOut(auth);
+        setUser(null);
+        setUserRole(null);
+        setLoading(false);
+        return;
+      }
+
       setUser(currentUser);
       
       if (currentUser) {
@@ -262,6 +248,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
+      const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(email.toLowerCase());
+      if (!userCredential.user.emailVerified && !isSuperAdmin) {
+        try {
+          await sendEmailVerification(userCredential.user);
+        } catch (e) {
+          console.warn("Resend verification error:", e);
+        }
+        await firebaseSignOut(auth);
+        return { success: false, error: "तुमचा ईमेल अजून व्हेरीफाय झालेला नाही. आम्ही तुमच्या ईमेलवर पुन्हा लिंक पाठवली आहे. कृपया तुमचा ईमेल तपासा आणि दिलेल्या लिंकवर क्लिक करा." };
+      }
+
       // Check suspension
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
       if (userDoc.exists() && userDoc.data().isSuspended) {
@@ -344,7 +341,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
-      setUserRole(newUser);
 
       await logAuthActivity({
         userId: userCredential.user.uid,
@@ -355,7 +351,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role
       });
 
-      setAuthModalOpen(false);
+      // Sign out immediately so regular users must verify their email
+      if (!isOwner) {
+        await firebaseSignOut(auth);
+      }
+
       return { success: true };
     } catch (err: any) {
       let message = "नोंदणी अयशस्वी. कृपया पुन्हा प्रयत्न करा.";
@@ -370,69 +370,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // 3. Google One-Click Login
-  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const result = await signInWithPopup(auth, googleAuthProvider);
-      const isOwner = result.user.email && SUPER_ADMIN_EMAILS.includes(result.user.email.toLowerCase());
-      await logAuthActivity({
-        userId: result.user.uid,
-        email: result.user.email || '',
-        action: 'LOGIN_SUCCESS',
-        method: 'GOOGLE',
-        success: true,
-        role: isOwner ? 'SUPER_ADMIN' : 'USER'
-      });
-      setAuthModalOpen(false);
-      return { success: true };
-    } catch (error: any) {
-      console.warn("Google popup sign in notice:", error);
-      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
-
-      if (
-        error.code === 'auth/popup-blocked' ||
-        error.code === 'auth/cancelled-popup-request' ||
-        error.code === 'auth/operation-not-supported-in-this-environment'
-      ) {
-        if (!isIframe) {
-          try {
-            await signInWithRedirect(auth, googleAuthProvider);
-            return { success: true };
-          } catch (redirectErr: any) {
-            console.error("Google redirect sign in error:", redirectErr);
-          }
-        }
-        return { 
-          success: false, 
-          error: "ब्राउझरने Google लॉगिन पॉपअप ब्लॉक केले आहे. कृपया ब्राउझरमध्ये 'Allow Popups' निवडा किंवा वरील ईमेल/पासवर्ड पर्यायाने लॉगिन करा अथवा अ‍ॅप स्वतंत्र टॅबमध्ये उघडा." 
-        };
-      }
-
-      if (error.code === 'auth/popup-closed-by-user') {
-        return { success: false, error: "Google लॉगिन विंडो बंद करण्यात आली. कृपया पुन्हा प्रयत्न करा किंवा ईमेलने लॉगिन करा." };
-      }
-      
-      if (error.code === 'auth/unauthorized-domain') {
-        const currentDomain = typeof window !== 'undefined' ? window.location.hostname : 'हा डोमेन';
-        return { success: false, error: `${currentDomain} हा डोमेन Firebase मध्ये अधिकृत (Authorized) नाही. कृपया तुमच्या Firebase Console मध्ये जाऊन Authorized Domains मध्ये हा डोमेन ॲड करा किंवा ईमेल आणि पासवर्डने लॉगिन करा.` };
-      }
-
-      if (error.code === 'auth/account-exists-with-different-credential') {
-        return { success: false, error: "हा ईमेल आधीच नोंदणीकृत आहे. कृपया ईमेल व पासवर्डने लॉगिन करा." };
-      }
-
-      if (error.code === 'auth/network-request-failed') {
-        return { success: false, error: "नेटवर्क समस्या. कृपया तुमचे इंटरनेट कनेक्शन तपासा." };
-      }
-
-      return { 
-        success: false, 
-        error: error.message || "Google लॉगिन अयशस्वी झाले. कृपया अ‍ॅप एका नवीन टॅबमध्ये (New Tab) उघडून पुन्हा प्रयत्न करा किंवा ईमेल/पासवर्डने लॉगिन करा." 
-      };
-    }
-  };
-
-  // 4. Password Reset Flow
+  // 3. Password Reset Flow
   const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
       await sendPasswordResetEmail(auth, email);
@@ -602,7 +540,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setBookmarksModalOpen,
         loginWithEmail,
         registerWithEmail,
-        loginWithGoogle,
         resetPassword,
         sendVerificationEmail,
         updateProfileData,
