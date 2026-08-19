@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, limit, getDocs, updateDoc } from 'firebase/firestore';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { doc, getDoc, collection, query, where, limit, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { mockArticles } from '../data';
 import Header from '../components/Header';
@@ -9,18 +9,34 @@ import SEO from '../components/SEO';
 import Image from '../components/Image';
 import AdUnit from '../components/AdUnit';
 import { getCategoryFallbackImage } from '../lib/defaultImages';
-import { MapPin, Clock, User, Tag, Share2, AlertTriangle, Loader2, ChevronRight, Home, Sparkles, Newspaper, Bookmark } from 'lucide-react';
+import { MapPin, Clock, User, Tag, Share2, AlertTriangle, Loader2, ChevronRight, Home, Sparkles, Newspaper, Bookmark, Trash2 } from 'lucide-react';
 import BookmarkButton from '../components/BookmarkButton';
 import { format } from 'date-fns';
+import { useAuth } from '../lib/AuthContext';
 
 export default function ArticlePage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { isSuperAdmin } = useAuth();
   const [article, setArticle] = useState<any>(null);
   const [relatedArticles, setRelatedArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isExpanding, setIsExpanding] = useState(false);
   const [expandError, setExpandError] = useState<string | null>(null);
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this news article?")) {
+      try {
+        if (id) {
+           await deleteDoc(doc(db, "articles", id));
+           navigate("/");
+        }
+      } catch (err) {
+        alert("Error deleting article");
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -297,7 +313,16 @@ export default function ArticlePage() {
             </Link>
             
             {/* Social Share & Bookmark Buttons */}
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap gap-2 items-center">
+              {isSuperAdmin && (
+                <button 
+                  onClick={handleDelete}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 rounded-md text-xs font-semibold hover:bg-red-100 transition-colors shadow-sm cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete
+                </button>
+              )}
               <BookmarkButton articleId={article.id || id || ''} showText className="px-3 py-1.5 border border-gray-300 text-xs font-semibold shadow-sm" />
               <button 
                 onClick={() => navigator.clipboard.writeText(articleUrl).then(() => alert('बातमीची लिंक कॉपी झाली आहे!'))} 

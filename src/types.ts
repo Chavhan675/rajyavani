@@ -45,19 +45,6 @@ export interface NewsArticle {
   faqList?: Array<{ question: string; answer: string }>;
   factCheckingScore?: number; // 0-100
   
-  // Job Recruitment Verification metadata (for नोकरी / शिक्षण category)
-  jobDetails?: {
-    status: JobOpportunityStatus;
-    statusLabelMarathi?: string;
-    organization?: string;
-    vacancies?: string | number;
-    startDate?: string;
-    lastDate?: string;
-    rawDate?: string;
-    originalLastDate?: string;
-    isExtended?: boolean;
-    officialPortalUrl?: string;
-    applicationPortalActive?: boolean;
     corrigendumUrl?: string;
     corrigendumNotes?: string;
     lastVerifiedAt?: number;
@@ -141,40 +128,6 @@ export type JobOpportunityCategory =
   | 'CAMPUS_DRIVE';
 
 export type JobOpportunityStatus = 
-  | 'ACTIVE'      // 🟢 Applications Open
-  | 'UPCOMING'    // 🟡 Applications Not Started
-  | 'CLOSED'      // 🔴 Application Closed / Expired
-  | 'CANCELLED'   // ⚫ Cancelled / Withdrawn / Postponed
-  | 'EXTENDED';   // 🔵 Date Extended - Verify New Deadline
-
-export interface JobOpportunity {
-  id: string;
-  title: string;
-  titleEn: string;
-  organization: string;
-  organizationEn: string;
-  category: JobOpportunityCategory;
-  
-  // Verification & Dynamic Recruitment Status (Strict 5-State Rule)
-  status: JobOpportunityStatus;
-  statusLabelMarathi?: string;
-  statusReason?: string;
-  isArchivedHistorical?: boolean; // If closed, preserved for history but excluded from active feed
-  
-  qualifications: string[];
-  qualificationsDisplay: string;
-  district: string;
-  city?: string;
-  vacancies: string | number;
-  salary: string;
-  ageLimit: string;
-  applicationFee: string;
-  selectionProcess: string;
-  importantDates: {
-    startDate?: string;
-    lastDate: string;
-    rawDate?: string;          // ISO string e.g. 2026-08-31 for automated mathematical checks
-    rawStartDate?: string;     // ISO string e.g. 2026-08-01
     originalLastDate?: string; // Stored if deadline was extended
     isExtended?: boolean;
     examDate?: string;

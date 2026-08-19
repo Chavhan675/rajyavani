@@ -1,9 +1,7 @@
 import { adminDb } from '../lib/firebase-admin.js';
 import { executeNewsCollectionCycle, CollectionEngineResult } from './newsCollectorEngine.js';
 import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from './trustedSources.js';
-import { CollectionCycle, NewsArticle, JobOpportunity } from '../types.js';
-import { computeVerifiedJobStatus } from './jobVerificationService.js';
-import { VERIFIED_JOBS_DATA } from '../data/jobsData.js';
+import { CollectionCycle, NewsArticle } from '../types.js';
 
 interface SchedulerState {
   isRunning: boolean;
@@ -99,77 +97,6 @@ export async function persistArticlesToFirestore(articles: NewsArticle[]): Promi
 }
 
 /**
- * Automatically audits all active and upcoming job listings in the database every 3 hours.
- * Compares current date with application last date, detects expired recruitments, and auto-marks them as CLOSED.
- */
-export async function auditJobRecruitmentsInDatabase(): Promise<{
-  totalAudited: number;
-  activeCount: number;
-  extendedCount: number;
-  closedCount: number;
-}> {
-  console.log('[CollectionScheduler] 🔍 Starting 3-Hour Job Recruitment Verification Audit...');
-  let totalAudited = 0;
-  let activeCount = 0;
-  let extendedCount = 0;
-  let closedCount = 0;
-
-  try {
-    const jobsSnapshot = await adminDb.collection('jobs').get();
-    const batch = adminDb.batch();
-    const now = Date.now();
-
-    if (!jobsSnapshot.empty) {
-      jobsSnapshot.forEach(doc => {
-        const job = doc.data() as JobOpportunity;
-        const verification = computeVerifiedJobStatus(job);
-        totalAudited++;
-
-        if (verification.status === 'ACTIVE') activeCount++;
-        if (verification.status === 'EXTENDED') extendedCount++;
-        if (verification.status === 'CLOSED') closedCount++;
-
-        if (job.status !== verification.status || !job.lastVerifiedAt) {
-          batch.update(doc.ref, {
-            status: verification.status,
-            statusLabelMarathi: verification.statusLabelMarathi,
-            statusReason: verification.notes,
-            lastVerifiedAt: now,
-            applicationPortalActive: verification.isAcceptingApplications,
-            isArchivedHistorical: verification.status === 'CLOSED' || verification.status === 'CANCELLED',
-            updatedAt: now
-          });
-        }
-      });
-
-      await batch.commit();
-      console.log(`[CollectionScheduler] 💼 Job Audit Completed: ${totalAudited} checked (${activeCount} Active, ${extendedCount} Extended, ${closedCount} Closed).`);
-    } else {
-      // If Firestore jobs collection is empty, populate with verified jobs dataset
-      console.log('[CollectionScheduler] 💼 Seeding and verifying initial jobs data in Firestore...');
-      for (const job of VERIFIED_JOBS_DATA) {
-        const verification = computeVerifiedJobStatus(job);
-        const docRef = adminDb.collection('jobs').doc(job.id);
-        batch.set(docRef, {
-          ...job,
-          status: verification.status,
-          statusLabelMarathi: verification.statusLabelMarathi,
-          statusReason: verification.notes,
-          lastVerifiedAt: now,
-          applicationPortalActive: verification.isAcceptingApplications,
-          isArchivedHistorical: verification.status === 'CLOSED' || verification.status === 'CANCELLED'
-        }, { merge: true });
-        totalAudited++;
-      }
-      await batch.commit();
-    }
-  } catch (err: any) {
-    console.warn('[CollectionScheduler] Notice auditing jobs in Firestore:', err.message);
-  }
-
-  return { totalAudited, activeCount, extendedCount, closedCount };
-}
-
 /**
  * Saves cycle metrics record to Firestore 'news_collection_cycles'
  */
@@ -198,7 +125,7 @@ export async function persistCycleRecord(cycle: CollectionCycle): Promise<void> 
 /**
  * Executes one complete automated or manual news collection cycle.
  */
-export async function runNewsCollectionCycle(triggeredBy: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL' = 'AUTOMATIC_3HR_SCHEDULER'): Promise<CollectionEngineResult> {
+export async function runNewsCollectionCycle(triggeredBy: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL' = 'AUTOMATIC_3HR_SCHEDULER', targetCount: number = 100, sourceFilters?: string[]): Promise<CollectionEngineResult> {
   if (state.isCycleActive) {
     console.warn('[CollectionScheduler] ⚠️ A collection cycle is already active. Skipping duplicate run.');
     return {
@@ -233,26 +160,22 @@ export async function runNewsCollectionCycle(triggeredBy: 'AUTOMATIC_3HR_SCHEDUL
 
     // 2. Execute the engine
     const result = await executeNewsCollectionCycle({
-      targetArticles: 100,
+      targetArticles: targetCount,
       triggeredBy: triggeredBy,
       existingArticleUrls: existingUrls,
       existingTitles: existingTitles,
+      sourceFilters: sourceFilters,
       onProgress: (p) => {
         state.activeProgress = p;
       }
     });
 
     if (result.success && result.newArticles.length > 0) {
-      // 3. Save to database permanently
-      await persistArticlesToFirestore(result.newArticles);
-      await persistCycleRecord(result.cycle);
+      // 3. We DO NOT save to database here anymore due to adminDb permissions issues
+      // The client will handle the saves.
+      // await persistArticlesToFirestore(result.newArticles);
+      // await persistCycleRecord(result.cycle);
 
-      // 4. Run 3-Hour Job Recruitment Verification Audit
-      try {
-        await auditJobRecruitmentsInDatabase();
-      } catch (jobErr: any) {
-        console.warn('[CollectionScheduler] Job audit notice:', jobErr.message);
-      }
 
       // 5. Update in-memory state
       state.lastCycleAt = result.cycle.completedAt || Date.now();
@@ -284,36 +207,34 @@ export async function runNewsCollectionCycle(triggeredBy: 'AUTOMATIC_3HR_SCHEDUL
 /**
  * Initializes and starts the 24/7 3-Hour Automation Loop.
  */
+// Export a placeholder to avoid breaking any remaining imports that might still look for it, or just leave it empty.
 export function start3HourNewsScheduler(): void {
   if (state.isRunning) return;
   state.isRunning = true;
-  state.nextCycleAt = calculateNextIst3HourBoundary();
 
-  console.log(`[CollectionScheduler] 🕒 Initializing 24/7 3-Hour News Scheduler for Rajyavani.`);
-  console.log(`[CollectionScheduler] Next 3-hour scheduled run at: ${new Date(state.nextCycleAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`);
-
-  // Check every minute if it's time for the 3-hour cycle
-  timerHandle = setInterval(async () => {
+  const scheduleNextCycle = () => {
+    state.nextCycleAt = calculateNextIst3HourBoundary();
     const now = Date.now();
-    if (state.nextCycleAt && now >= state.nextCycleAt && !state.isCycleActive) {
-      console.log(`[CollectionScheduler] ⏰ 3-Hour timer triggered! Starting automated collection cycle...`);
-      await runNewsCollectionCycle('AUTOMATIC_3HR_SCHEDULER');
-    }
-  }, 60 * 1000);
+    const delay = state.nextCycleAt - now;
 
-  // Run an initial check on startup after 15 seconds if database has few articles
-  setTimeout(async () => {
-    try {
-      if (adminDb) {
-        const snap = await adminDb.collection('articles').limit(5).get().catch(() => null);
-        if (snap && snap.empty) {
-          console.log(`[CollectionScheduler] Initial bootstrap news check complete.`);
-        }
+    console.log(`[CollectionScheduler] 🕒 Auto-scheduler active. Next automated run in ${Math.round(delay / 60000)} minutes.`);
+
+    timerHandle = setTimeout(async () => {
+      try {
+        console.log(`[CollectionScheduler] ⚡ 3-Hour Boundary reached! Starting automated collection...`);
+        // Target roughly 111 articles to match the user's requirement (100+ articles)
+        await runNewsCollectionCycle('AUTOMATIC_3HR_SCHEDULER', 111);
+      } catch (err) {
+        console.error('[CollectionScheduler] ❌ Automated cycle failed:', err);
+      } finally {
+        // Reschedule the next cycle after this one finishes
+        scheduleNextCycle();
       }
-    } catch {
-      // Quiet background check
-    }
-  }, 15000);
+    }, Math.max(delay, 5000)); // Minimum 5s delay just in case
+  };
+
+  // Kickoff the initial scheduling
+  scheduleNextCycle();
 }
 
 /**
@@ -336,8 +257,8 @@ export function getSchedulerStatus() {
     isRunning: state.isRunning,
     isCycleActive: state.isCycleActive,
     lastCycleAt: state.lastCycleAt,
-    nextCycleAt: state.nextCycleAt || calculateNextIst3HourBoundary(),
-    nextCycleIstFormatted: new Date(state.nextCycleAt || calculateNextIst3HourBoundary()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    nextCycleAt: state.nextCycleAt,
+    nextCycleIstFormatted: state.nextCycleAt ? new Date(state.nextCycleAt).toLocaleTimeString('mr-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' }) : "Manual Only",
     totalArticlesCount: state.totalArticlesCount,
     totalCyclesCount: state.totalCyclesCount,
     lastCycleRecord: state.lastCycleRecord,

@@ -12,7 +12,6 @@ import { collection, query, where, orderBy, getDocs, limit } from 'firebase/fire
 import { db } from '../lib/firebase';
 import { Loader2, MapPin, Briefcase, GraduationCap, Sparkles, ChevronRight, ShieldCheck, ExternalLink } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { VERIFIED_JOBS_DATA } from '../data/jobsData';
 
 import SEO from "../components/SEO";
 
@@ -120,72 +119,6 @@ export default function HomePage() {
             
             <NewsGrid title="महाराष्ट्र विशेष" articles={maharashtraNews} />
 
-            {/* Students & Jobs Maharashtra Spotlight Section */}
-            <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-10 my-8 rounded-3xl mx-4 sm:mx-6 lg:mx-8 px-6 sm:px-8 border border-indigo-800/40 shadow-xl">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-white/10">
-                <div>
-                  <div className="inline-flex items-center gap-2 bg-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30 mb-2">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>महाराष्ट्र विद्यार्थी व नोकरी महामार्ग (New)</span>
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                    शासकीय भरती, IT नोकऱ्या व शिष्यवृत्ती संधी
-                  </h2>
-                  <p className="text-indigo-200 text-xs sm:text-sm mt-1">
-                    सर्व ३६ जिल्ह्यांतील १०वी, १२वी, ITI, डिप्लोमा, पदवीधरांसाठी अधिकृत जाहिराती व AI करिअर मार्गदर्शक.
-                  </p>
-                </div>
-
-                <Link
-                  to="/jobs"
-                  className="bg-amber-400 hover:bg-amber-300 text-indigo-950 font-extrabold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md flex items-center gap-1.5 shrink-0"
-                >
-                  <span>सर्व संधी पहा (View All)</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              {/* Grid of top verified opportunities */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {VERIFIED_JOBS_DATA.filter(job => job.status === 'ACTIVE' || job.status === 'EXTENDED' || job.status === 'UPCOMING').slice(0, 3).map((job) => (
-                  <Link
-                    key={job.id}
-                    to="/jobs"
-                    className="bg-white/10 hover:bg-white/15 p-4 rounded-2xl border border-white/10 transition-all flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between text-[11px] text-amber-300 font-semibold mb-1.5">
-                        <span className="truncate">{job.organization}</span>
-                        <span className="bg-red-500/80 text-white px-2 py-0.5 rounded-full text-[10px] shrink-0">
-                          शेवटची तारीख: {job.importantDates.lastDate}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-sm text-white group-hover:text-amber-300 transition-colors line-clamp-2 mb-2">
-                        {job.title}
-                      </h3>
-                      <div className="text-xs text-slate-300 space-y-1 mb-3">
-                        <div className="flex items-center gap-1.5">
-                          <GraduationCap className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
-                          <span className="truncate">{job.qualificationsDisplay}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-rose-300 shrink-0" />
-                          <span className="truncate">{job.district}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300">
-                      <span>{job.salary}</span>
-                      <span className="inline-flex items-center gap-1 text-[11px] text-white group-hover:translate-x-1 transition-transform">
-                        तपशील व अर्ज →
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-            
             {/* District/Village highlights with all 36 Districts */}
             <section className="bg-white py-12 border-y border-gray-100 my-8">
                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

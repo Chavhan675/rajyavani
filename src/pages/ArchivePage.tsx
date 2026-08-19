@@ -425,7 +425,6 @@ export default function ArchivePage() {
                 <option value="राष्ट्रीय">राष्ट्रीय</option>
                 <option value="प्रशासन">प्रशासन</option>
                 <option value="शेती">शेती व ग्रामीण</option>
-                <option value="नोकरी">नोकरी व भरती</option>
               </select>
             </div>
 

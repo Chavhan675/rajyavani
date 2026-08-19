@@ -1,14 +1,33 @@
-import { Bot, Clock, MapPin, Tag, User } from "lucide-react";
+import React from "react";
+import { Bot, Clock, MapPin, Tag, User, Trash2 } from "lucide-react";
 import { NewsArticle } from "../types";
 import { formatDistanceToNow } from "date-fns";
 import Image from "./Image";
 import { Link } from "react-router-dom";
+import { useAuth } from "../lib/AuthContext";
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 interface HeroProps {
   articles: NewsArticle[];
 }
 
 export default function Hero({ articles }: HeroProps) {
+  const { isSuperAdmin } = useAuth();
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this news article?")) {
+      try {
+        await deleteDoc(doc(db, "articles", id));
+        window.location.reload();
+      } catch (err) {
+        alert("Error deleting article");
+      }
+    }
+  };
+
   if (articles.length === 0) return null;
 
   const mainArticle = articles[0];
@@ -20,6 +39,15 @@ export default function Hero({ articles }: HeroProps) {
         
         {/* Main Feature */}
         <Link to={`/article/${mainArticle.id}`} className="lg:col-span-8 relative group overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100 cursor-pointer block">
+          {isSuperAdmin && (
+            <button
+              onClick={(e) => handleDelete(e, mainArticle.id)}
+              className="absolute top-4 right-4 z-30 bg-red-600/90 hover:bg-red-700 text-white p-2 rounded-full shadow-lg transition-colors cursor-pointer"
+              title="Delete Article"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
           <div className="absolute top-4 left-4 z-20 flex space-x-2">
             <span className="bg-brand-red text-white text-xs font-bold px-3 py-1 rounded-sm shadow-md">
               {mainArticle.category.name}
@@ -98,6 +126,15 @@ export default function Hero({ articles }: HeroProps) {
           {sideArticles.map((article) => (
             <Link to={`/article/${article.id}`} key={article.id} className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group cursor-pointer block hover:shadow-md transition-shadow">
               <div className="relative h-32 overflow-hidden">
+                {isSuperAdmin && (
+                  <button
+                    onClick={(e) => handleDelete(e, article.id)}
+                    className="absolute top-2 right-2 z-30 bg-red-600/90 hover:bg-red-700 text-white p-1.5 rounded-full shadow-lg transition-colors cursor-pointer"
+                    title="Delete Article"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
                 <Image 
                   src={article.imageUrl}
                   category={typeof article.category === 'string' ? article.category : article.category?.name}

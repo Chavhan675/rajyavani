@@ -47,7 +47,7 @@ const batchCollectionSchema: Schema = {
           },
           category: {
             type: Type.STRING,
-            description: "Primary category: महाराष्ट्र, राष्ट्रीय, राजकारण, शेती, शिक्षण, नोकरी, क्राईम, व्यापार, क्रीडा, तंत्रज्ञान, आरोग्य, प्रशासन."
+            description: "Primary category: महाराष्ट्र, राष्ट्रीय, राजकारण, शेती, शिक्षण, क्राईम, व्यापार, क्रीडा, तंत्रज्ञान, आरोग्य, प्रशासन."
           },
           state: {
             type: Type.STRING,
@@ -89,25 +89,6 @@ const batchCollectionSchema: Schema = {
           isDeveloping: {
             type: Type.BOOLEAN,
             description: "True if breaking / ongoing story."
-          },
-          jobDetails: {
-            type: Type.OBJECT,
-            description: "Recruitment verification metadata (if category is नोकरी, शिक्षण, or career related).",
-            properties: {
-              status: {
-                type: Type.STRING,
-                description: "Strict recruitment status: 'ACTIVE' (सक्रिय - अर्ज सुरू), 'UPCOMING' (आगामी - लवकरच सुरू), 'CLOSED' (मुदत संपली - अर्ज बंद), 'CANCELLED' (रद्द), 'EXTENDED' (मुदतवाढ)."
-              },
-              organization: { type: Type.STRING },
-              vacancies: { type: Type.STRING },
-              startDate: { type: Type.STRING },
-              lastDate: { type: Type.STRING },
-              rawDate: { type: Type.STRING, description: "ISO date format YYYY-MM-DD for math comparison." },
-              originalLastDate: { type: Type.STRING, description: "Previous deadline if extended." },
-              isExtended: { type: Type.BOOLEAN },
-              officialPortalUrl: { type: Type.STRING },
-              corrigendumNotes: { type: Type.STRING }
-            }
           }
         },
         required: ["headline", "summary", "content", "category", "tags", "verificationStatus"]
@@ -142,22 +123,29 @@ CRITICAL EDITORIAL & GEOGRAPHIC GUIDELINES:
    - You MUST go deeper into the complete administrative area: महाराष्ट्र → जिल्हा → तालुका → गाव / स्थानिक परिसर.
    - Clearly identify and set 'taluka' and 'village' in the response schema whenever reporting regional, rural, or semi-urban news.
    - Cover vital rural, agricultural, and semi-urban developments: Zilla Parishad & Gram Panchayat decisions, irrigation canals & dam water discharge, APMC grain & vegetable market prices, rural roads, taluka hospitals & schools, village electricity issues, local festivals, and taluka police station crime/investigation reports.
-3. ANTI-FAKE-NEWS & VERIFICATION:
+   - For every event, you MUST explicitly name the 'District', 'Taluka', and 'Village' in the structured article data.
+3. TODAY'S LATEST & TRUE NEWS ONLY (अत्यंत महत्त्वाचे):
+   - You MUST ONLY report news that is FRESH and happened TODAY or within the LAST 24 HOURS.
+   - Ignore, skip, and discard any outdated news, old events, or events from previous weeks/months.
+   - Ensure absolute truth. Do NOT invent false stories or unverified sensational claims. Filter out rumors.
+4. ANTI-FAKE-NEWS & VERIFICATION:
    - Follow strict journalistic workflow: Find → Verify → Cross-check → Remove duplicates → Publish.
    - Prefer official government announcements, collectorate circulars, police briefings, and established agencies.
-   - Do NOT invent false stories or unverified sensational claims.
    - If multiple feeds report the same event, combine all verified facts into ONE comprehensive article.
-4. STRICT JOB RECRUITMENT VERIFICATION SYSTEM (अतिशय महत्त्वाचे — DO NOT PUBLISH OUTDATED OR CLOSED JOB RECRUITMENT NEWS AS ACTIVE):
+5. STRICT JOB RECRUITMENT VERIFICATION SYSTEM (अतिशय महत्त्वाचे — DO NOT PUBLISH OUTDATED OR CLOSED JOB RECRUITMENT NEWS AS ACTIVE):
+   - You MUST ONLY publish educational and job news that is from the PRESENT YEAR (2026).
+   - You MUST ONLY collect and report job/recruitment news published within the LAST 15 DAYS.
+   - EXPLICIT BLACKLIST: The news regarding "महापारेषण (MahaTransco) तंत्रज्ञ व सहायक अभियंता भरती (२,१५० जागा)" is CONFIRMED FALSE AND OUTDATED. You MUST NOT publish, mention, or process this specific news under any circumstances.
    - Whenever finding or writing about any government or private job/recruitment news:
-     a. Check latest official information: official recruitment notification, official organization website, application portal, latest corrigendum/updated notification.
-     b. Check dates carefully: compare current date (August 2026) with officially announced dates.
-     c. DO NOT assume a job is active just because an old article appears on Google or other news websites.
-     d. If application last date has passed: DO NOT mark or publish as active. Mark status as 'CLOSED' (मुदत संपली - अर्ज बंद). State clearly in the headline, summary, and content that applications are closed and the article is preserved for historical reference/archive only.
-     e. If application has not started yet: Mark status as 'UPCOMING' (आगामी - अर्ज लवकरच सुरू).
-     f. If deadline was extended: Detect latest corrigendum, mark status as 'EXTENDED' (मुदतवाढ), display the new verified last date, and mention previous deadline in history.
-     g. If recruitment was cancelled or withdrawn: Mark status as 'CANCELLED' (रद्द).
-     h. Only mark as 'ACTIVE' (सक्रिय) if the latest official source confirms applications are currently being accepted within the open date window.
-5. MANDATORY HTML CONTENT STRUCTURE FOR EVERY ARTICLE:
+      a. Check latest official information: official recruitment notification, official organization website, application portal, latest corrigendum/updated notification.
+      b. Check dates carefully: compare current date (August 2026) with officially announced dates.
+      c. DO NOT assume a job is active just because an old article appears on Google or other news websites.
+      d. If application last date has passed: DO NOT mark or publish as active. Mark status as 'CLOSED' (मुदत संपली - अर्ज बंद). State clearly in the headline, summary, and content that applications are closed and the article is preserved for historical reference/archive only.
+      e. If application has not started yet: Mark status as 'UPCOMING' (आगामी - अर्ज लवकरच सुरू).
+      f. If deadline was extended: Detect latest corrigendum, mark status as 'EXTENDED' (मुदतवाढ), display the new verified last date, and mention previous deadline in history.
+      g. If recruitment was cancelled or withdrawn: Mark status as 'CANCELLED' (रद्द).
+      h. Only mark as 'ACTIVE' (सक्रिय) if the latest official source confirms applications are currently being accepted within the open date window.
+6. MANDATORY HTML CONTENT STRUCTURE FOR EVERY ARTICLE:
    - Lead Paragraph: 5 Ws and 1 H (काय, कुठे, कधी, का, कसे, कोण).
    - <h3>सविस्तर घटना आणि कारणे (Detailed Event Explanation)</h3>: Full incident breakdown.
    - <h3>घटनास्थळ आणि भौगोलिक संदर्भ (Location Details)</h3>: Detailed Village, Taluka, District, and regional terrain context.
@@ -198,6 +186,7 @@ export interface CollectionEngineOptions {
   triggeredBy?: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL';
   existingArticleUrls?: string[];
   existingTitles?: string[];
+  sourceFilters?: string[];
   onProgress?: (progress: { stage: string; percent: number; details?: string }) => void;
 }
 
@@ -227,7 +216,13 @@ export async function executeNewsCollectionCycle(options: CollectionEngineOption
   const rawFeedItems: Array<{ title: string; link: string; pubDate?: string; contentSnippet?: string; sourceName: string; region: string; district?: string; category?: string }> = [];
 
   // 1. Ingest from all enabled trusted sources in parallel
-  const sourceFetchPromises = TRUSTED_NEWS_SOURCES.filter(s => s.enabled).map(async (source) => {
+  let activeSources = TRUSTED_NEWS_SOURCES.filter(s => s.enabled);
+  if (options.sourceFilters && options.sourceFilters.length > 0) {
+    activeSources = activeSources.filter(s => options.sourceFilters!.includes(s.id));
+    logNotes.push(`Filtered sources to: ${options.sourceFilters.join(', ')}`);
+  }
+
+  const sourceFetchPromises = activeSources.map(async (source) => {
     try {
       sourcesChecked++;
       const feed = await parser.parseURL(source.url);

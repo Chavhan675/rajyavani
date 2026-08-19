@@ -7,9 +7,6 @@ import { requireAuth, AuthRequest } from "./src/middleware/auth.js";
 import { adminAuth, adminDb } from "./src/lib/firebase-admin.js";
 import fs from "fs";
 import { generateContentWithRetry } from "./src/services/geminiClient.js";
-import { auditJobRecruitmentsInDatabase } from "./src/services/collectionScheduler.js";
-import { computeVerifiedJobStatus, auditAndRecheckJobs } from "./src/services/jobVerificationService.js";
-import { VERIFIED_JOBS_DATA } from "./src/data/jobsData.js";
 
 // Load config for REST calls
 const firebaseConfig = JSON.parse(fs.readFileSync("./firebase-applet-config.json", "utf-8"));
@@ -508,12 +505,15 @@ app.get("/api/districts", (req, res) => {
 // Endpoint to generate/collect 1000+ word Marathi news for a specific district using its designated media sources
 app.post("/api/district-news/generate", async (req, res) => {
   try {
-    const { districtSlug, districtName, websiteSource, youtubeChannel, division, taluka, village } = req.body;
+    const { districtSlug, districtName, websiteSource, newsPortals, youtubeChannel, division, taluka, village } = req.body;
 
     const districtInfo = getDistrictBySlug(districtSlug) || getDistrictByName(districtName) || MAHARASHTRA_DISTRICTS.find(d => d.slug === districtSlug || d.nameMarathi === districtName);
 
     const distName = districtInfo?.nameMarathi || districtName || "महाराष्ट्र";
     const webPartner = districtInfo?.website || websiteSource || "स्थानिक वार्तापत्र";
+    const localPortals = (districtInfo?.newsPortals && districtInfo.newsPortals.length > 0) ? districtInfo.newsPortals : (newsPortals && newsPortals.length > 0 ? newsPortals : []);
+    const portalsString = localPortals.length > 0 ? localPortals.join(', ') : webPartner;
+    
     const ytPartner = districtInfo?.youtubeChannel || youtubeChannel || "मराठी न्यूज नेटवर्क";
     const divName = districtInfo?.division || division || "महाराष्ट्र";
     const availableTalukas = districtInfo?.talukas || [];
@@ -530,7 +530,7 @@ GEOGRAPHIC COVERAGE MANDATE (DISTRICT → TALUKA → VILLAGE-LEVEL):
 - Cover real local affairs: Gram Panchayat & Panchayat Samiti actions, APMC market prices, canal/irrigation water releases, taluka civil hospitals, ZP primary schools, rural connectivity/roads, village electricity issues, local farmers' challenges, or taluka police station crime/investigation reports.
 
 MEDIA ATTRIBUTION & SOURCES FOR THIS DISTRICT:
-- Primary Regional Website / News Portal: ${webPartner}
+- Primary Regional Website / News Portal: ${portalsString}
 - District Broadcast News Partner: ${ytPartner}
 
 CRITICAL REPORTING MANDATES:
@@ -627,10 +627,10 @@ app.get("/api/images/proxy", async (req: any, res: any) => {
   }
 });
 
-import { start3HourNewsScheduler, getSchedulerStatus, runNewsCollectionCycle } from "./src/services/collectionScheduler.js";
+import { getSchedulerStatus, runNewsCollectionCycle, start3HourNewsScheduler } from "./src/services/collectionScheduler.js";
 import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from "./src/services/trustedSources.js";
 
-// Endpoint to get 3-Hour Continuous News Engine Status & Telemetry
+// Endpoint to get News Engine Status & Telemetry
 app.get("/api/collector/status", (req, res) => {
   try {
     const status = getSchedulerStatus();
@@ -662,8 +662,9 @@ app.post("/api/collector/trigger", requireAuth, async (req: AuthRequest, res: an
     }
 
     console.log(`[Server] Manual collection cycle triggered by ${req.user?.email}`);
-    // Run asynchronously or await
-    const result = await runNewsCollectionCycle('ADMIN_MANUAL');
+    const target = req.body?.target || 15; // default to 15 for Universal Button
+    const sourceFilters = req.body?.sourceFilters;
+    const result = await runNewsCollectionCycle('ADMIN_MANUAL', target, sourceFilters);
     res.json(result);
   } catch (err: any) {
     console.error("Error triggering collection cycle:", err);
@@ -774,6 +775,8 @@ app.post("/api/admin/trigger-automator", requireAuth, async (req: AuthRequest, r
     
     const result = await runNewsAutomator(recentArticles || [], req.user!.uid, authorName || "Rajyavani System", sources || []);
     
+    // We return the operations to the client to execute them via the client SDK.
+    // This avoids adminDb missing permission issues in the server environment.
     if (result.success) {
       res.json(result);
     } else {
@@ -785,84 +788,10 @@ app.post("/api/admin/trigger-automator", requireAuth, async (req: AuthRequest, r
   }
 });
 
-// Jobs API: Get verified jobs with strict status verification filter
-app.get("/api/jobs", async (req, res) => {
-  try {
-    const { status, category, district } = req.query;
-
-    let jobs: any[] = [];
-    try {
-      const snap = await adminDb.collection("jobs").get();
-      if (!snap.empty) {
-        snap.forEach(doc => jobs.push(doc.data()));
-      }
-    } catch (e: any) {
-      console.warn("Notice loading jobs from Firestore:", e.message);
-    }
-
-    // Fallback to verified memory dataset if Firestore empty
-    if (jobs.length === 0) {
-      jobs = [...VERIFIED_JOBS_DATA];
-    }
-
-    // Compute real-time verified status for every job against current date
-    const verifiedJobs = jobs.map(j => {
-      const v = computeVerifiedJobStatus(j);
-      return {
-        ...j,
-        status: v.status,
-        statusLabelMarathi: v.statusLabelMarathi,
-        statusReason: v.notes,
-        applicationPortalActive: v.isAcceptingApplications,
-        isArchivedHistorical: v.status === 'CLOSED' || v.status === 'CANCELLED'
-      };
-    });
-
-    let filtered = verifiedJobs;
-
-    if (status === 'ACTIVE_ALL') {
-      filtered = filtered.filter(j => j.status === 'ACTIVE' || j.status === 'EXTENDED');
-    } else if (status && status !== 'ALL') {
-      filtered = filtered.filter(j => j.status === status);
-    }
-
-    if (category && category !== 'ALL') {
-      filtered = filtered.filter(j => j.category === category);
-    }
-
-    if (district && district !== 'ALL') {
-      filtered = filtered.filter(j => j.district === 'महाराष्ट्र सर्व जिल्हे' || (j.district || '').includes(String(district)));
-    }
-
-    res.json({
-      success: true,
-      count: filtered.length,
-      jobs: filtered,
-      auditTimestamp: Date.now()
-    });
-  } catch (error: any) {
-    console.error("Error fetching jobs:", error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Jobs API: Trigger instant verification audit
-app.post("/api/jobs/audit", async (req, res) => {
-  try {
-    const stats = await auditJobRecruitmentsInDatabase();
-    res.json({
-      success: true,
-      message: "Recruitment verification audit executed successfully.",
-      stats,
-      auditedAt: Date.now()
-    });
-  } catch (error: any) {
-    console.error("Error running jobs audit:", error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 async function startServer() {
+  // Start the automated 3-hour news scheduler background service
+  start3HourNewsScheduler();
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -879,8 +808,6 @@ async function startServer() {
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
-    // Start 24/7 3-Hour News Continuous Scheduler
-    start3HourNewsScheduler();
   });
 
   // Increase timeouts to allow for long Gemini API responses

@@ -467,82 +467,7 @@ export default function AdminPage() {
                           sourceUrl: doc.data().sourceUrl
                         }));
 
-                        // 2. Fetch stale breaking articles to remove
-                        const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
-                        const staleSnapshot = await getDocs(query(
-                          collection(db, 'articles'),
-                          where('isDeveloping', '==', true),
-                          where('updatedAt', '<', twelveHoursAgo)
-                        ));
-
-                        if (!staleSnapshot.empty) {
-                          const batch = writeBatch(db);
-                          staleSnapshot.docs.forEach(docSnap => {
-                            const existingData = docSnap.data();
-                            const updatePayload: any = { isDeveloping: false, updatedAt: Date.now() };
-                            if (!existingData.authorId) updatePayload.authorId = user?.uid || 'system-automator';
-                            if (!existingData.authorName) updatePayload.authorName = user?.displayName || user?.email || 'Rajyavani System';
-                            if (!existingData.createdAt) updatePayload.createdAt = existingData.publishedAt || Date.now();
-                            
-                            updatePayload.title = String(existingData.title || 'Untitled').substring(0, 300);
-                            updatePayload.summary = String(existingData.summary || 'No summary').substring(0, 1000);
-                            updatePayload.content = String(existingData.content || 'No content').substring(0, 50000);
-                            updatePayload.category = String(existingData.category || 'Uncategorized').substring(0, 100);
-                            updatePayload.status = existingData.status || 'DRAFT';
-                            updatePayload.tags = Array.isArray(existingData.tags) ? existingData.tags.slice(0, 10) : [];
-                            updatePayload.imagePrompt = String(existingData.imagePrompt || '').substring(0, 1000);
-                            updatePayload.imageAlt = String(existingData.imageAlt || '').substring(0, 300);
-                            updatePayload.isDeveloping = false;
-                            updatePayload.aiGenerated = !!existingData.aiGenerated;
-
-                            batch.update(docSnap.ref, updatePayload);
-                          });
-                          await batch.commit();
-                        }
-
-                        // 2.5 Auto-archive old articles (older than 30 days)
-                        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-                        const archiveSnapshot = await getDocs(query(
-                          collection(db, 'articles'),
-                          where('status', '==', 'PUBLISHED'),
-                          where('publishedAt', '<', thirtyDaysAgo)
-                        ));
-
-                        if (!archiveSnapshot.empty) {
-                          const batch = writeBatch(db);
-                          archiveSnapshot.docs.forEach(docSnap => {
-                            const existingData = docSnap.data();
-                            const updatePayload: any = { status: 'ARCHIVED', updatedAt: Date.now() };
-                            if (!existingData.authorId) updatePayload.authorId = user?.uid || 'system-automator';
-                            if (!existingData.authorName) updatePayload.authorName = user?.displayName || user?.email || 'Rajyavani System';
-                            if (!existingData.createdAt) updatePayload.createdAt = existingData.publishedAt || Date.now();
-                            
-                            updatePayload.title = (existingData.title || 'Untitled').substring(0, 300);
-                            updatePayload.summary = (existingData.summary || 'No summary').substring(0, 1000);
-                            updatePayload.content = (existingData.content || 'No content').substring(0, 50000);
-                            updatePayload.category = (existingData.category || 'Uncategorized').substring(0, 100);
-                            updatePayload.tags = Array.isArray(existingData.tags) ? existingData.tags.slice(0, 10) : [];
-                            updatePayload.imagePrompt = (existingData.imagePrompt || '').substring(0, 1000);
-                            updatePayload.imageAlt = (existingData.imageAlt || '').substring(0, 300);
-                            updatePayload.isDeveloping = !!existingData.isDeveloping;
-                            updatePayload.aiGenerated = !!existingData.aiGenerated;
-                            
-                            // Fix any legacy nulls
-                            if (existingData.district === null) updatePayload.district = '';
-                            if (existingData.taluka === null) updatePayload.taluka = '';
-                            if (existingData.village === null) updatePayload.village = '';
-                            if (existingData.sourceUrl === null) updatePayload.sourceUrl = '';
-                            if (existingData.imagePrompt === null) updatePayload.imagePrompt = '';
-                            if (existingData.imageAlt === null) updatePayload.imageAlt = '';
-                            if (existingData.imageUrl === null) updatePayload.imageUrl = '';
-                            if (existingData.publishedAt === null) updatePayload.publishedAt = 0;
-
-                            batch.update(docSnap.ref, updatePayload);
-                          });
-                          await batch.commit();
-                        }
-
-                        // 3. Trigger backend to run Gemini and get operations
+                        // 2. Trigger backend to run Gemini and get operations
                         const activeSources = automatorSources.filter(s => s.isActive !== false);
                         const res = await fetch('/api/admin/trigger-automator', {
                           method: 'POST',
@@ -564,42 +489,20 @@ export default function AdminPage() {
                         if (!res.ok) {
                           throw new Error(data.error || `Server responded with error ${res.status}`);
                         }
-                        
-                        // 4. Apply operations locally
+
+                        // Execute operations on the client-side to avoid backend permission issues
                         if (data.operations && data.operations.length > 0) {
-                           for (const op of data.operations) {
-                              if (op.type === 'UPDATE') {
-                                 const articleRef = doc(db, 'articles', op.targetId);
-                                 const currentDoc = await getDoc(articleRef);
-                                 if (currentDoc.exists()) {
-                                   await addDoc(collection(articleRef, 'revisions'), {
-                                     ...currentDoc.data(),
-                                     archivedAt: Date.now()
-                                   });
-                                   
-                                   // Prevent overwriting immortal fields if they already exist
-                                   const existingData = currentDoc.data();
-                                   if (existingData.authorId) {
-                                     delete op.data.authorId;
-                                   } else {
-                                     op.data.authorId = user?.uid || 'system-automator';
-                                   }
-                                   if (existingData.authorName) {
-                                     delete op.data.authorName;
-                                   } else {
-                                     op.data.authorName = user?.displayName || user?.email || 'Rajyavani System';
-                                   }
-                                   if (existingData.createdAt) {
-                                     delete op.data.createdAt;
-                                   } else {
-                                     op.data.createdAt = existingData.publishedAt || Date.now();
-                                   }
-                                 }
-                                 await updateDoc(articleRef, op.data);
-                              } else if (op.type === 'CREATE') {
-                                 await addDoc(collection(db, 'articles'), op.data);
-                              }
-                           }
+                          const batch = writeBatch(db);
+                          for (const op of data.operations) {
+                            if (op.type === 'UPDATE' && op.targetId) {
+                               const docRef = doc(collection(db, 'articles'), op.targetId);
+                               batch.set(docRef, op.data, { merge: true });
+                            } else if (op.type === 'CREATE') {
+                               const newRef = doc(collection(db, 'articles'));
+                               batch.set(newRef, op.data);
+                            }
+                          }
+                          await batch.commit();
                         }
                         
                         alert(`News Automator finished successfully! Processed ${data.operations?.length || 0} operations.`);

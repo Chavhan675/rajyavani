@@ -13,7 +13,6 @@ const languages = ["मराठी", "English", "हिंदी"];
 const primaryNavItems = [
   { name: "मुख्यपृष्ठ", path: "/" },
   { name: "📚 बातमी संग्रह", path: "/archive", isHighlight: true },
-  { name: "🎓 विद्यार्थी व नोकरी", path: "/jobs", isSpecial: true },
   { name: "महाराष्ट्र", path: "/category/महाराष्ट्र" },
   { name: "राजकारण", path: "/category/राजकारण" },
   { name: "शेती", path: "/category/शेती" },

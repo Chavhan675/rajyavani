@@ -1,8 +1,12 @@
-import { Bot, Clock, MapPin, User, Tag } from "lucide-react";
+import React from "react";
+import { Bot, Clock, MapPin, User, Tag, Trash2 } from "lucide-react";
 import { NewsArticle } from "../types";
 import { formatDistanceToNow } from "date-fns";
 import Image from "./Image";
 import { Link } from "react-router-dom";
+import { useAuth } from "../lib/AuthContext";
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 interface NewsGridProps {
   title: string;
@@ -10,6 +14,21 @@ interface NewsGridProps {
 }
 
 export default function NewsGrid({ title, articles }: NewsGridProps) {
+  const { isSuperAdmin } = useAuth();
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this news article?")) {
+      try {
+        await deleteDoc(doc(db, "articles", id));
+        window.location.reload();
+      } catch (err) {
+        alert("Error deleting article");
+      }
+    }
+  };
+
   if (articles.length === 0) return null;
 
   return (
@@ -91,7 +110,18 @@ export default function NewsGrid({ title, articles }: NewsGridProps) {
                     <Clock className="w-3.5 h-3.5" />
                     <span>{formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}</span>
                   </div>
-                  <span className="text-brand-red">{article.views?.toLocaleString('mr-IN') || 0} views</span>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-brand-red">{article.views?.toLocaleString('mr-IN') || 0} views</span>
+                    {isSuperAdmin && (
+                      <button 
+                        onClick={(e) => handleDelete(e, article.id)}
+                        className="text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-colors z-20 relative cursor-pointer"
+                        title="Delete Article"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

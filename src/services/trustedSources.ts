@@ -3,6 +3,17 @@ import { NewsSourceConfig } from '../types';
 export const TRUSTED_NEWS_SOURCES: NewsSourceConfig[] = [
   // 1. Official Government & Press Information Bureau
   {
+    id: 'src-rural-taluka-maharashtra',
+    name: 'Maharashtra Rural, Taluka & Village News',
+    nameMarathi: 'महाराष्ट्र ग्रामीण, तालुका व गाव पातळीवरील घडामोडी',
+    type: 'GOV_PORTAL',
+    url: 'https://news.google.com/rss/search?q=महाराष्ट्र+तालुका+OR+ग्रामपंचायत+OR+जिल्हा+परिषद+OR+गाव&hl=mr&gl=IN&ceid=IN:mr',
+    region: 'MAHARASHTRA',
+    trustScore: 95,
+    enabled: true,
+    status: 'ACTIVE'
+  },
+  {
     id: 'src-pib-marathi',
     name: 'Press Information Bureau (PIB Mumbai - GoI)',
     nameMarathi: 'प्रेस इन्फॉर्मेशन ब्युरो (भारत सरकार - मुंबई)',
@@ -46,20 +57,6 @@ export const TRUSTED_NEWS_SOURCES: NewsSourceConfig[] = [
     region: 'MAHARASHTRA',
     category: 'शेती',
     trustScore: 96,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-
-  // 3. Education & Recruitment (शिक्षण व रोजगार)
-  {
-    id: 'src-jobs-edu',
-    name: 'Maharashtra Jobs, MPSC & Education Bureau',
-    nameMarathi: 'महाराष्ट्र भरती, एमपीएससी व शिक्षण वार्ता',
-    type: 'GOV_PORTAL',
-    url: 'https://news.google.com/rss/search?q=महाराष्ट्र+भरती+OR+MPSC+OR+पोलीस+भरती+OR+शिक्षण+मंडळ&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'MAHARASHTRA',
-    category: 'शिक्षण',
-    trustScore: 97,
     enabled: true,
     status: 'ACTIVE'
   },

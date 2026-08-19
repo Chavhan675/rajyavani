@@ -9,6 +9,7 @@ export interface DistrictInfo {
   website: string;
   youtubeChannel: string;
   description?: string;
+  newsPortals?: Array<{ name: string; url: string }>;
 }
 
 export const MAHARASHTRA_DISTRICTS: DistrictInfo[] = [

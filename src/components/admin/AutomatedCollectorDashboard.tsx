@@ -24,7 +24,7 @@ import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from '../../services/t
 import { CollectionCycle, NewsSourceConfig, NewsArticle } from '../../types';
 import { useAuth } from '../../lib/AuthContext';
 import { db } from '../../lib/firebase';
-import { doc, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch, collection, setDoc } from 'firebase/firestore';
 
 export default function AutomatedCollectorDashboard() {
   const { user } = useAuth();
@@ -32,6 +32,7 @@ export default function AutomatedCollectorDashboard() {
   const [sources, setSources] = useState<NewsSourceConfig[]>(TRUSTED_NEWS_SOURCES);
   const [loading, setLoading] = useState(true);
   const [isTriggering, setIsTriggering] = useState(false);
+  const [isPurging, setIsPurging] = useState(false);
   const [triggerProgress, setTriggerProgress] = useState<any>(null);
   const [timeToNextCycle, setTimeToNextCycle] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DISTRICTS' | 'SOURCES' | 'HISTORY'>('OVERVIEW');
@@ -59,88 +60,117 @@ export default function AutomatedCollectorDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Update countdown timer every second
   useEffect(() => {
-    const updateCountdown = () => {
-      if (!schedulerStatus?.nextCycleAt) {
-        setTimeToNextCycle('गणना करत आहे...');
-        return;
-      }
+    if (!schedulerStatus?.nextCycleAt) {
+      setTimeToNextCycle('मॅन्युअल मोड');
+      return;
+    }
 
-      const diff = schedulerStatus.nextCycleAt - Date.now();
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const diff = schedulerStatus.nextCycleAt - now;
+
       if (diff <= 0) {
-        setTimeToNextCycle('सायकल सुरू होत आहे...');
+        setTimeToNextCycle('प्रारंभ होत आहे...');
       } else {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeToNextCycle(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeToNextCycle(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
       }
-    };
+    }, 1000);
 
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, [schedulerStatus]);
 
-  // Manually trigger 100+ collection cycle
-  const handleTriggerCycle = async () => {
+  const saveArticlesToFirestore = async (articles: any[], cycle: any) => {
+    if (!articles || articles.length === 0) return;
+    const CHUNK_SIZE = 400;
+    for (let i = 0; i < articles.length; i += CHUNK_SIZE) {
+      const chunk = articles.slice(i, i + CHUNK_SIZE);
+      const batch = writeBatch(db);
+      for (const art of chunk) {
+         const docRef = doc(collection(db, 'articles'), art.id);
+         batch.set(docRef, {
+            ...art,
+            status: 'PUBLISHED',
+            authorId: 'system-newsroom-bot',
+            authorName: art.author || 'राज्यवाणी विशेष वृत्त ब्युरो',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            publishedAt: Date.now(),
+            views: art.views || 15,
+            aiGenerated: true,
+            isArchived: false
+         }, { merge: true });
+      }
+      await batch.commit();
+    }
+    if (cycle) {
+      try {
+        const cycleRef = doc(collection(db, 'news_collection_cycles'), cycle.id);
+        await setDoc(cycleRef, { ...cycle, timestamp: Date.now() });
+        const settingsRef = doc(collection(db, 'settings'), 'news_automation');
+        await setDoc(settingsRef, {
+          lastCycleAt: cycle.completedAt || Date.now(),
+          lastArticlesPublished: cycle.articlesPublished,
+          lastStatus: cycle.status
+        }, { merge: true });
+      } catch (e) {
+        console.warn("Could not save cycle record", e);
+      }
+    }
+  };
+
+  // Unified Universal News Collector Trigger
+  const handleTriggerCycle = async (skipConfirm = false) => {
     if (isTriggering) return;
 
-    const confirmed = window.confirm(
-      "⚡ तुम्ही १००+ पडताळणीकृत बातम्यांचे तात्काळ संकलन चक्र सुरू करू इच्छिता?\n\nहे चक्र विश्वसनीय स्त्रोतांकडून बातम्या गोळा करून, पडताळणी करून, १०००+ शब्दांचे लेख तयार करून डेटाबेसमध्ये कायमस्वरूपी सेव्ह करेल."
-    );
-    if (!confirmed) return;
+    if (!skipConfirm) {
+      const confirmed = window.confirm(
+        "⚡ तुम्ही मॅन्युअल संकलन सुरू करू इच्छिता?\n\nहे भारत, महाराष्ट्र, जिल्हे आणि तालुक्यांच्या ११+ ताज्या बातम्या गोळा करून डेटाबेसमध्ये सेव्ह करेल."
+      );
+      if (!confirmed) return;
+    }
 
     setIsTriggering(true);
-    setTriggerProgress({ stage: 'STARTING', percent: 10, details: 'विश्वसनीय स्त्रोतांशी संपर्क साधत आहे...' });
+    setTriggerProgress({ stage: 'STARTING', percent: 10, details: 'सर्व स्त्रोतांशी संपर्क साधत आहे...' });
 
     try {
       const token = await user?.getIdToken();
-      const res = await fetch('/api/collector/trigger', {
+      
+      // 1. Run General/Universal Cycle
+      setTriggerProgress({ stage: 'GENERAL_NEWS', percent: 30, details: 'राजकीय, सामाजिक आणि जिल्हा पातळीवरील बातम्या गोळा करत आहे...' });
+      const resGeneral = await fetch('/api/collector/trigger', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ target: 7 })
       });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        // Persist articles directly to Firestore using Super Admin client credentials
-        if (data.newArticles && Array.isArray(data.newArticles) && data.newArticles.length > 0) {
-          try {
-            const batch = writeBatch(db);
-            const CHUNK = 400;
-            for (let i = 0; i < Math.min(data.newArticles.length, CHUNK); i++) {
-              const art = data.newArticles[i];
-              const docRef = doc(db, 'articles', art.id);
-              batch.set(docRef, {
-                ...art,
-                status: 'PUBLISHED',
-                authorId: 'system-newsroom-bot',
-                authorName: art.author || 'राज्यवाणी विशेष वृत्त ब्युरो',
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-                publishedAt: Date.now(),
-                views: art.views || 25,
-                aiGenerated: true,
-                isArchived: false
-              }, { merge: true });
-            }
-            await batch.commit();
-          } catch (batchErr) {
-            console.warn('Batch write notice:', batchErr);
-          }
-        }
-
-        alert(`✅ १००+ बातम्या संकलन चक्र यशस्वी!\n\nएकूण प्रसिद्ध बातम्या: ${data.cycle.articlesPublished}\nमहाराष्ट्र कव्हरेज: ${data.cycle.maharashtraCount}\nकालावधी: ${Math.round(data.cycle.durationMs / 1000)} सेकंद.`);
-        fetchStatus();
-      } else {
-        alert(`❌ संकलन चक्र त्रुटी: ${data.error || 'अज्ञात त्रुटी'}`);
+      const dataGeneral = await resGeneral.json();
+      
+      if (!resGeneral.ok || !dataGeneral.success) {
+         throw new Error(dataGeneral.error || "सामान्य बातम्या संकलन अयशस्वी");
       }
+      
+      // Save General News Client-side
+      setTriggerProgress({ stage: 'GENERAL_NEWS', percent: 90, details: 'डेटाबेसमध्ये बातम्या सेव्ह करत आहे...' });
+      await saveArticlesToFirestore(dataGeneral.newArticles, dataGeneral.cycle);
+
+      const totalGeneral = dataGeneral.newArticles?.length || 0;
+
+      if (!skipConfirm) {
+        alert(`✅ युनिव्हर्सल संकलन चक्र यशस्वी!\n\nएकूण बातम्या: ${totalGeneral}`);
+      }
+      
     } catch (err: any) {
-      alert(`त्रुटी: ${err.message}`);
+      if (!skipConfirm) {
+         alert(`❌ त्रुटी: ${err.message}`);
+      } else {
+         console.error("AutoPilot Error:", err);
+      }
     } finally {
       setIsTriggering(false);
       setTriggerProgress(null);
@@ -159,41 +189,39 @@ export default function AutomatedCollectorDashboard() {
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-xs font-bold text-green-400">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                <span>२४/७ स्वयंचलित वृत्त संकलन सक्रिय (Active 24/7)</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full text-xs font-bold text-amber-400">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>स्वयंचलित संकलन (Automated Engine)</span>
               </span>
               <span className="px-2.5 py-0.5 bg-white/10 rounded-full text-[11px] font-bold text-zinc-300">
-                प्रत्येक ३ तास चक्र
+                ३-तास चक्र (3-Hour Cycle)
               </span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black font-serif text-white tracking-tight">
-              राज्यवाणी ३-तास स्वयंचलित वृत्त संकलन व पडताळणी केंद्र
+              राज्यवाणी स्वयंचलित वृत्त संकलन व पडताळणी केंद्र
             </h2>
             <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-              PIB, DGIPR महान्यूज, ३६ जिल्हाधिकारी कार्यालये आणि अधिकृत स्त्रोतांवरून दर ३ तासांनी १००+ पडताळणीकृत बातम्यांचे स्वयंचलित संकलन, डुप्लिकेशन फिल्टर, आणि १०००+ शब्दांचे दीर्घ मराठी वृत्त तयार करण्याचे स्वयंचलित इंजिन.
+              PIB, DGIPR महान्यूज, ३६ जिल्हाधिकारी कार्यालये, शैक्षणिक प्लॅटफॉर्म्स आणि अधिकृत स्त्रोतांवरून दर ३ तासांनी स्वयंचलितपणे ११+ पडताळणीकृत बातम्यांचे संकलन, डुप्लिकेशन फिल्टर, आणि १०००+ शब्दांचे दीर्घ मराठी वृत्त तयार करण्याचे इंजिन.
             </p>
           </div>
 
-          {/* Trigger Button & Next Run Countdown */}
-          <div className="bg-zinc-850/90 border border-zinc-750 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[280px] text-center space-y-3 shrink-0 shadow-lg backdrop-blur-md">
-            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-amber-400" />
-              <span>पुढील चक्र वेळेची उलटी गणना (IST)</span>
-            </div>
-
-            <div className="text-3xl font-black font-mono text-amber-300 tracking-wider bg-black/40 px-4 py-1.5 rounded-xl border border-amber-400/20">
-              {timeToNextCycle || '03:00:00'}
-            </div>
-
-            <div className="text-[11px] text-zinc-400 font-medium">
-              पुढील वेळ: <strong>{schedulerStatus?.nextCycleIstFormatted || 'पुढील ३-तास चक्र'}</strong>
+          {/* Trigger Button & Timer */}
+          <div className="bg-zinc-850/90 border border-zinc-750 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[280px] text-center space-y-4 shrink-0 shadow-lg backdrop-blur-md">
+            
+            <div className="text-center w-full bg-zinc-900/50 rounded-xl p-3 border border-zinc-800/50">
+              <div className="text-[10px] uppercase font-bold text-zinc-400 mb-1 flex items-center justify-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-brand-saffron" />
+                पुढील संकलन (Next Cycle)
+              </div>
+              <div className="text-3xl font-black text-white font-mono tracking-wider tabular-nums drop-shadow-md">
+                {timeToNextCycle || '00:00:00'}
+              </div>
             </div>
 
             <button
-              onClick={handleTriggerCycle}
+              onClick={() => handleTriggerCycle(false)}
               disabled={isTriggering || schedulerStatus?.isCycleActive}
               className={`w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
                 isTriggering || schedulerStatus?.isCycleActive
@@ -204,12 +232,12 @@ export default function AutomatedCollectorDashboard() {
               {isTriggering || schedulerStatus?.isCycleActive ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>१००+ संकलन चक्र सुरू आहे...</span>
+                  <span>संकलन चक्र सुरू आहे...</span>
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4 fill-white" />
-                  <span>⚡ त्वरित १००+ बातम्या संकलन सुरू करा</span>
+                  <span>🌍 युनिव्हर्सल संकलन सुरू करा (११+ बातम्या)</span>
                 </>
               )}
             </button>
