@@ -426,7 +426,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { 
         success: false, 
-        error: error.message || "Google लॉगिन अयशस्वी झाले. कृपया ईमेल आणि पासवर्ड पर्याय वापरा." 
+        error: error.message || "Google लॉगिन अयशस्वी झाले. कृपया अ‍ॅप एका नवीन टॅबमध्ये (New Tab) उघडून पुन्हा प्रयत्न करा किंवा ईमेल/पासवर्डने लॉगिन करा." 
       };
     }
   };
