@@ -155,15 +155,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      const isSuperAdminEmail = currentUser?.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
-      if (currentUser && !currentUser.emailVerified && !isSuperAdminEmail) {
-        await firebaseSignOut(auth);
-        setUser(null);
-        setUserRole(null);
-        setLoading(false);
-        return;
-      }
-
       setUser(currentUser);
       
       if (currentUser) {
@@ -248,17 +239,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(email.toLowerCase());
-      if (!userCredential.user.emailVerified && !isSuperAdmin) {
-        try {
-          await sendEmailVerification(userCredential.user);
-        } catch (e) {
-          console.warn("Resend verification error:", e);
-        }
-        await firebaseSignOut(auth);
-        return { success: false, error: "तुमचा ईमेल अजून व्हेरीफाय झालेला नाही. आम्ही तुमच्या ईमेलवर पुन्हा लिंक पाठवली आहे. कृपया तुमचा ईमेल तपासा आणि दिलेल्या लिंकवर क्लिक करा." };
-      }
-
       // Check suspension
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
       if (userDoc.exists() && userDoc.data().isSuspended) {
@@ -351,11 +331,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role
       });
 
-      // Sign out immediately so regular users must verify their email
-      if (!isOwner) {
-        await firebaseSignOut(auth);
-      }
-
+      setAuthModalOpen(false);
       return { success: true };
     } catch (err: any) {
       let message = "नोंदणी अयशस्वी. कृपया पुन्हा प्रयत्न करा.";

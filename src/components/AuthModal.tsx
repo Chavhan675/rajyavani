@@ -84,10 +84,6 @@ export default function AuthModal() {
     setIsSubmitting(false);
     if (!res.success) {
       setError(res.error || 'नोंदणी अयशस्वी.');
-    } else {
-      resetForm();
-      setAuthModalTab('login');
-      setSuccessMsg('नोंदणी यशस्वी! कृपया तुमचा ईमेल तपासा आणि खात्री करण्यासाठी दिलेल्या लिंकवर क्लिक करा.');
     }
   };
 
