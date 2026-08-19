@@ -413,7 +413,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (error.code === 'auth/unauthorized-domain') {
-        return { success: false, error: "हा डोमेन अधिकृत (Authorized Domain) नाही. कृपया खालील ईमेल आणि पासवर्डने सुरक्षित लॉगिन करा." };
+        const currentDomain = typeof window !== 'undefined' ? window.location.hostname : 'हा डोमेन';
+        return { success: false, error: `${currentDomain} हा डोमेन Firebase मध्ये अधिकृत (Authorized) नाही. कृपया तुमच्या Firebase Console मध्ये जाऊन Authorized Domains मध्ये हा डोमेन ॲड करा किंवा ईमेल आणि पासवर्डने लॉगिन करा.` };
       }
 
       if (error.code === 'auth/account-exists-with-different-credential') {
