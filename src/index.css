@@ -168,3 +168,10 @@ html, body {
   font-weight: 400;
   margin-bottom: 0;
 }
+
+/* High-Performance rendering optimizations */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 600px;
+}
+

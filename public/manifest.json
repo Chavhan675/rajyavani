@@ -1,0 +1,17 @@
+{
+  "name": "राज्यवाणी (Rajyavani)",
+  "short_name": "राज्यवाणी",
+  "description": "महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b91c1c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

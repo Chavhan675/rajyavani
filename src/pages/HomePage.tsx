@@ -8,7 +8,6 @@ import AdUnit from "../components/AdUnit";
 import DistrictExplorer from "../components/DistrictExplorer";
 import { mockArticles } from "../data";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
-import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Loader2, MapPin, Briefcase, GraduationCap, Sparkles, ChevronRight, ShieldCheck, ExternalLink } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -36,6 +35,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
+        const { collection, query, where, orderBy, getDocs, limit } = await import('firebase/firestore');
         const q = query(
           collection(db, 'articles'),
           where('status', '==', 'PUBLISHED'),
@@ -79,7 +79,12 @@ export default function HomePage() {
       }
     };
     
-    fetchArticles();
+    // Fetch in idle callback or next microtask to keep main thread completely unblocked for initial paint
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(fetchArticles, { timeout: 1500 });
+    } else {
+      setTimeout(fetchArticles, 100);
+    }
   }, []);
 
   // Use DB articles if available, otherwise fallback to mock data

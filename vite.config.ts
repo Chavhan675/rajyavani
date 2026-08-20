@@ -13,14 +13,30 @@ export default defineConfig(() => {
     },
     build: {
       sourcemap: false,
-      chunkSizeWarningLimit: 800,
+      chunkSizeWarningLimit: 1000,
+      target: 'es2020',
+      cssCodeSplit: true,
+      minify: 'esbuild',
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
-            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-            'vendor-icons': ['lucide-react'],
-            'vendor-date': ['date-fns'],
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('firebase')) {
+                return 'vendor-firebase';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('date-fns')) {
+                return 'vendor-date';
+              }
+              if (id.includes('react-router') || id.includes('react-helmet')) {
+                return 'vendor-router';
+              }
+              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+                return 'vendor-react';
+              }
+            }
           },
         },
       },

@@ -34,7 +34,7 @@ export default function DistrictExplorer() {
   }, [activeDivision, searchQuery]);
 
   return (
-    <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 my-10">
+    <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 my-10 content-visibility-auto">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-gray-100">
         <div>
           <div className="flex items-center gap-2 mb-2">

@@ -245,6 +245,7 @@ export default function ArticlesManagementTab() {
                           <Link
                             to={`/article/${art.id}`}
                             target="_blank"
+                            rel="noopener noreferrer"
                             className="font-bold text-gray-900 hover:text-brand-red line-clamp-1 flex items-center gap-1"
                           >
                             <span>{art.title}</span>
