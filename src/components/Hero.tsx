@@ -71,7 +71,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Main Feature */}
-        <Link to={`/article/${mainArticle.id}`} className="lg:col-span-8 relative group overflow-hidden rounded-xl bg-white shadow-sm border border-gray-200 cursor-pointer block">
+        <Link to={`/article/${mainArticle.id}`} className="lg:col-span-8 relative group overflow-hidden rounded-xl bg-gray-950 shadow-sm border border-gray-800 cursor-pointer block">
           {isSuperAdmin && (
             <button
               onClick={(e) => handleDelete(e, mainArticle.id)}
@@ -92,7 +92,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
               </span>
             )}
           </div>
-          <div className="relative h-[450px] lg:h-[550px] w-full overflow-hidden">
+          <div className="relative h-[450px] lg:h-[550px] w-full overflow-hidden bg-gray-950">
             <Image 
               src={mainArticle.imageUrl}
               category={typeof mainArticle.category === 'string' ? mainArticle.category : mainArticle.category?.name}
@@ -102,53 +102,56 @@ export default function Hero({ articles, loading = false }: HeroProps) {
               priority={true}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/85 to-transparent" />
           </div>
-          <div className="absolute bottom-0 left-0 p-6 w-full">
+          <div className="absolute bottom-0 left-0 p-6 w-full z-10">
             <div className="flex items-center space-x-2 mb-3">
                {mainArticle.tags && mainArticle.tags.slice(0, 2).map(tag => (
-                 <span key={tag} className="text-[10px] font-extrabold uppercase tracking-wider text-white bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm border border-white/20 flex items-center">
-                   <Tag className="w-2.5 h-2.5 mr-1 text-white" />
+                 <span key={tag} className="text-xs font-black uppercase tracking-wider text-white bg-gray-950 px-3 py-1 rounded shadow-md border border-gray-700 flex items-center">
+                   <Tag className="w-3 h-3 mr-1 text-amber-400" />
                    {tag}
                  </span>
                ))}
             </div>
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-3 group-hover:text-brand-saffron transition-colors">
+            <h1 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-3 group-hover:text-amber-400 transition-colors">
               {mainArticle.title}
             </h1>
-            <p className="text-gray-300 text-sm lg:text-base line-clamp-2 mb-5 max-w-3xl">
+            <p className="text-gray-100 text-sm lg:text-base line-clamp-2 mb-5 max-w-3xl font-medium">
               {mainArticle.summary}
             </p>
             
-            <div className="flex flex-wrap items-center text-gray-300 text-xs font-medium gap-y-2 gap-x-5">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center text-xs font-semibold gap-2">
+              <div className="flex items-center space-x-2 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm">
                 {mainArticle.authorAvatar && mainArticle.authorAvatar.trim() !== '' ? (
                   <img 
                     src={mainArticle.authorAvatar} 
                     alt={mainArticle.author} 
-                    className="w-6 h-6 rounded-full border border-gray-500" 
+                    className="w-5 h-5 rounded-full border border-gray-400" 
                     onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
                   />
                 ) : null}
-                <div className={`w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center ${mainArticle.authorAvatar && mainArticle.authorAvatar.trim() !== '' ? 'hidden' : ''}`}>
+                <div className={`w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center ${mainArticle.authorAvatar && mainArticle.authorAvatar.trim() !== '' ? 'hidden' : ''}`}>
                   <User className="w-3 h-3 text-white" />
                 </div>
-                <span className="text-white">{mainArticle.author}</span>
+                <span className="text-white font-bold">{mainArticle.author}</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <Clock className="w-4 h-4" />
-                <span>Published {formatDistanceToNow(new Date(mainArticle.publishedAt), { addSuffix: true })}</span>
+              
+              <div className="flex items-center space-x-1.5 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm">
+                <Clock className="w-3.5 h-3.5 text-gray-300" />
+                <span className="text-white font-semibold">Published {formatDistanceToNow(new Date(mainArticle.publishedAt), { addSuffix: true })}</span>
               </div>
+
               {mainArticle.lastUpdated && (
-                <div className="flex items-center space-x-1 text-brand-saffron">
-                  <Clock className="w-4 h-4" />
+                <div className="flex items-center space-x-1.5 bg-amber-950/95 text-amber-200 px-2.5 py-1 rounded-md border border-amber-500/60 shadow-sm font-bold">
+                  <Clock className="w-3.5 h-3.5 text-amber-300" />
                   <span>Updated {formatDistanceToNow(new Date(mainArticle.lastUpdated), { addSuffix: true })}</span>
                 </div>
               )}
-              {mainArticle.location.district && (
-                <div className="flex items-center space-x-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>{mainArticle.location.district}</span>
+
+              {mainArticle.location?.district && (
+                <div className="flex items-center space-x-1.5 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm font-bold">
+                  <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                  <span className="text-white">{mainArticle.location.district}</span>
                 </div>
               )}
             </div>

@@ -352,7 +352,7 @@ export default function ArticlePage() {
             className="w-full h-auto max-h-[60vh] object-cover"
           />
           {article.imageAlt && (
-            <figcaption className="p-3 text-center text-sm text-gray-500 bg-gray-50 border-t border-gray-100">
+            <figcaption className="p-3 text-center text-sm text-gray-700 font-medium bg-gray-50 border-t border-gray-100">
               {article.imageAlt} {article.aiGenerated && " (राज्यवाणी विशेष बातमी चित्र)"}
             </figcaption>
           )}
