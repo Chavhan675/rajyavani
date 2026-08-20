@@ -591,7 +591,11 @@ app.post("/api/images/resolve", async (req, res) => {
   }
 });
 
-// Image proxy endpoint with aggressive caching & hotlink bypass (supports /api/images/proxy and /images/proxy)
+// In-memory LRU cache for proxied news images to speed up delivery and avoid remote fetches
+const imageProxyCache = new Map<string, { buffer: Buffer; contentType: string; etag: string; timestamp: number }>();
+const MAX_IMAGE_CACHE_SIZE = 150;
+
+// Image proxy endpoint with aggressive in-memory caching & hotlink bypass (supports /api/images/proxy and /images/proxy)
 app.get(["/api/images/proxy", "/images/proxy"], async (req: any, res: any) => {
   const imageUrl = req.query.url as string;
   const category = req.query.category as string;
@@ -602,9 +606,22 @@ app.get(["/api/images/proxy", "/images/proxy"], async (req: any, res: any) => {
     return res.redirect(fallback);
   }
 
+  // Check In-Memory Cache first
+  const cacheKey = imageUrl;
+  const cached = imageProxyCache.get(cacheKey);
+  if (cached) {
+    if (req.headers['if-none-match'] === cached.etag) {
+      return res.status(304).end();
+    }
+    res.setHeader('Content-Type', cached.contentType);
+    res.setHeader('ETag', cached.etag);
+    res.setHeader('Cache-Control', 'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400, immutable');
+    return res.send(cached.buffer);
+  }
+
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const timeout = setTimeout(() => controller.abort(), 4500);
 
     const remoteRes = await fetch(imageUrl, {
       headers: {
@@ -623,11 +640,27 @@ app.get(["/api/images/proxy", "/images/proxy"], async (req: any, res: any) => {
     }
 
     const contentType = remoteRes.headers.get('content-type') || 'image/jpeg';
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    const arrayBuf = await remoteRes.arrayBuffer();
+    const buffer = Buffer.from(arrayBuf);
+    const etag = `W/"img-${buffer.length}-${Date.now().toString(36)}"`;
 
-    const buffer = await remoteRes.arrayBuffer();
-    return res.send(Buffer.from(buffer));
+    // Manage LRU cache size
+    if (imageProxyCache.size >= MAX_IMAGE_CACHE_SIZE) {
+      const oldestKey = imageProxyCache.keys().next().value;
+      if (oldestKey) imageProxyCache.delete(oldestKey);
+    }
+
+    imageProxyCache.set(cacheKey, {
+      buffer,
+      contentType,
+      etag,
+      timestamp: Date.now()
+    });
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('ETag', etag);
+    res.setHeader('Cache-Control', 'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400, immutable');
+    return res.send(buffer);
   } catch (err) {
     const fallback = getCategoryFallbackImage(category, title);
     return res.redirect(fallback);

@@ -218,7 +218,17 @@ export default function Header() {
                   aria-label="User Profile"
                 >
                   {user.photoURL && user.photoURL.trim() !== '' ? (
-                    <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                    <img 
+                      src={user.photoURL} 
+                      alt="Profile" 
+                      width={36} 
+                      height={36} 
+                      loading="lazy" 
+                      decoding="async" 
+                      referrerPolicy="no-referrer" 
+                      className="w-full h-full rounded-full object-cover" 
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
                   ) : (
                     <span>{(user.displayName?.charAt(0) || user.email?.charAt(0) || 'U').toUpperCase()}</span>
                   )}

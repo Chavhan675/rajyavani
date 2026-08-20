@@ -110,7 +110,12 @@ export default function NewsGrid({ title, articles, loading = false, skeletonCou
                   <img 
                     src={article.authorAvatar} 
                     alt={article.author} 
-                    className="w-6 h-6 rounded-full border border-gray-100" 
+                    width={24}
+                    height={24}
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    className="w-6 h-6 rounded-full border border-gray-100 object-cover" 
                     onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
                   />
                 ) : null}

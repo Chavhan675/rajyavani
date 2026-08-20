@@ -472,7 +472,8 @@ export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({
               ) : generatedCardUrl ? (
                 <img 
                   src={generatedCardUrl} 
-                  alt={title}
+                  alt={title || "बातमी शेअर कार्ड"}
+                  decoding="async"
                   className="w-full h-auto object-contain rounded-lg shadow-sm" 
                 />
               ) : (

@@ -112,7 +112,17 @@ export default function UserProfileModal() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-brand-red flex items-center justify-center font-bold text-base shadow-md">
               {user.photoURL && user.photoURL.trim() !== '' ? (
-                <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                <img 
+                  src={user.photoURL} 
+                  alt="Profile" 
+                  width={40} 
+                  height={40} 
+                  loading="lazy" 
+                  decoding="async" 
+                  referrerPolicy="no-referrer" 
+                  className="w-full h-full rounded-full object-cover" 
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
               ) : (
                 (user.displayName?.charAt(0) || user.email?.charAt(0) || 'U').toUpperCase()
               )}

@@ -126,7 +126,12 @@ export default function Hero({ articles, loading = false }: HeroProps) {
                   <img 
                     src={mainArticle.authorAvatar} 
                     alt={mainArticle.author} 
-                    className="w-5 h-5 rounded-full border border-gray-400" 
+                    width={20}
+                    height={20}
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    className="w-5 h-5 rounded-full border border-gray-400 object-cover" 
                     onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
                   />
                 ) : null}
@@ -197,7 +202,12 @@ export default function Hero({ articles, loading = false }: HeroProps) {
                       <img 
                         src={article.authorAvatar} 
                         alt={article.author} 
-                        className="w-5 h-5 rounded-full" 
+                        width={20}
+                        height={20}
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        className="w-5 h-5 rounded-full object-cover" 
                         onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
                       />
                     ) : null}
