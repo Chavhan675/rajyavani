@@ -1,14 +1,57 @@
 <!doctype html>
 <html lang="mr">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0YZ3Q025WF"></script>
+    <!-- Non-blocking Third-Party Scripts: Google Analytics & AdSense loaded on interaction -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-0YZ3Q025WF');
+
+      // Load analytics and AdSense on first user interaction or delayed idle
+      var thirdPartyLoaded = false;
+      function loadThirdPartyScripts() {
+        if (thirdPartyLoaded) return;
+        thirdPartyLoaded = true;
+
+        // Clean up listeners
+        window.removeEventListener('scroll', loadThirdPartyScripts);
+        window.removeEventListener('mousemove', loadThirdPartyScripts);
+        window.removeEventListener('touchstart', loadThirdPartyScripts);
+        window.removeEventListener('click', loadThirdPartyScripts);
+        window.removeEventListener('keydown', loadThirdPartyScripts);
+
+        // GTAG
+        var gaScript = document.createElement('script');
+        gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-0YZ3Q025WF';
+        gaScript.async = true;
+        document.head.appendChild(gaScript);
+
+        // Google AdSense
+        var adsScript = document.createElement('script');
+        adsScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5135667808606813';
+        adsScript.async = true;
+        adsScript.crossOrigin = 'anonymous';
+        document.head.appendChild(adsScript);
+      }
+
+      // Attach user interaction triggers
+      window.addEventListener('scroll', loadThirdPartyScripts, { passive: true, once: true });
+      window.addEventListener('mousemove', loadThirdPartyScripts, { passive: true, once: true });
+      window.addEventListener('touchstart', loadThirdPartyScripts, { passive: true, once: true });
+      window.addEventListener('click', loadThirdPartyScripts, { passive: true, once: true });
+      window.addEventListener('keydown', loadThirdPartyScripts, { passive: true, once: true });
+
+      // Fallback timer if user doesn't interact
+      setTimeout(function() {
+        if (!thirdPartyLoaded) {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadThirdPartyScripts, { timeout: 2000 });
+          } else {
+            loadThirdPartyScripts();
+          }
+        }
+      }, 5000);
     </script>
     <meta charset="UTF-8" />
     <title data-rh="true">राज्यवाणी (Rajyavani) - महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र</title>
@@ -16,14 +59,19 @@
     <meta name="description" content="राज्यवाणी (Rajyavani): महाराष्ट्रातील सर्व ३६ जिल्हे, शहरे आणि ग्रामीण भागातील ताज्या, अचूक व विश्वासार्ह घडामोडींचे डिजिटल वृत्तपत्र." />
     <meta name="google-site-verification" content="-zk1qdzl7JP29O_3EHp5nsjwp4Q9G9WOtBXN4YMmuAA" />
     <meta name="google-adsense-account" content="ca-pub-5135667808606813" />
+    <meta http-equiv="Permissions-Policy" content="unload=()" />
     
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5135667808606813"
-     crossorigin="anonymous"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
+    
+    <!-- LCP Hero Image Preload for Instant Discovery in Initial Document with responsive compression -->
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=70&w=800" imagesrcset="https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=70&w=480 480w, https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=70&w=800 800w, https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=70&w=1200 1200w" imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px" fetchpriority="high">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap">
+    </noscript>
     
     <meta property="og:site_name" content="राज्यवाणी (Rajyavani)" />
     <meta property="og:title" content="राज्यवाणी (Rajyavani) - महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र" />

@@ -121,26 +121,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     )
   );
 
-  // Inactivity auto-logout handler (30 minutes)
+  // Inactivity auto-logout handler (30 minutes) - throttled to preserve main thread performance
+  const lastActivityTimestamp = useRef<number>(Date.now());
   const resetInactivityTimer = useCallback(() => {
+    if (!user) return;
+    const now = Date.now();
+    // Throttle resets to at most once every 30 seconds
+    if (now - lastActivityTimestamp.current < 30000 && inactivityTimerRef.current) {
+      return;
+    }
+    lastActivityTimestamp.current = now;
+
     if (inactivityTimerRef.current) {
       clearTimeout(inactivityTimerRef.current);
     }
-    // Only auto-logout if user is signed in
-    if (user) {
-      inactivityTimerRef.current = setTimeout(() => {
-        console.warn("Session expired due to 30 minutes of inactivity.");
-        signOut();
-      }, 30 * 60 * 1000); // 30 mins
-    }
+    inactivityTimerRef.current = setTimeout(() => {
+      console.warn("Session expired due to 30 minutes of inactivity.");
+      signOut();
+    }, 30 * 60 * 1000);
   }, [user]);
 
   useEffect(() => {
+    if (!user) return; // Do not attach global listeners if no user is signed in
+
     const handleActivity = () => resetInactivityTimer();
-    window.addEventListener('mousemove', handleActivity);
-    window.addEventListener('keydown', handleActivity);
-    window.addEventListener('scroll', handleActivity);
-    window.addEventListener('click', handleActivity);
+    window.addEventListener('mousemove', handleActivity, { passive: true });
+    window.addEventListener('keydown', handleActivity, { passive: true });
+    window.addEventListener('scroll', handleActivity, { passive: true });
+    window.addEventListener('click', handleActivity, { passive: true });
 
     resetInactivityTimer();
 
@@ -151,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.removeEventListener('scroll', handleActivity);
       window.removeEventListener('click', handleActivity);
     };
-  }, [resetInactivityTimer]);
+  }, [user, resetInactivityTimer]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {

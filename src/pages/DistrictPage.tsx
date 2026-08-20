@@ -254,12 +254,12 @@ export default function DistrictPage() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center space-x-2 text-xs font-semibold text-gray-500 mb-6" aria-label="Breadcrumb">
+        <nav className="flex items-center space-x-2 text-xs font-bold text-gray-700 mb-6" aria-label="Breadcrumb">
           <Link to="/" className="hover:text-brand-red transition-colors">मुख्यपृष्ठ</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+          <ChevronRight className="w-3.5 h-3.5 text-gray-700" />
           <Link to="/category/महाराष्ट्र" className="hover:text-brand-red transition-colors">महाराष्ट्र</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-gray-900 font-bold">{currentDistrict.nameMarathi}</span>
+          <ChevronRight className="w-3.5 h-3.5 text-gray-700" />
+          <span className="text-gray-900 font-black">{currentDistrict.nameMarathi}</span>
         </nav>
 
         {/* District Hero Header Banner */}
@@ -312,22 +312,22 @@ export default function DistrictPage() {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      ⚡ {currentDistrict.nameMarathi}ची ताजी बातमी (१०००+ शब्द) मिळवा
+                      <Sparkles className="w-4 h-4" />
+                      {currentDistrict.nameMarathi}ची ताजी बातमी तयार करा
                     </>
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Verified Media Sources Strip */}
-            <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* District Quick Metadata Bar */}
+            <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 text-blue-300 rounded-lg shrink-0">
+                <div className="p-2 bg-brand-red/20 text-brand-saffron rounded-lg shrink-0">
                   <Globe className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[11px] uppercase font-bold text-gray-400 tracking-wider block">
+                  <span className="text-[11px] uppercase font-bold text-gray-200 tracking-wider block">
                     प्रमुख प्रादेशिक वेब पोर्टल
                   </span>
                   <span className="text-sm font-bold text-white block">
@@ -343,7 +343,7 @@ export default function DistrictPage() {
                   <Tv className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[11px] uppercase font-bold text-gray-400 tracking-wider block">
+                  <span className="text-[11px] uppercase font-bold text-gray-200 tracking-wider block">
                     युट्यूब ब्रॉडकास्ट पार्टनर
                   </span>
                   <span className="text-sm font-bold text-white truncate block">
@@ -527,13 +527,13 @@ export default function DistrictPage() {
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs font-medium text-gray-700 mt-0.5">
                 {selectedTaluka !== 'ALL'
                   ? `${currentDistrict.nameMarathi} जिल्ह्यातील ${selectedTaluka} तालुका व स्थानिक परिसरातील पडताळणी केलेले सविस्तर वृत्त (१,०००+ शब्द)`
                   : `केवळ ${currentDistrict.nameMarathi} परिसरातील पडताळणी केलेले सविस्तर वृत्त (१,०००+ शब्द)`}
               </p>
             </div>
-            <div className="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full self-start sm:self-auto">
+            <div className="text-xs font-bold text-gray-800 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-300 self-start sm:self-auto">
               📝 एकूण बातम्या: {displayedArticles.length}
             </div>
           </div>
@@ -597,10 +597,10 @@ export default function DistrictPage() {
                     {other.nameMarathi}
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </h4>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-[11px] font-medium text-gray-700">
                     वेब: {other.website}
                   </p>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-[11px] font-medium text-gray-700">
                     युट्यूब: {other.youtubeChannel}
                   </p>
                 </Link>

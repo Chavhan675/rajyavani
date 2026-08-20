@@ -160,7 +160,7 @@ export default function LegalPage({ pageKey, title: propTitle, content: propCont
           {/* Sidebar (4 cols) */}
           <aside className="lg:col-span-4 space-y-6">
             <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm sticky top-24">
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100">
+              <h3 className="text-xs font-black text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-200">
                 कायदेशीर व संपादकीय धोरणे
               </h3>
               <nav className="space-y-1">
@@ -174,19 +174,19 @@ export default function LegalPage({ pageKey, title: propTitle, content: propCont
                       className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                         isActive
                           ? 'bg-red-50 text-brand-red border border-red-200/60 shadow-xs'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          : 'text-gray-800 hover:bg-gray-100 hover:text-black'
                       }`}
                     >
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-red' : 'text-gray-400'}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-red' : 'text-gray-700'}`} />
                       <span className="truncate">{item.label}</span>
                     </Link>
                   );
                 })}
               </nav>
 
-              <div className="mt-8 pt-6 border-t border-gray-100">
-                <h4 className="text-xs font-bold text-gray-800 mb-2">थेट संपर्क साधा</h4>
-                <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h4 className="text-xs font-bold text-gray-900 mb-2">थेट संपर्क साधा</h4>
+                <p className="text-xs text-gray-700 font-medium mb-3 leading-relaxed">
                   आपल्या परिसरातील बातमी पाठवण्यासाठी किंवा दुरुस्ती सुचवण्यासाठी संपर्क कक्ष वापरा.
                 </p>
                 <Link

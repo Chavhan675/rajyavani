@@ -752,21 +752,21 @@ export default function AdminPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-sm border border-gray-200">
+                      <span className="bg-gray-100 text-gray-900 px-2.5 py-1 rounded border border-gray-300 font-bold">
                         Category: {generatedDraft.category}
                       </span>
                       {generatedDraft.district && (
-                        <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-sm border border-gray-200">
+                        <span className="bg-gray-100 text-gray-900 px-2.5 py-1 rounded border border-gray-300 font-bold">
                           District: {generatedDraft.district}
                         </span>
                       )}
                       {generatedDraft.content && (
-                        <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-sm font-bold flex items-center gap-1">
+                        <span className="bg-emerald-50 text-emerald-900 border border-emerald-300 px-2.5 py-1 rounded font-bold flex items-center gap-1">
                           📝 {generatedDraft.content.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length} शब्द (दीर्घ लेख)
                         </span>
                       )}
                       {generatedDraft.isDeveloping && (
-                        <span className="bg-red-50 text-brand-red px-2 py-1 rounded-sm border border-red-200 flex items-center gap-1">
+                        <span className="bg-red-50 text-brand-red px-2.5 py-1 rounded border border-red-300 font-bold flex items-center gap-1">
                           <AlertTriangle className="w-3 h-3" /> Developing Story
                         </span>
                       )}
@@ -784,7 +784,7 @@ export default function AdminPage() {
                       <label className="text-xs font-bold text-gray-400 uppercase">SEO Tags</label>
                       <div className="flex flex-wrap gap-2">
                         {generatedDraft.tags?.map((tag: string) => (
-                          <span key={tag} className="text-xs text-brand-saffron bg-brand-saffron/10 px-2 py-1 rounded-sm font-medium">
+                          <span key={tag} className="text-xs text-amber-950 bg-amber-100 px-2.5 py-1 rounded border border-amber-300 font-bold">
                             #{tag}
                           </span>
                         ))}

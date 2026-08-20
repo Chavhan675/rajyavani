@@ -134,14 +134,14 @@ export default function ContactPage() {
               <Phone className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">थेट फोन संपर्क</h3>
+              <h3 className="text-xs font-black text-gray-700 uppercase tracking-wider">थेट फोन संपर्क</h3>
               <a 
                 href="tel:8459675917" 
                 className="text-base font-extrabold text-gray-900 hover:text-brand-red transition-colors block mt-0.5"
               >
                 8459675917
               </a>
-              <p className="text-[11px] text-gray-500 mt-1">सकाळी ९ ते रात्री ९ उपलब्ध</p>
+              <p className="text-[11px] text-gray-700 font-medium mt-1">सकाळी ९ ते रात्री ९ उपलब्ध</p>
             </div>
           </div>
 
@@ -151,7 +151,7 @@ export default function ContactPage() {
               <Mail className="w-6 h-6" />
             </div>
             <div className="overflow-hidden">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">अधिकृत ईमेल</h3>
+              <h3 className="text-xs font-black text-gray-700 uppercase tracking-wider">अधिकृत ईमेल</h3>
               <a 
                 href="mailto:chavhanakash675@gmail.com" 
                 className="text-xs sm:text-sm font-extrabold text-gray-900 hover:text-blue-600 transition-colors block mt-0.5 truncate"
@@ -159,7 +159,7 @@ export default function ContactPage() {
               >
                 chavhanakash675@gmail.com
               </a>
-              <p className="text-[11px] text-gray-500 mt-1">२४ तासांत प्रतिसाद</p>
+              <p className="text-[11px] text-gray-700 font-medium mt-1">२४ तासांत प्रतिसाद</p>
             </div>
           </div>
 
@@ -169,9 +169,9 @@ export default function ContactPage() {
               <FileEdit className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">संपादकीय व बातमी कक्ष</h3>
+              <h3 className="text-xs font-black text-gray-700 uppercase tracking-wider">संपादकीय व बातमी कक्ष</h3>
               <p className="text-sm font-extrabold text-gray-900 mt-0.5">संपादक: आकाश चव्हाण</p>
-              <p className="text-[11px] text-gray-500 mt-1">तथ्य पडताळणी व वार्ताहर नेटवर्क</p>
+              <p className="text-[11px] text-gray-700 font-medium mt-1">तथ्य पडताळणी व वार्ताहर नेटवर्क</p>
             </div>
           </div>
 
@@ -181,9 +181,9 @@ export default function ContactPage() {
               <MapPin className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">कार्यक्षेत्र</h3>
+              <h3 className="text-xs font-black text-gray-700 uppercase tracking-wider">कार्यक्षेत्र</h3>
               <p className="text-sm font-extrabold text-gray-900 mt-0.5">महाराष्ट्र (सर्व ३६ जिल्हे)</p>
-              <p className="text-[11px] text-gray-500 mt-1">गाव, तालुका, जिल्हा ते राज्य</p>
+              <p className="text-[11px] text-gray-700 font-medium mt-1">गाव, तालुका, जिल्हा ते राज्य</p>
             </div>
           </div>
         </div>

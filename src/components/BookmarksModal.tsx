@@ -118,7 +118,7 @@ export default function BookmarksModal() {
                         {item.category}
                       </span>
                       {item.district && (
-                        <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                        <span className="text-[10px] font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded border border-gray-300">
                           {item.district}
                         </span>
                       )}

@@ -49,7 +49,7 @@ export default function NotFoundPage() {
 
         {/* Popular Categories */}
         <div className="w-full bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm text-left">
-          <h2 className="text-base font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+          <h2 className="text-base font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
             लोकप्रिय बातम्यांचे विभाग
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -57,15 +57,15 @@ export default function NotFoundPage() {
               <Link
                 key={cat}
                 to={`/category/${cat}`}
-                className="px-3.5 py-2 text-xs font-semibold bg-gray-50 hover:bg-red-50 hover:text-brand-red rounded-lg transition-colors text-gray-700 border border-gray-100 flex items-center justify-between"
+                className="px-3.5 py-2 text-xs font-bold bg-gray-100 hover:bg-red-50 hover:text-brand-red rounded-lg transition-colors text-gray-900 border border-gray-300 flex items-center justify-between shadow-xs"
               >
                 <span>{cat}</span>
-                <span className="text-gray-400 text-[10px]">→</span>
+                <span className="text-gray-700 text-xs font-bold">→</span>
               </Link>
             ))}
           </div>
 
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-6 mb-3">
+          <h3 className="text-xs font-black text-gray-900 uppercase tracking-wider mt-6 mb-3">
             प्रमुख ३६ जिल्हे
           </h3>
           <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
@@ -73,7 +73,7 @@ export default function NotFoundPage() {
               <Link
                 key={d.slug}
                 to={`/district/${d.slug}`}
-                className="px-2.5 py-1 text-[11px] font-medium bg-gray-100 hover:bg-brand-red hover:text-white rounded-md transition-colors text-gray-600"
+                className="px-2.5 py-1 text-[11px] font-bold bg-gray-200 hover:bg-brand-red hover:text-white rounded-md transition-colors text-gray-900 border border-gray-300 shadow-xs"
               >
                 {d.nameMarathi}
               </Link>

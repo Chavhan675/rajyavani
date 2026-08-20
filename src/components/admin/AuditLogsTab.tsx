@@ -121,10 +121,14 @@ export default function AuditLogsTab() {
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Action Filter */}
+          <label htmlFor="admin-audit-action-filter" className="sr-only">ॲक्टिव्हिटी प्रकार फिल्टर (Filter by Action)</label>
           <select
+            id="admin-audit-action-filter"
+            name="filterAction"
+            aria-label="ॲक्टिव्हिटी प्रकारानुसार फिल्टर करा (Filter by Action Type)"
             value={filterAction}
             onChange={(e) => setFilterAction(e.target.value)}
-            className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-bold text-gray-700 focus:bg-white focus:outline-none"
+            className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-bold text-gray-700 focus:bg-white focus:outline-none cursor-pointer"
           >
             <option value="ALL">सर्व ॲक्टिव्हिटी (All)</option>
             <option value="LOGIN">लॉगिन (Login)</option>
@@ -136,8 +140,12 @@ export default function AuditLogsTab() {
 
           {/* Search */}
           <div className="relative">
+            <label htmlFor="admin-audit-search" className="sr-only">लॉग शोधा (Search Audit Logs)</label>
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
             <input
+              id="admin-audit-search"
+              name="auditSearch"
+              aria-label="ईमेल किंवा माहिती शोधा"
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

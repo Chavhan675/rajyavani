@@ -39,6 +39,13 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+// Set modern browser performance and security headers
+app.use((req, res, next) => {
+  res.setHeader("Permissions-Policy", "unload=()");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  next();
+});
+
 const PORT = 3000;
 
 // Initialize Gemini API
@@ -584,8 +591,8 @@ app.post("/api/images/resolve", async (req, res) => {
   }
 });
 
-// Image proxy endpoint with aggressive caching & hotlink bypass
-app.get("/api/images/proxy", async (req: any, res: any) => {
+// Image proxy endpoint with aggressive caching & hotlink bypass (supports /api/images/proxy and /images/proxy)
+app.get(["/api/images/proxy", "/images/proxy"], async (req: any, res: any) => {
   const imageUrl = req.query.url as string;
   const category = req.query.category as string;
   const title = req.query.title as string;
@@ -788,6 +795,75 @@ app.post("/api/admin/trigger-automator", requireAuth, async (req: AuthRequest, r
   }
 });
 
+// Social Crawlers (WhatsApp, Facebook, Twitter, Telegram, Discord, Googlebot) Open Graph meta generator
+app.get("/article/:id", async (req, res, next) => {
+  const userAgent = (req.headers["user-agent"] || "").toLowerCase();
+  const isBot = /whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|linkedinbot|slackbot|discordbot|googlebot|bingbot/i.test(userAgent);
+  
+  if (!isBot) {
+    return next();
+  }
+
+  const { id } = req.params;
+  try {
+    let article: any = null;
+    try {
+      const docSnap = await adminDb.collection("articles").doc(id).get();
+      if (docSnap.exists) {
+        article = { id: docSnap.id, ...docSnap.data() };
+      }
+    } catch (e) {
+      // Ignore adminDb permission error if any
+    }
+
+    if (!article) {
+      const { mockArticles } = await import("./src/data.js");
+      article = mockArticles.find((a: any) => a.id === id);
+    }
+
+    if (!article) {
+      return next();
+    }
+
+    const title = (article.title || "राज्यवाणी बातमी").replace(/"/g, '&quot;');
+    const summary = (article.summary || "").replace(/"/g, '&quot;');
+    const imageUrl = article.imageUrl || "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=1200&q=80";
+    const articleUrl = `https://rajyavani.vercel.app/article/${id}`;
+
+    const html = `<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="utf-8" />
+  <title>${title} | राज्यवाणी (Rajyavani)</title>
+  <meta name="description" content="${summary}" />
+  <meta property="og:site_name" content="राज्यवाणी (Rajyavani)" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${summary}" />
+  <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="${articleUrl}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${summary}" />
+  <meta name="twitter:image" content="${imageUrl}" />
+</head>
+<body>
+  <h1>${title}</h1>
+  <p>${summary}</p>
+  <img src="${imageUrl}" alt="${title}" />
+  <p><a href="${articleUrl}">सविस्तर बातमी वाचण्यासाठी येथे क्लिक करा</a></p>
+</body>
+</html>`;
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    return res.status(200).send(html);
+  } catch (err) {
+    return next();
+  }
+});
+
 async function startServer() {
   // Start the automated 3-hour news scheduler background service
   start3HourNewsScheduler();
@@ -800,7 +876,15 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, {
+      maxAge: '1y',
+      immutable: true,
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+        }
+      }
+    }));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });

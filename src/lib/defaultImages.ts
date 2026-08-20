@@ -11,65 +11,65 @@ export interface CategoryDefaultImage {
 
 export const CATEGORY_DEFAULT_IMAGES: Record<string, string[]> = {
   "महाराष्ट्र": [
-    "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&q=80&w=1200", // Mumbai Gateway
-    "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&q=80&w=1200", // Mumbai Skyline
-    "https://images.unsplash.com/photo-1566552881560-0be86c53210f?auto=format&fit=crop&q=80&w=1200", // Pune / Sahyadri
-    "https://images.unsplash.com/photo-1627917242194-e3fb639a0ef2?auto=format&fit=crop&q=80&w=1200"  // Infrastructure / Metro
+    "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&q=70&w=800", // Mumbai Gateway
+    "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&q=70&w=800", // Mumbai Skyline
+    "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=70&w=800", // Pune / Sahyadri
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=70&w=800"  // Infrastructure / Metro
   ],
   "राजकारण": [
-    "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=1200", // Assembly/Government
-    "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=80&w=1200", // Parliament/Governance
-    "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=80&w=1200"  // Press Conference
+    "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=70&w=800", // Assembly/Government
+    "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=70&w=800", // Parliament/Governance
+    "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=70&w=800"  // Press Conference
   ],
   "शेती": [
-    "https://images.unsplash.com/photo-1592982537447-6f2334259b3f?auto=format&fit=crop&q=80&w=1200", // Indian Green Agriculture Field
-    "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=1200", // Farmer Agriculture
-    "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=80&w=1200"  // Crops & Farming
+    "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=70&w=800", // Indian Green Agriculture Field
+    "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=70&w=800", // Farmer Agriculture
+    "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=70&w=800"  // Crops & Farming
   ],
   "हवामान": [
-    "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&q=80&w=1200", // Heavy Monsoon Rain
-    "https://images.unsplash.com/photo-1514632595-4944383f2737?auto=format&fit=crop&q=80&w=1200", // Clouds / Weather
-    "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&q=80&w=1200"  // Sky / Storm Radar
+    "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&q=70&w=800", // Heavy Monsoon Rain
+    "https://images.unsplash.com/photo-1514632595-4944383f2737?auto=format&fit=crop&q=70&w=800", // Clouds / Weather
+    "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&q=70&w=800"  // Sky / Storm Radar
   ],
   "गुन्हेगारी": [
-    "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1200", // Law & Justice Gavel
-    "https://images.unsplash.com/photo-1508847154043-be5407fcaa5a?auto=format&fit=crop&q=80&w=1200", // Police Beacon / Law Enforcement
-    "https://images.unsplash.com/photo-1453733197781-70d2de820992?auto=format&fit=crop&q=80&w=1200"  // Investigation / Security
+    "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=70&w=800", // Law & Justice Gavel
+    "https://images.unsplash.com/photo-1508847154043-be5407fcaa5a?auto=format&fit=crop&q=70&w=800", // Police Beacon / Law Enforcement
+    "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=70&w=800"  // Investigation / Security
   ],
   "क्रीडा": [
-    "https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&q=80&w=1200", // Cricket Match Stadium
-    "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80&w=1200", // Cricket Ball & Pitch
-    "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=80&w=1200"  // Sports Arena / Athletics
+    "https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&q=70&w=800", // Cricket Match Stadium
+    "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=70&w=800", // Cricket Ball & Pitch
+    "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=70&w=800"  // Sports Arena / Athletics
   ],
   "व्यापार": [
-    "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=1200", // Stock Market / Financial Charts
-    "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1200", // Economy / Business
-    "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200"  // Finance Growth
+    "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=70&w=800", // Stock Market / Financial Charts
+    "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=70&w=800", // Economy / Business
+    "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=70&w=800"  // Finance Growth
   ],
   "शिक्षण": [
-    "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200", // Students / College
-    "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=1200", // Books / Education
-    "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=1200"  // Classroom / Exams
+    "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=70&w=800", // Students / College
+    "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=70&w=800", // Books / Education
+    "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=70&w=800"  // Classroom / Exams
   ],
   "तंत्रज्ञान": [
-    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200", // Technology Circuit / Chip
-    "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1200", // Digital Innovation
-    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200"  // Global Data Network
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=70&w=800", // Technology Circuit / Chip
+    "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=70&w=800", // Digital Innovation
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=70&w=800"  // Global Data Network
   ],
   "मनोरंजन": [
-    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1200", // Cinema Hall
-    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1200", // Film Stage & Lights
-    "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=1200"  // Media Production
+    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=70&w=800", // Cinema Hall
+    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=70&w=800", // Film Stage & Lights
+    "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=70&w=800"  // Media Production
   ],
   "राष्ट्रीय": [
-    "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&q=80&w=1200", // India Gate / New Delhi
-    "https://images.unsplash.com/photo-1598598795009-f80c5072e665?auto=format&fit=crop&q=80&w=1200", // Tricolor / National
-    "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=80&w=1200"  // Historical Heritage
+    "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&q=70&w=800", // India Gate / New Delhi
+    "https://images.unsplash.com/photo-1598598795009-f80c5072e665?auto=format&fit=crop&q=70&w=800", // Tricolor / National
+    "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=70&w=800"  // Historical Heritage
   ],
   "DEFAULT": [
-    "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1200", // News Paper / Press
-    "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=1200", // Breaking News Concept
-    "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=1200"  // Journal / Digital Media
+    "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=70&w=800", // News Paper / Press
+    "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=70&w=800", // Breaking News Concept
+    "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=70&w=800"  // Journal / Digital Media
   ]
 };
 

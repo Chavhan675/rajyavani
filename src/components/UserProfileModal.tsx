@@ -207,8 +207,10 @@ export default function UserProfileModal() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">पूर्ण नाव</label>
+                <label htmlFor="user-profile-display-name" className="block text-xs font-bold text-gray-700 mb-1">पूर्ण नाव</label>
                 <input
+                  id="user-profile-display-name"
+                  name="displayName"
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
@@ -218,10 +220,13 @@ export default function UserProfileModal() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">आवडता जिल्हा</label>
+                <label htmlFor="user-profile-district-select" className="block text-xs font-bold text-gray-700 mb-1">आवडता जिल्हा</label>
                 <div className="relative">
                   <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
                   <select
+                    id="user-profile-district-select"
+                    name="preferredDistrict"
+                    aria-label="आवडता जिल्हा निवडा"
                     value={preferredDistrict}
                     onChange={(e) => setPreferredDistrict(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"

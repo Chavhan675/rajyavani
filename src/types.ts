@@ -44,11 +44,9 @@ export interface NewsArticle {
   keyTakeaways?: string[];
   faqList?: Array<{ question: string; answer: string }>;
   factCheckingScore?: number; // 0-100
-  
-    corrigendumUrl?: string;
-    corrigendumNotes?: string;
-    lastVerifiedAt?: number;
-  };
+  corrigendumUrl?: string;
+  corrigendumNotes?: string;
+  lastVerifiedAt?: number;
 }
 
 export interface CollectionCycle {
@@ -123,19 +121,35 @@ export type JobOpportunityCategory =
   | 'INTERNSHIP' 
   | 'SCHOLARSHIP' 
   | 'ENTRANCE_EXAM' 
-  | 'SKILL_TRAINING'
-  | 'WALK_IN'
+  | 'SKILL_TRAINING' 
+  | 'WALK_IN' 
   | 'CAMPUS_DRIVE';
 
-export type JobOpportunityStatus = 
-    originalLastDate?: string; // Stored if deadline was extended
+export type JobOpportunityStatus = 'OPEN' | 'CLOSING_SOON' | 'EXPIRED' | 'UPCOMING' | 'EXTENDED';
+
+export interface JobOpportunity {
+  id: string;
+  title: string;
+  organization: string;
+  category: JobOpportunityCategory;
+  status: JobOpportunityStatus;
+  qualification: string[];
+  totalVacancies?: number;
+  location?: string;
+  district?: string;
+  salaryOrStipend?: string;
+  applicationFee?: string;
+  startDate?: string;
+  lastDate: string;
+  datesDetails?: {
+    originalLastDate?: string;
     isExtended?: boolean;
     examDate?: string;
   };
   corrigendumUrl?: string;
   corrigendumNotes?: string;
-  applicationPortalActive?: boolean; // Live portal accepting applications (true/false)
-  lastVerifiedAt?: number;           // Re-checked timestamp (updated every 3-hour cycle)
+  applicationPortalActive?: boolean;
+  lastVerifiedAt?: number;
   
   verificationChecklist?: {
     officialNotificationVerified: boolean;
@@ -165,5 +179,3 @@ export interface CareerChatMessage {
   timestamp: number;
   suggestions?: string[];
 }
-
-

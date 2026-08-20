@@ -117,10 +117,14 @@ export default function ArticlesManagementTab() {
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Status Filter */}
+          <label htmlFor="admin-article-status-filter" className="sr-only">स्थिती फिल्टर करा (Filter by Status)</label>
           <select
+            id="admin-article-status-filter"
+            name="statusFilter"
+            aria-label="स्थितीनुसार फिल्टर करा (Filter by Status)"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 font-bold text-gray-700 focus:bg-white focus:outline-none"
+            className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 font-bold text-gray-700 focus:bg-white focus:outline-none cursor-pointer"
           >
             <option value="ALL">सर्व स्थिती (Status)</option>
             <option value="PUBLISHED">प्रकाशित (Published)</option>
@@ -129,10 +133,14 @@ export default function ArticlesManagementTab() {
           </select>
 
           {/* Category Filter */}
+          <label htmlFor="admin-article-category-filter" className="sr-only">वर्गवारीनुसार फिल्टर करा (Filter by Category)</label>
           <select
+            id="admin-article-category-filter"
+            name="categoryFilter"
+            aria-label="वर्गवारीनुसार फिल्टर करा (Filter by Category)"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 font-bold text-gray-700 focus:bg-white focus:outline-none"
+            className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 font-bold text-gray-700 focus:bg-white focus:outline-none cursor-pointer"
           >
             <option value="ALL">सर्व वर्ग (Categories)</option>
             {categories.map(c => (
@@ -142,8 +150,12 @@ export default function ArticlesManagementTab() {
 
           {/* Search */}
           <div className="relative">
+            <label htmlFor="admin-article-search" className="sr-only">बातमी शोधा (Search Articles)</label>
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2" />
             <input
+              id="admin-article-search"
+              name="searchQuery"
+              aria-label="बातमी शीर्षक किंवा आयडी शोधा"
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

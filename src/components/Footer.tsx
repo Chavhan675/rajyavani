@@ -183,7 +183,7 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-4 text-center md:text-left">
           <div>
             <p>&copy; {new Date().getFullYear()} <strong className="text-white">राज्यवाणी (Rajyavani)</strong>. सर्व हक्क राखीव. (All rights reserved).</p>
-            <p className="text-[11px] text-gray-500 mt-0.5">
+            <p className="text-[11px] text-gray-300 font-medium mt-0.5">
               महाराष्ट्राचे विश्वासार्ह डिजिटल वृत्तपत्र | संपादक: आकाश चव्हाण | संपर्क: 8459675917
             </p>
           </div>

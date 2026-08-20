@@ -11,6 +11,7 @@ import AdUnit from '../components/AdUnit';
 import { getCategoryFallbackImage } from '../lib/defaultImages';
 import { MapPin, Clock, User, Tag, Share2, AlertTriangle, Loader2, ChevronRight, Home, Sparkles, Newspaper, Bookmark, Trash2 } from 'lucide-react';
 import BookmarkButton from '../components/BookmarkButton';
+import FloatingShareButton from '../components/FloatingShareButton';
 import { format } from 'date-fns';
 import { useAuth } from '../lib/AuthContext';
 
@@ -269,8 +270,8 @@ export default function ArticlePage() {
               </div>
             )}
 
-            <div className="inline-flex items-center text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-md ml-auto">
-              <Clock className="w-3.5 h-3.5 text-gray-400 mr-1" />
+            <div className="inline-flex items-center text-xs font-bold text-gray-700 bg-gray-50 border border-gray-300 px-2.5 py-1 rounded-md ml-auto">
+              <Clock className="w-3.5 h-3.5 text-gray-700 mr-1" />
               वाचनाची वेळ: ~{readMinutes} मिनिटे ({wordCount} शब्द)
             </div>
           </div>
@@ -279,11 +280,11 @@ export default function ArticlePage() {
             {article.title}
           </h1>
           
-          <p className="text-lg sm:text-xl text-gray-700 mb-6 font-medium leading-relaxed border-l-4 border-brand-saffron pl-4 bg-orange-50/40 py-2 rounded-r-lg">
+          <p className="text-lg sm:text-xl text-gray-900 mb-6 font-semibold leading-relaxed border-l-4 border-brand-saffron pl-4 bg-orange-50/60 py-2 rounded-r-lg">
             {article.summary}
           </p>
 
-          <div className="flex flex-wrap items-center justify-between border-y border-gray-200 py-4 gap-4 bg-gray-50/60 px-4 rounded-lg">
+          <div className="flex flex-wrap items-center justify-between border-y border-gray-200 py-4 gap-4 bg-gray-50/80 px-4 rounded-lg">
             <Link to={`/author/${encodeURIComponent(article.authorId)}`} className="flex items-center space-x-3 group">
               <div className="w-10 h-10 rounded-full bg-brand-red/10 border border-brand-red/20 flex items-center justify-center overflow-hidden">
                 <User className="w-5 h-5 text-brand-red" />
@@ -292,19 +293,19 @@ export default function ArticlePage() {
                 <p className="text-sm font-bold text-gray-900 group-hover:text-brand-red transition-colors flex items-center gap-1.5">
                   {article.authorName}
                   {article.aiGenerated && (
-                    <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-semibold flex items-center">
-                      <Sparkles className="w-2.5 h-2.5 mr-0.5" /> राज्यवाणी AI Desk
+                    <span className="text-[10px] bg-purple-100 text-purple-900 border border-purple-200 px-1.5 py-0.5 rounded font-bold flex items-center">
+                      <Sparkles className="w-2.5 h-2.5 mr-0.5 text-purple-700" /> राज्यवाणी AI Desk
                     </span>
                   )}
                 </p>
-                <div className="flex flex-wrap items-center text-xs text-gray-500 gap-x-4 gap-y-1 mt-1">
+                <div className="flex flex-wrap items-center text-xs text-gray-700 font-medium gap-x-4 gap-y-1 mt-1">
                   <span className="flex items-center">
-                    <Clock className="w-3.5 h-3.5 mr-1 text-gray-400" /> 
+                    <Clock className="w-3.5 h-3.5 mr-1 text-gray-600" /> 
                     प्रसिद्धी: {format(new Date(article.publishedAt || article.createdAt), "dd MMMM yyyy, hh:mm a")}
                   </span>
                   {article.updatedAt && article.updatedAt > (article.publishedAt || article.createdAt) + 60000 && (
-                    <span className="flex items-center text-brand-saffron font-semibold">
-                      <Clock className="w-3.5 h-3.5 mr-1" /> 
+                    <span className="flex items-center text-amber-900 font-bold">
+                      <Clock className="w-3.5 h-3.5 mr-1 text-amber-800" /> 
                       शेवटचे अपडेट: {format(new Date(article.updatedAt), "dd MMMM yyyy, hh:mm a")}
                     </span>
                   )}
@@ -325,11 +326,15 @@ export default function ArticlePage() {
               )}
               <BookmarkButton articleId={article.id || id || ''} showText className="px-3 py-1.5 border border-gray-300 text-xs font-semibold shadow-sm" />
               <button 
-                onClick={() => navigator.clipboard.writeText(articleUrl).then(() => alert('बातमीची लिंक कॉपी झाली आहे!'))} 
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-md text-xs font-semibold hover:bg-gray-100 hover:text-brand-red transition-colors shadow-sm"
+                onClick={() => {
+                  const text = `📢 *${article.title}*\n\n${article.summary ? `${article.summary.slice(0, 140)}...\n\n` : ''}🔗 *सविस्तर बातमी वाचण्यासाठी क्लिक करा:* 👇\n${articleUrl}\n\n📰 *राज्यवाणी (Rajyavani)*`;
+                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                }} 
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-300 text-emerald-700 rounded-md text-xs font-semibold hover:bg-emerald-100 transition-colors shadow-sm cursor-pointer"
+                title="WhatsApp वर शेअर करा"
               >
                 <Share2 className="w-3.5 h-3.5" />
-                शेअर करा
+                WhatsApp वर शेअर करा
               </button>
             </div>
           </div>
@@ -343,6 +348,7 @@ export default function ArticlePage() {
             fallbackPrompt={article.imagePrompt}
             alt={article.imageAlt || article.title}
             size="featured"
+            priority={true}
             className="w-full h-auto max-h-[60vh] object-cover"
           />
           {article.imageAlt && (
@@ -359,12 +365,12 @@ export default function ArticlePage() {
               <Sparkles className="w-5 h-5 animate-pulse text-brand-red" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 {isShortArticle ? "या बातमीचे सविस्तर वृत्त (१,०००+ शब्द) उपलब्ध आहे" : "सविस्तर विश्लेषणात्मक आवृत्ती"}
                 <span className={`text-xs px-2 py-0.5 rounded border ${isShortArticle ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold' : 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold'}`}>
                   📝 {wordCount} शब्द
                 </span>
-              </h3>
+              </p>
               <p className="text-xs text-gray-600 mt-1">
                 {isShortArticle 
                   ? "ही बातमी सध्या प्राथमिक स्वरूपात आहे. संपूर्ण १४ मुद्द्यांचे सविस्तर वृत्त, पार्श्वभूमी, अधिकृत विधाने आणि आकडेवारी वाचण्यासाठी खाली क्लिक करा."
@@ -484,8 +490,8 @@ export default function ArticlePage() {
                     <h3 className="text-sm font-bold text-gray-900 group-hover:text-brand-red transition-colors line-clamp-2 mb-2">
                       {rel.title}
                     </h3>
-                    <span className="text-[11px] text-gray-500 flex items-center mt-auto">
-                      <Clock className="w-3 h-3 mr-1" />
+                    <span className="text-xs font-bold text-gray-700 flex items-center mt-auto">
+                      <Clock className="w-3 h-3 mr-1 text-gray-600" />
                       {format(new Date(rel.publishedAt || rel.createdAt || Date.now()), "dd MMM yyyy")}
                     </span>
                   </div>
@@ -500,6 +506,17 @@ export default function ArticlePage() {
           <AdUnit format="horizontal" />
         </div>
       </main>
+
+      {/* Persistent Floating Share Button (WhatsApp Deep Link & Clickable Full Image Card) */}
+      <FloatingShareButton 
+        title={article.title}
+        url={articleUrl}
+        summary={article.summary}
+        imageUrl={article.imageUrl || getCategoryFallbackImage(article.category, article.title)}
+        category={article.category}
+        authorName={article.authorName}
+        publishedDate={format(new Date(article.publishedAt || article.createdAt || Date.now()), "dd MMMM yyyy")}
+      />
 
       <Footer />
     </div>

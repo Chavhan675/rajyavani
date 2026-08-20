@@ -98,75 +98,75 @@ export default function HomePage() {
       <Header />
       <BreakingNewsTicker articles={articlesToUse} />
       
-      <main className="flex-1 w-full">
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-             <Loader2 className="w-8 h-8 animate-spin text-brand-red" />
-          </div>
-        ) : (
-          <>
-            {/* Top Ad Unit */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <AdUnit format="horizontal" />
-            </div>
+      <main className="flex-1 w-full min-h-[1200px]">
+        {/* Top Ad Unit */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 min-h-[122px]">
+          <AdUnit format="horizontal" />
+        </div>
 
-            <Hero articles={articlesToUse} />
-            
-            {/* Mid Page Ad Unit */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <AdUnit format="horizontal" />
-            </div>
-            
-            <NewsGrid title="महाराष्ट्र विशेष" articles={maharashtraNews} />
+        <Hero articles={articlesToUse} />
+        
+        {/* Mid Page Ad Unit */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 min-h-[122px]">
+          <AdUnit format="horizontal" />
+        </div>
+        
+        <NewsGrid title="महाराष्ट्र विशेष" articles={maharashtraNews} skeletonCount={8} />
 
-            {/* District/Village highlights with all 36 Districts */}
-            <section className="bg-white py-12 border-y border-gray-100 my-8">
-               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-brand-red to-brand-saffron rounded-3xl p-8 text-white shadow-xl">
-                    <div className="mb-6 md:mb-0">
-                      <span className="px-3 py-1 bg-white/20 text-xs font-extrabold uppercase tracking-wider rounded-full mb-2 inline-flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5" />
-                        महाराष्ट्र ३६ जिल्हे थेट कव्हरेज
-                      </span>
-                      <h2 className="text-3xl font-extrabold mb-2" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                        तुमच्या जिल्ह्याची बातमी निवडा!
-                      </h2>
-                      <p className="text-white/90 max-w-xl text-sm">
-                        स्थानिक वृत्तवाहिन्या, अग्रगण्य वेब पोर्टल्स आणि युट्यूब ब्रॉडकास्टर्सकडून संकलित पडताळणी केलेले सविस्तर वृत्त (१०००+ शब्द).
-                      </p>
-                    </div>
-                    <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
-                      <select 
-                        value={selectedDistrict}
-                        onChange={(e) => setSelectedDistrict(e.target.value)}
-                        className="bg-white text-gray-900 border border-white/30 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-300 min-w-[200px] shadow-sm"
-                      >
-                        <option value="">-- जिल्हा निवडा (३६ जिल्हे) --</option>
-                        {MAHARASHTRA_DISTRICTS.map((d) => (
-                          <option key={d.slug} value={d.slug}>
-                            {d.nameMarathi} ({d.division})
-                          </option>
-                        ))}
-                      </select>
-                      <button 
-                        onClick={handleLocationSearch}
-                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md cursor-pointer text-sm"
-                      >
-                        बातम्या पहा
-                      </button>
-                    </div>
-                  </div>
-               </div>
-            </section>
+        {/* District/Village highlights with all 36 Districts */}
+        <section className="bg-white py-12 border-y border-gray-100 my-8">
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-brand-red to-brand-saffron rounded-3xl p-8 text-white shadow-xl">
+                <div className="mb-6 md:mb-0">
+                  <span className="px-3 py-1 bg-white/20 text-xs font-extrabold uppercase tracking-wider rounded-full mb-2 inline-flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5" />
+                    महाराष्ट्र ३६ जिल्हे थेट कव्हरेज
+                  </span>
+                  <h2 className="text-3xl font-extrabold mb-2" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                    तुमच्या जिल्ह्याची बातमी निवडा!
+                  </h2>
+                  <p className="text-white/90 max-w-xl text-sm">
+                    स्थानिक वृत्तवाहिन्या, अग्रगण्य वेब पोर्टल्स आणि युट्यूब ब्रॉडकास्टर्सकडून संकलित पडताळणी केलेले सविस्तर वृत्त (१०००+ शब्द).
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
+                  <label id="homepage-district-select-label" htmlFor="homepage-district-select" className="sr-only">
+                    महाराष्ट्र जिल्हा निवडा (Select Maharashtra District)
+                  </label>
+                  <select 
+                    id="homepage-district-select"
+                    name="district"
+                    title="महाराष्ट्र जिल्हा निवडा (Select Maharashtra District)"
+                    aria-label="महाराष्ट्र जिल्हा निवडा (Select Maharashtra District)"
+                    aria-labelledby="homepage-district-select-label"
+                    value={selectedDistrict}
+                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                    className="bg-white text-gray-900 border border-white/30 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-300 min-w-[200px] shadow-sm"
+                  >
+                    <option value="">-- जिल्हा निवडा (३६ जिल्हे) --</option>
+                    {MAHARASHTRA_DISTRICTS.map((d) => (
+                      <option key={d.slug} value={d.slug}>
+                        {d.nameMarathi} ({d.division})
+                      </option>
+                    ))}
+                  </select>
+                  <button 
+                    onClick={handleLocationSearch}
+                    className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md cursor-pointer text-sm"
+                  >
+                    बातम्या पहा
+                  </button>
+                </div>
+              </div>
+           </div>
+        </section>
 
-            {/* Dedicated District Explorer Component for all 36 districts */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <DistrictExplorer />
-            </div>
+        {/* Dedicated District Explorer Component for all 36 districts */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <DistrictExplorer />
+        </div>
 
-            <NewsGrid title="राष्ट्रीय बातम्या" articles={nationalNews} />
-          </>
-        )}
+        <NewsGrid title="राष्ट्रीय बातम्या" articles={nationalNews} skeletonCount={4} />
       </main>
 
       <Footer />

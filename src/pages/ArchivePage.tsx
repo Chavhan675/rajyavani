@@ -248,13 +248,13 @@ export default function ArchivePage() {
             <span>मुख्यपृष्ठावर जा (Go to Home Page)</span>
           </Link>
 
-          <nav className="flex items-center space-x-2 text-xs font-semibold text-gray-500" aria-label="Breadcrumb">
+          <nav className="flex items-center space-x-2 text-xs font-bold text-gray-700" aria-label="Breadcrumb">
             <Link to="/" className="hover:text-brand-red flex items-center gap-1 transition-colors">
-              <Home className="w-3.5 h-3.5 text-gray-400" />
+              <Home className="w-3.5 h-3.5 text-gray-700" />
               <span>मुख्यपृष्ठ</span>
             </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-300" />
-            <span className="text-brand-red font-bold">बातमी संग्रह (Archive)</span>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+            <span className="text-brand-red font-black">बातमी संग्रह (Archive)</span>
           </nav>
         </div>
 
@@ -340,15 +340,18 @@ export default function ArchivePage() {
           </div>
 
           {/* Detailed Dropdown Filters (District -> Taluka -> Village -> Category -> Date -> Sort) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pt-2 border-t border-gray-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 pt-2 border-t border-gray-200">
             
             {/* 1. District Filter */}
             <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <label htmlFor="archive-district-filter" className="block text-[11px] font-black text-gray-900 uppercase tracking-wider mb-1 flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-brand-red" />
                 <span>१. जिल्हा (District)</span>
               </label>
               <select
+                id="archive-district-filter"
+                name="district"
+                aria-label="जिल्हा निवडा (Select District)"
                 value={selectedDistrict}
                 onChange={(e) => handleDistrictChange(e.target.value)}
                 className="w-full py-2.5 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red cursor-pointer"
@@ -362,11 +365,14 @@ export default function ArchivePage() {
 
             {/* 2. Taluka Filter (Dynamic based on selected district) */}
             <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <label htmlFor="archive-taluka-filter" className="block text-[11px] font-black text-gray-900 uppercase tracking-wider mb-1 flex items-center gap-1">
                 <Compass className="w-3 h-3 text-amber-600" />
                 <span>२. तालुका (Taluka)</span>
               </label>
               <select
+                id="archive-taluka-filter"
+                name="taluka"
+                aria-label="तालुका निवडा (Select Taluka)"
                 value={selectedTaluka}
                 onChange={(e) => setSelectedTaluka(e.target.value)}
                 disabled={selectedDistrict === 'ALL' || availableTalukas.length === 0}
@@ -385,12 +391,15 @@ export default function ArchivePage() {
 
             {/* 3. Village / Local Area Input */}
             <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <label htmlFor="archive-village-filter" className="block text-[11px] font-black text-gray-900 uppercase tracking-wider mb-1 flex items-center gap-1">
                 <Navigation className="w-3 h-3 text-emerald-600" />
                 <span>३. गाव / स्थानिक परिसर</span>
               </label>
               <div className="relative">
                 <input
+                  id="archive-village-filter"
+                  name="village"
+                  aria-label="गाव किंवा परिसर नाव शोधा (Search village or area)"
                   type="text"
                   value={villageFilter}
                   onChange={(e) => setVillageFilter(e.target.value)}
@@ -410,10 +419,13 @@ export default function ArchivePage() {
 
             {/* 4. Category Filter */}
             <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-wider mb-1">
+              <label htmlFor="archive-category-filter" className="block text-[11px] font-black text-gray-900 uppercase tracking-wider mb-1">
                 ४. वर्गवारी (Category)
               </label>
               <select
+                id="archive-category-filter"
+                name="category"
+                aria-label="वर्गवारी निवडा (Select Category)"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full py-2.5 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red cursor-pointer"
@@ -430,10 +442,13 @@ export default function ArchivePage() {
 
             {/* 5. Date Presets */}
             <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-wider mb-1">
+              <label htmlFor="archive-date-filter" className="block text-[11px] font-black text-gray-900 uppercase tracking-wider mb-1">
                 ५. कालखंड (Date Range)
               </label>
               <select
+                id="archive-date-filter"
+                name="dateRange"
+                aria-label="कालखंड निवडा (Select Date Range)"
                 value={dateFilter}
                 onChange={(e: any) => setDateFilter(e.target.value)}
                 className="w-full py-2.5 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red cursor-pointer"
@@ -449,10 +464,13 @@ export default function ArchivePage() {
 
             {/* 6. Sort Order */}
             <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-wider mb-1">
+              <label htmlFor="archive-sort-by" className="block text-[11px] font-black text-gray-900 uppercase tracking-wider mb-1">
                 ६. क्रमवारी (Sort By)
               </label>
               <select
+                id="archive-sort-by"
+                name="sortBy"
+                aria-label="क्रमवारी निवडा (Select Sort Order)"
                 value={sortBy}
                 onChange={(e: any) => setSortBy(e.target.value)}
                 className="w-full py-2.5 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red cursor-pointer"
@@ -471,21 +489,21 @@ export default function ArchivePage() {
                 <Calendar className="w-3.5 h-3.5" /> कस्टम कालावधी:
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">पासून:</span>
+                <span className="text-xs text-gray-800 font-bold">पासून:</span>
                 <input
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="py-1 px-2.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold"
+                  className="py-1 px-2.5 bg-white border border-gray-400 rounded-lg text-xs font-bold text-gray-900"
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">पर्यंत:</span>
+                <span className="text-xs text-gray-800 font-bold">पर्यंत:</span>
                 <input
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="py-1 px-2.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold"
+                  className="py-1 px-2.5 bg-white border border-gray-400 rounded-lg text-xs font-bold text-gray-900"
                 />
               </div>
             </div>
@@ -493,12 +511,12 @@ export default function ArchivePage() {
 
           {/* Active Filter Badges & Results Counter */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs">
-            <div className="flex items-center gap-2 text-gray-600 font-semibold">
+            <div className="flex items-center gap-2 text-gray-800 font-bold">
               <span>एकूण सापडलेल्या बातम्या: <strong className="text-brand-red text-sm font-black">{filteredArticles.length}</strong></span>
               {hasActiveFilters && (
                 <button
                   onClick={resetAllFilters}
-                  className="text-xs text-red-600 hover:text-red-800 font-bold underline cursor-pointer ml-2"
+                  className="text-xs text-red-700 hover:text-red-900 font-bold underline cursor-pointer ml-2"
                 >
                   सर्व फिल्टर्स रीसेट करा
                 </button>
@@ -506,11 +524,11 @@ export default function ArchivePage() {
             </div>
 
             {/* View Mode Buttons */}
-            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-gray-200 p-1 rounded-xl">
               <button
                 onClick={() => setViewMode('GRID')}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'GRID' ? 'bg-white text-brand-red shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  viewMode === 'GRID' ? 'bg-white text-brand-red shadow-xs font-black' : 'text-gray-800 hover:text-black'
                 }`}
               >
                 ग्रिड (Grid)
@@ -518,7 +536,7 @@ export default function ArchivePage() {
               <button
                 onClick={() => setViewMode('LIST')}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'LIST' ? 'bg-white text-brand-red shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  viewMode === 'LIST' ? 'bg-white text-brand-red shadow-xs font-black' : 'text-gray-800 hover:text-black'
                 }`}
               >
                 यादी (List)
@@ -539,7 +557,7 @@ export default function ArchivePage() {
         {!loading && filteredArticles.length === 0 && (
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-200 space-y-4">
             <Archive className="w-12 h-12 text-gray-300 mx-auto" />
-            <h3 className="text-lg font-bold text-gray-800">निवडलेल्या निकषांनुसार बातम्या सापडल्या नाहीत</h3>
+            <h2 className="text-lg font-bold text-gray-800">निवडलेल्या निकषांनुसार बातम्या सापडल्या नाहीत</h2>
             <p className="text-xs text-gray-500 max-w-md mx-auto">
               कृपया तुमचा सर्च कीवर्ड किंवा जिल्हा बदलून पहा, किंवा 'सर्व फिल्टर्स रीसेट करा' बटणावर क्लिक करा.
             </p>
@@ -550,6 +568,11 @@ export default function ArchivePage() {
               सर्व बातम्या दाखवा
             </button>
           </div>
+        )}
+
+        {/* Results Heading for Accessibility */}
+        {!loading && filteredArticles.length > 0 && (
+          <h2 className="sr-only">संग्रहित बातम्या निकाल यादी</h2>
         )}
 
         {/* Articles Grid Display */}
@@ -619,16 +642,16 @@ export default function ArchivePage() {
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
                     <div className="space-y-2">
                       {/* Administrative hierarchy breadcrumb */}
-                      <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                      <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
                         <span>{stateName}</span>
-                        {districtName && <span>› <strong className="text-gray-700">{districtName}</strong></span>}
-                        {talukaName && <span>› <strong className="text-amber-700">{talukaName}</strong></span>}
-                        {villageName && <span>› <strong className="text-emerald-700">{villageName}</strong></span>}
+                        {districtName && <span>› <strong className="text-gray-900">{districtName}</strong></span>}
+                        {talukaName && <span>› <strong className="text-amber-800">{talukaName}</strong></span>}
+                        {villageName && <span>› <strong className="text-emerald-800">{villageName}</strong></span>}
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-gray-400 font-medium">
+                      <div className="flex items-center justify-between text-[11px] text-gray-600 font-semibold">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
+                          <Calendar className="w-3 h-3 text-gray-600" />
                           {formattedDate}
                         </span>
                         <span>{article.author || 'राज्यवाणी ब्युरो'}</span>
@@ -640,14 +663,14 @@ export default function ArchivePage() {
                         </h3>
                       </Link>
 
-                      <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
+                      <p className="text-xs text-gray-700 line-clamp-3 leading-relaxed">
                         {article.summary}
                       </p>
                     </div>
 
                     {/* Footer / Read More */}
                     <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-gray-400">
+                      <span className="text-[11px] font-semibold text-gray-600">
                         {article.sourceName ? `स्त्रोत: ${article.sourceName}` : 'अधिकृत वृत्त'}
                       </span>
 
@@ -703,9 +726,9 @@ export default function ArchivePage() {
                           गाव: {villageName}
                         </span>
                       )}
-                      <span className="text-[11px] text-gray-400">• {formattedDate}</span>
-                      <span className="inline-flex items-center gap-1 text-[10px] text-green-700 bg-green-50 px-2 py-0.5 rounded font-bold">
-                        <CheckCircle2 className="w-3 h-3 text-green-600" /> पडताळणीकृत
+                      <span className="text-[11px] text-gray-600 font-semibold">• {formattedDate}</span>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-green-800 bg-green-50 px-2 py-0.5 rounded font-bold border border-green-200">
+                        <CheckCircle2 className="w-3 h-3 text-green-700" /> पडताळणीकृत
                       </span>
                     </div>
 
@@ -715,12 +738,12 @@ export default function ArchivePage() {
                       </h3>
                     </Link>
 
-                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">
                       {article.summary}
                     </p>
 
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-[11px] text-gray-400">
+                      <span className="text-[11px] text-gray-600 font-semibold">
                         {article.sourceName ? `स्त्रोत: ${article.sourceName}` : 'राज्यवाणी ब्युरो'}
                       </span>
                       <div className="flex items-center gap-2">
@@ -750,7 +773,7 @@ export default function ArchivePage() {
         <div className="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
           <div className="text-center sm:text-left">
             <h4 className="font-bold text-gray-900 text-sm">ताज्या आणि मुख्य बातम्या वाचायच्या आहेत?</h4>
-            <p className="text-xs text-gray-500">राज्यवाणीच्या मुख्यपृष्ठावर २४/७ ताज्या घडामोडी थेट प्रसिद्ध होत असतात.</p>
+            <p className="text-xs font-medium text-gray-700">राज्यवाणीच्या मुख्यपृष्ठावर २४/७ ताज्या घडामोडी थेट प्रसिद्ध होत असतात.</p>
           </div>
           <Link
             to="/"

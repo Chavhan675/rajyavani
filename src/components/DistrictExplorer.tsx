@@ -1,35 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { MAHARASHTRA_DISTRICTS, DistrictInfo } from '../data/maharashtraDistricts';
+import { MAHARASHTRA_DISTRICTS } from '../data/maharashtraDistricts';
 import { MapPin, Globe, Tv, ArrowRight, Search, Sparkles } from 'lucide-react';
+
+const divisions = [
+  { key: 'all', label: 'सर्व ३६ जिल्हे' },
+  { key: 'पश्चिम महाराष्ट्र', label: 'पश्चिम महाराष्ट्र (७)' },
+  { key: 'विदर्भ', label: 'विदर्भ (११)' },
+  { key: 'मराठवाडा', label: 'मराठवाडा (८)' },
+  { key: 'उत्तर महाराष्ट्र', label: 'उत्तर महाराष्ट्र (५)' },
+  { key: 'कोकण', label: 'कोकण (५)' },
+];
 
 export default function DistrictExplorer() {
   const [activeDivision, setActiveDivision] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const divisions = [
-    { key: 'all', label: 'सर्व ३६ जिल्हे' },
-    { key: 'पश्चिम महाराष्ट्र', label: 'पश्चिम महाराष्ट्र (७)' },
-    { key: 'विदर्भ', label: 'विदर्भ (११)' },
-    { key: 'मराठवाडा', label: 'मराठवाडा (८)' },
-    { key: 'उत्तर महाराष्ट्र', label: 'उत्तर महाराष्ट्र (५)' },
-    { key: 'कोकण', label: 'कोकण (५)' },
-  ];
+  const filteredDistricts = useMemo(() => {
+    return MAHARASHTRA_DISTRICTS.filter(district => {
+      const matchesDivision = activeDivision === 'all' || district.division === activeDivision;
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return matchesDivision;
 
-  const filteredDistricts = MAHARASHTRA_DISTRICTS.filter(district => {
-    const matchesDivision = activeDivision === 'all' || district.division === activeDivision;
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return matchesDivision;
+      const matchesSearch = 
+        district.nameMarathi.toLowerCase().includes(query) ||
+        district.nameEnglish.toLowerCase().includes(query) ||
+        district.website.toLowerCase().includes(query) ||
+        district.youtubeChannel.toLowerCase().includes(query) ||
+        district.aliases.some(a => a.toLowerCase().includes(query));
 
-    const matchesSearch = 
-      district.nameMarathi.toLowerCase().includes(query) ||
-      district.nameEnglish.toLowerCase().includes(query) ||
-      district.website.toLowerCase().includes(query) ||
-      district.youtubeChannel.toLowerCase().includes(query) ||
-      district.aliases.some(a => a.toLowerCase().includes(query));
-
-    return matchesDivision && matchesSearch;
-  });
+      return matchesDivision && matchesSearch;
+    });
+  }, [activeDivision, searchQuery]);
 
   return (
     <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 my-10">
@@ -92,33 +94,33 @@ export default function DistrictExplorer() {
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-black text-gray-900 uppercase tracking-wider bg-gray-200 px-2.5 py-0.5 rounded border border-gray-400 shadow-xs">
                   #{district.id}
                 </span>
-                <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/60">
+                <span className="text-[11px] font-black text-amber-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-400 shadow-xs">
                   {district.division}
                 </span>
               </div>
 
               <h3 className="text-base font-extrabold text-gray-900 group-hover:text-brand-red transition-colors flex items-center justify-between">
                 <span>{district.nameMarathi}</span>
-                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-brand-red group-hover:translate-x-0.5 transition-all shrink-0" />
+                <ArrowRight className="w-4 h-4 text-gray-800 group-hover:text-brand-red group-hover:translate-x-0.5 transition-all shrink-0" />
               </h3>
-              <p className="text-[11px] font-medium text-gray-500 mb-3">
+              <p className="text-xs font-bold text-gray-800 mb-3">
                 {district.nameEnglish}
               </p>
 
               {/* Media Partner Badges */}
-              <div className="space-y-1.5 pt-2 border-t border-gray-100 text-[11px]">
-                <div className="flex items-center gap-1.5 text-gray-600 truncate">
-                  <Globe className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span className="font-semibold truncate" title={district.website}>
+              <div className="space-y-1.5 pt-2 border-t border-gray-200 text-[11px]">
+                <div className="flex items-center gap-1.5 text-gray-800 truncate">
+                  <Globe className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                  <span className="font-bold truncate" title={district.website}>
                     {district.website}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 text-gray-600 truncate">
-                  <Tv className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                  <span className="font-semibold truncate" title={district.youtubeChannel}>
+                <div className="flex items-center gap-1.5 text-gray-800 truncate">
+                  <Tv className="w-3.5 h-3.5 text-red-700 shrink-0" />
+                  <span className="font-bold truncate" title={district.youtubeChannel}>
                     {district.youtubeChannel}
                   </span>
                 </div>

@@ -191,7 +191,7 @@ export const mockArticles: NewsArticle[] = [
     <li>आधार लिंक बँक खात्यात येत्या ७ दिवसांत संपूर्ण रक्कम जमा होणार.</li>
   </ul>
 </div>`,
-    imageUrl: "https://images.unsplash.com/photo-1592982537447-6f2334259b3f?auto=format&fit=crop&q=80&w=1200",
+    imageUrl: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1200",
     category: categories[3],
     location: { state: "महाराष्ट्र" },
     publishedAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
@@ -265,7 +265,7 @@ export const mockArticles: NewsArticle[] = [
     <li>विद्यार्थी, नोकरदार आणि महिलांसाठी पर्यावरणपूरक व सुरक्षित वाहतूक उपलब्ध.</li>
   </ul>
 </div>`,
-    imageUrl: "https://images.unsplash.com/photo-1627917242194-e3fb639a0ef2?auto=format&fit=crop&q=80&w=1200",
+    imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200",
     category: categories[0],
     location: { district: "पुणे" },
     publishedAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
@@ -465,7 +465,7 @@ export const mockArticles: NewsArticle[] = [
     <li>मांजरा नदीच्या पुनरुज्जीवनाने भूजल पातळीत लक्षणीय वाढ होणार.</li>
   </ul>
 </div>`,
-    imageUrl: "https://images.unsplash.com/photo-1543330681-37d4fbd350a4?auto=format&fit=crop&q=80&w=1200",
+    imageUrl: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1200",
     category: categories[0],
     location: { district: "लातूर" },
     publishedAt: new Date(Date.now() - 1000 * 60 * 420).toISOString(),

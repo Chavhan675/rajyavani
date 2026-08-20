@@ -1,11 +1,12 @@
 import { Globe, Menu, Search, User, X, MapPin, ChevronDown, LogIn, LogOut, Bot, Bookmark, Settings, Sparkles, PhoneCall, ChevronRight } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
 import { useAuth } from "../lib/AuthContext";
-import AuthModal from "./AuthModal";
-import UserProfileModal from "./UserProfileModal";
-import BookmarksModal from "./BookmarksModal";
+
+const AuthModal = lazy(() => import("./AuthModal"));
+const UserProfileModal = lazy(() => import("./UserProfileModal"));
+const BookmarksModal = lazy(() => import("./BookmarksModal"));
 
 const languages = ["मराठी", "English", "हिंदी"];
 
@@ -47,6 +48,9 @@ export default function Header() {
   const { 
     user, 
     isSuperAdmin,
+    authModalOpen,
+    profileModalOpen,
+    bookmarksModalOpen,
     setAuthModalOpen, 
     setAuthModalTab, 
     setProfileModalOpen, 
@@ -74,10 +78,12 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-xs border-b border-gray-100">
-      {/* Modals */}
-      <AuthModal />
-      <UserProfileModal />
-      <BookmarksModal />
+      {/* Modals - Only loaded when triggered */}
+      <Suspense fallback={null}>
+        {authModalOpen && <AuthModal />}
+        {profileModalOpen && <UserProfileModal />}
+        {bookmarksModalOpen && <BookmarksModal />}
+      </Suspense>
 
       {/* Top utility bar */}
       <div className="bg-brand-red text-white text-xs py-1.5 border-b border-red-700">
@@ -109,7 +115,7 @@ export default function Header() {
                 <div className="absolute right-0 mt-2 w-80 bg-white text-gray-800 rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 max-h-96 overflow-y-auto">
                   <div className="text-xs font-black text-brand-red border-b border-gray-100 pb-2 mb-2 uppercase tracking-wider flex items-center justify-between">
                     <span>महाराष्ट्रातील ३६ जिल्हे (Live News)</span>
-                    <span className="text-gray-400 font-normal">३६ जिल्हे</span>
+                    <span className="text-gray-600 font-semibold">३६ जिल्हे</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1">
                     {MAHARASHTRA_DISTRICTS.map((district) => (
@@ -161,7 +167,7 @@ export default function Header() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-brand-red tracking-tight font-serif group-hover:opacity-95 transition-opacity">
               राज्यवाणी
             </h1>
-            <span className="text-[10px] sm:text-xs text-gray-500 font-medium tracking-widest uppercase mt-0.5">
+            <span className="text-[10px] sm:text-xs text-gray-700 font-bold tracking-widest uppercase mt-0.5">
               महाराष्ट्राचा बुलंद आवाज • सत्य, अचूक, निष्पक्ष
             </span>
           </Link>
@@ -375,8 +381,8 @@ export default function Header() {
               ))}
 
               {/* Regional categories on mobile */}
-              <div className="border-t border-gray-100 my-2 pt-2">
-                <span className="text-xs font-bold text-gray-400 uppercase px-3 block mb-1">
+              <div className="border-t border-gray-200 my-2 pt-2">
+                <span className="text-xs font-black text-gray-900 uppercase px-3 block mb-1">
                   प्रादेशिक विभाग
                 </span>
                 <div className="grid grid-cols-2 gap-1 px-2">
@@ -385,7 +391,7 @@ export default function Header() {
                       key={r.name}
                       to={r.path}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="px-2.5 py-1.5 text-xs font-semibold text-gray-700 hover:bg-red-50 rounded"
+                      className="px-2.5 py-1.5 text-xs font-bold text-gray-900 hover:bg-red-50 rounded"
                     >
                       {r.name}
                     </Link>
@@ -429,8 +435,8 @@ export default function Header() {
             </div>
 
             {/* Mobile District Selector */}
-            <div className="border-t border-gray-100 pt-3">
-              <span className="text-xs font-extrabold text-gray-500 uppercase px-3 block mb-2">
+            <div className="border-t border-gray-200 pt-3">
+              <span className="text-xs font-black text-gray-900 uppercase px-3 block mb-2">
                 महाराष्ट्र ३६ जिल्हे (थेट बातम्या):
               </span>
               <div className="grid grid-cols-2 gap-1 px-2 max-h-56 overflow-y-auto">
