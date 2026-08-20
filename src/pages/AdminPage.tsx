@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { Bot, AlertTriangle, Save, Loader2, CheckCircle2, Lock, LogIn, LogOut, Plus, Trash2, Newspaper, Users, ShieldAlert, Settings, Sparkles, RefreshCw, Zap, Home } from "lucide-react";
 import { useAuth } from '../lib/AuthContext';
-import { collection, addDoc, serverTimestamp, getDocs, getDoc, query, orderBy, limit, doc, writeBatch, where, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, getDoc, query, orderBy, limit, doc, writeBatch, where, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { getCategoryFallbackImage } from '../lib/defaultImages';
 
@@ -112,16 +112,22 @@ export default function AdminPage() {
     }
   };
 
+  const fetchSources = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'sources'));
+      const sourceData = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+      setAutomatorSources(sourceData);
+    } catch (e) {
+      console.error("Failed to fetch sources", e);
+    }
+  };
+
   useEffect(() => {
     if (isSuperAdmin) {
-      const unsubscribe = onSnapshot(collection(db, 'sources'), (snapshot) => {
-        const sourceData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setAutomatorSources(sourceData);
-      });
-      return () => unsubscribe();
+      fetchSources();
     }
   }, [isSuperAdmin]);
 
@@ -138,6 +144,7 @@ export default function AdminPage() {
       });
       setNewSourceName("");
       setNewSourceUrl("");
+      await fetchSources();
     } catch (e) {
       console.error("Failed to add source", e);
     }
@@ -146,6 +153,7 @@ export default function AdminPage() {
   const handleDeleteSource = async (id: string) => {
     try {
       await deleteDoc(doc(db, 'sources', id));
+      await fetchSources();
     } catch (e) {
       console.error("Failed to delete source", e);
     }
@@ -562,6 +570,7 @@ export default function AdminPage() {
                                }
                              });
                              await batch.commit();
+                             await fetchSources();
                              alert('Added default publishers successfully!');
                            } catch(e: any) {
                              alert('Failed to add sources: ' + e.message);
