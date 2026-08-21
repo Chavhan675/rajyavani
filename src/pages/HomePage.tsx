@@ -48,47 +48,76 @@ export default function HomePage() {
   useEffect(() => {
     let isMounted = true;
     const fetchArticles = async () => {
+      const mapItem = (item: any) => ({
+        id: item.id,
+        title: item.title,
+        summary: item.summary,
+        content: item.content,
+        imageUrl: item.imageUrl || null,
+        imagePrompt: item.imagePrompt,
+        imageAlt: item.imageAlt || item.title,
+        category: item.category,
+        author: item.authorName || (typeof item.author === 'string' ? item.author : "जिल्हा विशेष वार्ताहर"),
+        authorAvatar: item.authorAvatar,
+        publishedAt: typeof item.publishedAt === 'number' ? new Date(item.publishedAt).toISOString() : (item.publishedAt || new Date().toISOString()),
+        lastUpdated: item.updatedAt ? new Date(item.updatedAt).toISOString() : (item.lastUpdated || null),
+        readTime: item.readTime || "4 min read",
+        isBreaking: item.isBreaking || item.isDeveloping || false,
+        aiGenerated: item.aiGenerated || false,
+        location: item.location || {
+          state: (item.district || item.category === "महाराष्ट्र") ? "महाराष्ट्र" : "राष्ट्रीय",
+          district: item.district,
+          taluka: item.taluka,
+          village: item.village
+        },
+        tags: item.tags || []
+      });
+
+      try {
+        // 1. First attempt direct Firestore query via client SDK (works everywhere: Vercel, Cloud Run, Firebase)
+        const { collection, query, where, orderBy, limit, getDocs } = await import("firebase/firestore");
+        const { db } = await import("../lib/firebase");
+        
+        const q = query(
+          collection(db, "articles"),
+          where("status", "==", "PUBLISHED"),
+          orderBy("publishedAt", "desc"),
+          limit(20)
+        );
+
+        const snapshot = await getDocs(q);
+        if (!isMounted) return;
+
+        if (!snapshot.empty) {
+          const fetched = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+          const mapped = fetched.map(mapItem);
+          if (mapped.length > 0) {
+            setDbArticles(mapped);
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
+            } catch {}
+            return;
+          }
+        }
+      } catch {
+        // Continue to fallback if Firestore query has an index/permission issue
+      }
+
+      // 2. Fallback to API if available (handles local/server environments)
       try {
         const res = await fetch('/api/articles?limit=20');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!isMounted || !data.success || !Array.isArray(data.articles)) return;
-        const fetched = data.articles;
-        
-        // Map backend schema to frontend Hero/NewsGrid expected shape
-        const mapped = fetched.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          summary: item.summary,
-          content: item.content,
-          imageUrl: item.imageUrl || null,
-          imagePrompt: item.imagePrompt,
-          imageAlt: item.imageAlt || item.title,
-          category: item.category,
-          author: item.authorName || (typeof item.author === 'string' ? item.author : "जिल्हा विशेष वार्ताहर"),
-          authorAvatar: item.authorAvatar,
-          publishedAt: typeof item.publishedAt === 'number' ? new Date(item.publishedAt).toISOString() : (item.publishedAt || new Date().toISOString()),
-          lastUpdated: item.updatedAt ? new Date(item.updatedAt).toISOString() : (item.lastUpdated || null),
-          readTime: item.readTime || "4 min read",
-          isBreaking: item.isBreaking || item.isDeveloping || false,
-          aiGenerated: item.aiGenerated || false,
-          location: item.location || {
-            state: (item.district || item.category === "महाराष्ट्र") ? "महाराष्ट्र" : "राष्ट्रीय",
-            district: item.district,
-            taluka: item.taluka,
-            village: item.village
-          },
-          tags: item.tags || []
-        }));
-        
-        if (mapped.length > 0) {
-          setDbArticles(mapped);
-          try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
-          } catch {}
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.success && Array.isArray(data.articles) && data.articles.length > 0) {
+            const mapped = data.articles.map(mapItem);
+            setDbArticles(mapped);
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
+            } catch {}
+          }
         }
-      } catch (error) {
-        console.error("Error fetching articles:", error);
+      } catch {
+        // Gracefully ignore network errors and rely on cached or mock articles
       } finally {
         if (isMounted) setLoading(false);
       }
