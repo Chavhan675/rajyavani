@@ -91,8 +91,8 @@ export default function LegalPage({ pageKey, title: propTitle, content: propCont
               <p className="text-sm sm:text-base text-gray-600 font-medium mt-2 leading-relaxed">
                 {subtitle}
               </p>
-              <div className="flex items-center text-xs text-gray-400 mt-4 space-x-2">
-                <FileText className="w-3.5 h-3.5" />
+              <div className="flex items-center text-xs text-gray-600 font-medium mt-4 space-x-2">
+                <FileText className="w-3.5 h-3.5 text-gray-700" />
                 <span>शेवटचे अद्यतन: {lastUpdated} | राज्यवाणी संपादकीय मंडळ</span>
               </div>
             </div>

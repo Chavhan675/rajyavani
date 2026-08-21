@@ -327,7 +327,7 @@ export default function Header() {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`px-2.5 py-1 text-xs sm:text-sm font-bold rounded-md transition-colors whitespace-nowrap ${
+                  className={`px-3 py-2 text-xs sm:text-sm font-bold rounded-lg transition-colors whitespace-nowrap min-h-[40px] inline-flex items-center ${
                     isActive 
                       ? 'bg-brand-red text-white' 
                       : 'text-gray-800 hover:text-brand-red hover:bg-red-50'
@@ -345,7 +345,7 @@ export default function Header() {
               <Link
                 key={r.name}
                 to={r.path}
-                className="px-2 py-0.5 text-xs font-semibold text-gray-600 hover:text-brand-red hover:bg-gray-100 rounded transition-colors whitespace-nowrap"
+                className="px-2.5 py-1.5 text-xs font-semibold text-gray-700 hover:text-brand-red hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap min-h-[36px] inline-flex items-center"
               >
                 {r.name}
               </Link>
@@ -384,7 +384,7 @@ export default function Header() {
                   key={item.name}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-3 py-2 text-sm font-bold text-gray-800 hover:bg-red-50 hover:text-brand-red rounded-lg"
+                  className="px-3 py-3 text-sm font-bold text-gray-800 hover:bg-red-50 hover:text-brand-red rounded-lg min-h-[44px] flex items-center"
                 >
                   {item.name}
                 </Link>
@@ -395,13 +395,13 @@ export default function Header() {
                 <span className="text-xs font-black text-gray-900 uppercase px-3 block mb-1">
                   प्रादेशिक विभाग
                 </span>
-                <div className="grid grid-cols-2 gap-1 px-2">
+                <div className="grid grid-cols-2 gap-1.5 px-2">
                   {regionalCategories.map((r) => (
                     <Link
                       key={r.name}
                       to={r.path}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="px-2.5 py-1.5 text-xs font-bold text-gray-900 hover:bg-red-50 rounded"
+                      className="px-3 py-2.5 text-xs font-bold text-gray-900 hover:bg-red-50 rounded-lg min-h-[44px] flex items-center"
                     >
                       {r.name}
                     </Link>
@@ -413,7 +413,7 @@ export default function Header() {
               <Link
                 to="/contact"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-bold text-brand-red bg-red-50 hover:bg-red-100 rounded-lg flex items-center justify-between"
+                className="px-3 py-3 text-sm font-bold text-brand-red bg-red-50 hover:bg-red-100 rounded-lg flex items-center justify-between min-h-[44px]"
               >
                 <span>📞 संपर्क (Contact Us)</span>
                 <ChevronRight className="w-4 h-4" />
@@ -427,7 +427,7 @@ export default function Header() {
                     setAuthModalOpen(true); 
                     setIsMobileMenuOpen(false); 
                   }}
-                  className="flex items-center px-3 py-2 text-sm font-bold text-brand-red hover:bg-red-50 rounded-lg text-left cursor-pointer"
+                  className="flex items-center px-3 py-3 text-sm font-bold text-brand-red hover:bg-red-50 rounded-lg text-left cursor-pointer min-h-[44px]"
                 >
                   <LogIn className="w-4 h-4 mr-2" /> लॉगिन / नवीन खाते
                 </button>
@@ -437,7 +437,7 @@ export default function Header() {
                     setProfileModalOpen(true); 
                     setIsMobileMenuOpen(false); 
                   }}
-                  className="flex items-center px-3 py-2 text-sm font-bold text-gray-800 hover:bg-gray-50 rounded-lg text-left cursor-pointer"
+                  className="flex items-center px-3 py-3 text-sm font-bold text-gray-800 hover:bg-gray-50 rounded-lg text-left cursor-pointer min-h-[44px]"
                 >
                   <Settings className="w-4 h-4 mr-2 text-brand-red" /> माझी प्रोफाइल व सुरक्षा
                 </button>
@@ -449,12 +449,12 @@ export default function Header() {
               <span className="text-xs font-black text-gray-900 uppercase px-3 block mb-2">
                 महाराष्ट्र ३६ जिल्हे (थेट बातम्या):
               </span>
-              <div className="grid grid-cols-2 gap-1 px-2 max-h-56 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-1.5 px-2 max-h-64 overflow-y-auto">
                 {MAHARASHTRA_DISTRICTS.map((d) => (
                   <button
                     key={d.slug}
                     onClick={() => handleDistrictSelect(d.slug)}
-                    className="text-left px-2 py-1.5 text-xs font-semibold text-gray-700 hover:text-brand-red hover:bg-red-50 rounded"
+                    className="text-left px-3 py-2.5 text-xs font-semibold text-gray-800 hover:text-brand-red hover:bg-red-50 rounded-lg min-h-[44px] flex items-center truncate"
                   >
                     {d.nameMarathi}
                   </button>

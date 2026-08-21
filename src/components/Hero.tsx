@@ -31,10 +31,10 @@ export default function Hero({ articles, loading = false }: HeroProps) {
 
   if (articles.length === 0) {
     return (
-      <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ contain: 'paint layout' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[450px] lg:min-h-[550px]">
+      <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ contain: 'layout paint' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[460px] lg:min-h-[550px]">
           {/* Main Feature Skeleton */}
-          <div className="lg:col-span-8 relative rounded-xl bg-gray-200 overflow-hidden shadow-sm border border-gray-200 h-[450px] lg:h-[550px] animate-pulse">
+          <div className="lg:col-span-8 relative rounded-xl bg-gray-200 overflow-hidden shadow-sm border border-gray-200 h-[460px] lg:h-[550px] animate-pulse">
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-800/40 to-transparent flex flex-col justify-end p-6">
               <div className="w-24 h-6 bg-gray-400/60 rounded mb-4" />
               <div className="w-3/4 h-8 bg-gray-300/80 rounded mb-3" />
@@ -46,14 +46,15 @@ export default function Hero({ articles, loading = false }: HeroProps) {
           </div>
 
           {/* Side Articles Skeletons */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
+          <div className="lg:col-span-4 flex flex-col gap-4 h-full lg:h-[550px]">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col animate-pulse min-h-[160px]">
-                <div className="h-32 bg-gray-200 w-full" />
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div className="w-full h-4 bg-gray-200 rounded mb-2" />
-                  <div className="w-3/4 h-4 bg-gray-200 rounded mb-3" />
-                  <div className="w-1/3 h-3 bg-gray-200 rounded" />
+              <div key={i} className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-row items-center p-3 gap-3 animate-pulse min-h-[160px]">
+                <div className="w-28 sm:w-32 h-28 bg-gray-200 rounded-lg shrink-0" />
+                <div className="flex-1 flex flex-col justify-between h-full py-1">
+                  <div className="w-1/3 h-3 bg-gray-200 rounded mb-2" />
+                  <div className="w-full h-4 bg-gray-200 rounded mb-1.5" />
+                  <div className="w-3/4 h-4 bg-gray-200 rounded mb-2" />
+                  <div className="w-1/2 h-3 bg-gray-200 rounded mt-auto" />
                 </div>
               </div>
             ))}
@@ -67,11 +68,14 @@ export default function Hero({ articles, loading = false }: HeroProps) {
   const sideArticles = articles.slice(1, 4);
 
   return (
-    <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ contain: 'layout paint' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[460px] lg:min-h-[550px]">
         
         {/* Main Feature */}
-        <Link to={`/article/${mainArticle.id}`} className="lg:col-span-8 relative group overflow-hidden rounded-xl bg-gray-950 shadow-sm border border-gray-800 cursor-pointer block">
+        <Link 
+          to={`/article/${mainArticle.id}`} 
+          className="lg:col-span-8 relative group overflow-hidden rounded-xl bg-gray-950 shadow-sm border border-gray-800 cursor-pointer block h-[460px] lg:h-[550px]"
+        >
           {isSuperAdmin && (
             <button
               onClick={(e) => handleDelete(e, mainArticle.id)}
@@ -83,7 +87,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
           )}
           <div className="absolute top-4 left-4 z-20 flex space-x-2">
             <span className="bg-brand-red text-white text-xs font-black px-3 py-1 rounded shadow-md">
-              {mainArticle.category.name}
+              {mainArticle.category?.name || (typeof mainArticle.category === 'string' ? mainArticle.category : 'विशेष')}
             </span>
             {mainArticle.aiGenerated && (
               <span className="bg-gray-950 text-amber-400 border border-amber-500 text-xs font-black px-3 py-1 rounded shadow-md flex items-center space-x-1">
@@ -92,7 +96,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
               </span>
             )}
           </div>
-          <div className="relative h-[450px] lg:h-[550px] w-full overflow-hidden bg-gray-950">
+          <div className="relative h-full w-full overflow-hidden bg-gray-950">
             <Image 
               src={mainArticle.imageUrl}
               category={typeof mainArticle.category === 'string' ? mainArticle.category : mainArticle.category?.name}
@@ -102,7 +106,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
               priority={true}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/85 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/80 to-transparent" />
           </div>
           <div className="absolute bottom-0 left-0 p-6 w-full z-10">
             <div className="flex items-center space-x-2 mb-3">
@@ -113,10 +117,10 @@ export default function Hero({ articles, loading = false }: HeroProps) {
                  </span>
                ))}
             </div>
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-3 group-hover:text-amber-400 transition-colors">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-3 group-hover:text-amber-400 transition-colors line-clamp-2">
               {mainArticle.title}
             </h1>
-            <p className="text-gray-100 text-sm lg:text-base line-clamp-2 mb-5 max-w-3xl font-medium">
+            <p className="text-gray-100 text-xs sm:text-sm lg:text-base line-clamp-2 mb-4 max-w-3xl font-medium">
               {mainArticle.summary}
             </p>
             
@@ -142,16 +146,9 @@ export default function Hero({ articles, loading = false }: HeroProps) {
               </div>
               
               <div className="flex items-center space-x-1.5 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm">
-                <Clock className="w-3.5 h-3.5 text-gray-300" />
+                <Clock className="w-3.5 h-3.5 text-gray-200" />
                 <span className="text-white font-semibold">Published {formatDistanceToNow(new Date(mainArticle.publishedAt), { addSuffix: true })}</span>
               </div>
-
-              {mainArticle.lastUpdated && (
-                <div className="flex items-center space-x-1.5 bg-amber-950/95 text-amber-200 px-2.5 py-1 rounded-md border border-amber-500/60 shadow-sm font-bold">
-                  <Clock className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Updated {formatDistanceToNow(new Date(mainArticle.lastUpdated), { addSuffix: true })}</span>
-                </div>
-              )}
 
               {mainArticle.location?.district && (
                 <div className="flex items-center space-x-1.5 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm font-bold">
@@ -164,14 +161,18 @@ export default function Hero({ articles, loading = false }: HeroProps) {
         </Link>
 
         {/* Side Articles */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
+        <div className="lg:col-span-4 flex flex-col justify-between gap-4 h-full lg:h-[550px]">
           {sideArticles.map((article) => (
-            <Link to={`/article/${article.id}`} key={article.id} className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col group cursor-pointer block hover:shadow-md transition-shadow">
-              <div className="relative h-32 overflow-hidden">
+            <Link 
+              to={`/article/${article.id}`} 
+              key={article.id} 
+              className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-row group cursor-pointer block hover:shadow-md transition-shadow p-3 gap-3 min-h-[160px]"
+            >
+              <div className="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-gray-100">
                 {isSuperAdmin && (
                   <button
                     onClick={(e) => handleDelete(e, article.id)}
-                    className="absolute top-2 right-2 z-30 bg-red-600/90 hover:bg-red-700 text-white p-1.5 rounded-full shadow-lg transition-colors cursor-pointer"
+                    className="absolute top-1 right-1 z-30 bg-red-600/90 hover:bg-red-700 text-white p-1 rounded-full shadow-lg transition-colors cursor-pointer"
                     title="Delete Article"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -185,48 +186,32 @@ export default function Hero({ articles, loading = false }: HeroProps) {
                   size="card"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute top-2 left-2 flex space-x-2">
-                   <span className="bg-brand-red text-white text-[10px] font-black px-2.5 py-1 rounded shadow">
-                    {article.category.name}
+                <div className="absolute top-1 left-1">
+                   <span className="bg-brand-red text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">
+                    {article.category?.name || (typeof article.category === 'string' ? article.category : 'विशेष')}
                   </span>
                 </div>
               </div>
-              <div className="p-4 flex-1 flex flex-col justify-between">
-                <h2 className="text-base font-bold text-gray-900 leading-snug group-hover:text-brand-red transition-colors line-clamp-2 mb-2">
+              <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+                <h2 className="text-xs sm:text-sm font-bold text-gray-900 leading-snug group-hover:text-brand-red transition-colors line-clamp-2">
                   {article.title}
                 </h2>
                 
-                <div className="flex flex-col space-y-3 mt-auto">
-                  <div className="flex items-center space-x-2 text-xs font-semibold text-gray-800">
-                    {article.authorAvatar && article.authorAvatar.trim() !== '' ? (
-                      <img 
-                        src={article.authorAvatar} 
-                        alt={article.author} 
-                        width={20}
-                        height={20}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        className="w-5 h-5 rounded-full object-cover" 
-                        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
-                      />
-                    ) : null}
-                    <div className={`w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center ${article.authorAvatar && article.authorAvatar.trim() !== '' ? 'hidden' : ''}`}>
-                      <User className="w-3 h-3 text-gray-800" />
-                    </div>
-                    <span>{article.author}</span>
+                <div className="flex flex-col space-y-1.5 mt-auto pt-2">
+                  <div className="flex items-center space-x-1.5 text-[11px] font-medium text-gray-700 truncate">
+                    <User className="w-3 h-3 text-gray-500 shrink-0" />
+                    <span className="truncate">{article.author}</span>
                   </div>
                   
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-2">
-                    <div className="flex items-center text-gray-900 text-xs font-bold space-x-1.5">
-                      <Clock className="w-3.5 h-3.5 text-gray-900" />
-                      <span className="text-gray-900 font-bold">{formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}</span>
+                  <div className="flex items-center justify-between text-[10px] text-gray-600 font-bold border-t border-gray-100 pt-1.5">
+                    <div className="flex items-center space-x-1">
+                      <Clock className="w-3 h-3 text-gray-500" />
+                      <span>{formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}</span>
                     </div>
                     {article.aiGenerated && (
-                      <div className="flex items-center space-x-1 text-amber-950 bg-amber-200 border border-amber-400 px-2 py-0.5 rounded text-[11px] font-black">
-                        <Bot className="w-3.5 h-3.5 text-amber-950" />
-                        <span>AI Draft</span>
-                      </div>
+                      <span className="text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded text-[9px] font-black">
+                        AI Draft
+                      </span>
                     )}
                   </div>
                 </div>

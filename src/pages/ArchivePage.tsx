@@ -516,7 +516,7 @@ export default function ArchivePage() {
               {hasActiveFilters && (
                 <button
                   onClick={resetAllFilters}
-                  className="text-xs text-red-700 hover:text-red-900 font-bold underline cursor-pointer ml-2"
+                  className="text-xs sm:text-sm text-red-700 hover:text-red-900 font-bold underline cursor-pointer ml-2 min-h-[44px] inline-flex items-center"
                 >
                   सर्व फिल्टर्स रीसेट करा
                 </button>
@@ -524,10 +524,10 @@ export default function ArchivePage() {
             </div>
 
             {/* View Mode Buttons */}
-            <div className="flex items-center gap-1 bg-gray-200 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-gray-200 p-1 rounded-xl min-h-[44px]">
               <button
                 onClick={() => setViewMode('GRID')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-3.5 py-2 min-h-[38px] text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center ${
                   viewMode === 'GRID' ? 'bg-white text-brand-red shadow-xs font-black' : 'text-gray-800 hover:text-black'
                 }`}
               >
@@ -535,7 +535,7 @@ export default function ArchivePage() {
               </button>
               <button
                 onClick={() => setViewMode('LIST')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-3.5 py-2 min-h-[38px] text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center ${
                   viewMode === 'LIST' ? 'bg-white text-brand-red shadow-xs font-black' : 'text-gray-800 hover:text-black'
                 }`}
               >
@@ -676,7 +676,7 @@ export default function ArchivePage() {
 
                       <Link
                         to={`/article/${article.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-brand-red hover:text-brand-saffron transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-brand-red hover:text-red-700 hover:underline transition-colors"
                       >
                         <span>संपूर्ण वाचा</span>
                         <ChevronRight className="w-3.5 h-3.5" />

@@ -288,11 +288,11 @@ export default function DistrictPage() {
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-2" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                   {currentDistrict.nameMarathi}
                 </h1>
-                <p className="text-sm font-semibold text-gray-300 tracking-wide mb-3">
+                <p className="text-sm font-semibold text-gray-200 tracking-wide mb-3">
                   {currentDistrict.nameEnglish} • {currentDistrict.division} विभाग
                 </p>
                 {currentDistrict.description && (
-                  <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+                  <p className="text-gray-100 text-sm sm:text-base leading-relaxed">
                     {currentDistrict.description}
                   </p>
                 )}
@@ -375,15 +375,15 @@ export default function DistrictPage() {
             </div>
 
             {/* Division Pills */}
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
               {divisions.map((div) => (
                 <button
                   key={div}
                   onClick={() => setActiveDivision(div)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3.5 py-2.5 min-h-[44px] inline-flex items-center justify-center rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                     activeDivision === div
                       ? 'bg-brand-red text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   {div === 'all' ? 'सर्व ३६ जिल्हे' : div}
@@ -400,7 +400,7 @@ export default function DistrictPage() {
                 <Link
                   key={d.slug}
                   to={`/district/${d.slug}`}
-                  className={`px-3 py-2 rounded-lg text-xs font-bold text-center transition-all flex items-center justify-between border ${
+                  className={`px-3 py-2.5 min-h-[44px] rounded-xl text-xs font-bold text-center transition-all flex items-center justify-between border ${
                     isSelected
                       ? 'bg-brand-red text-white border-brand-red shadow-sm'
                       : 'bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-brand-red border-gray-200'
@@ -441,13 +441,13 @@ export default function DistrictPage() {
                 value={villageSearch}
                 onChange={(e) => setVillageSearch(e.target.value)}
                 placeholder="गाव / स्थानिक परिसर शोधा..."
-                className="w-full pl-8 pr-7 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
+                className="w-full pl-8 pr-7 py-2.5 min-h-[44px] bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
               />
-              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
               {villageSearch && (
                 <button
                   onClick={() => setVillageSearch('')}
-                  className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 p-0.5 cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -456,10 +456,10 @@ export default function DistrictPage() {
           </div>
 
           {/* Taluka Quick Pills */}
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setSelectedTaluka('ALL')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-2.5 min-h-[44px] inline-flex items-center justify-center rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 selectedTaluka === 'ALL'
                   ? 'bg-amber-600 text-white shadow-sm'
                   : 'bg-white text-gray-700 hover:bg-amber-50 border border-gray-200'
@@ -471,7 +471,7 @@ export default function DistrictPage() {
               <button
                 key={talukaName}
                 onClick={() => setSelectedTaluka(talukaName)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3.5 py-2.5 min-h-[44px] inline-flex items-center justify-center rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   selectedTaluka === talukaName
                     ? 'bg-amber-600 text-white shadow-sm'
                     : 'bg-white text-gray-700 hover:bg-amber-50 border border-gray-200'

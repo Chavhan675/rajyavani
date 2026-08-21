@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, ShieldCheck, FileText, ChevronRight } from "lucide-react";
+import { Phone, Mail, MapPin, ChevronRight } from "lucide-react";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
 
 export default function Footer() {
   return (
-    <footer className="bg-brand-black text-white pt-16 pb-8 border-t-4 border-brand-red mt-auto content-visibility-auto">
+    <footer className="bg-brand-black text-white pt-16 pb-8 border-t-4 border-brand-red mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Grid */}
@@ -13,45 +13,45 @@ export default function Footer() {
           
           {/* Brand & About Column (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
-            <Link to="/" className="flex items-center space-x-2 mb-4">
-              <div className="h-10 w-10 bg-gradient-to-br from-brand-red to-brand-saffron rounded-full flex items-center justify-center shadow-md border border-white/20">
+            <Link to="/" className="flex items-center space-x-2 mb-4 p-1 -ml-1 rounded-lg hover:opacity-95 transition-opacity">
+              <div className="h-10 w-10 bg-gradient-to-br from-brand-red to-brand-saffron rounded-full flex items-center justify-center shadow-md border border-white/20 shrink-0">
                 <span className="text-white font-bold text-xl">रा</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-extrabold text-white tracking-tight" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                   राज्यवाणी
                 </span>
-                <span className="text-[10px] text-gray-400 font-medium tracking-widest uppercase">
+                <span className="text-[10px] text-gray-200 font-semibold tracking-widest uppercase">
                   महाराष्ट्राचा बुलंद डिजिटल आवाज
                 </span>
               </div>
             </Link>
             
-            <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
+            <p className="text-gray-200 text-xs sm:text-sm leading-relaxed font-normal">
               राज्यवाणी हे महाराष्ट्राचे आघाडीचे स्वतंत्र डिजिटल वृत्तपत्र आहे. गाव, तालुका, जिल्हा ते राज्यभरातील प्रत्येक घडामोडीची सविस्तर, पडताळलेली आणि निष्पक्ष बातमी वाचकांपर्यंत पोहोचवणे हे आमचे ध्येय आहे.
             </p>
 
             {/* Official Contact Info Box */}
-            <div className="pt-3 space-y-2 border-t border-white/10 text-xs">
-              <div className="flex items-center space-x-2 text-gray-300">
+            <div className="pt-3 space-y-2 border-t border-white/10 text-xs sm:text-sm">
+              <div className="flex items-center space-x-2 text-gray-200 min-h-[36px]">
                 <Phone className="w-4 h-4 text-brand-red shrink-0" />
-                <span className="text-gray-400">संपर्क:</span>
-                <a href="tel:8459675917" className="text-white font-bold hover:text-brand-saffron transition-colors font-mono">
+                <span className="text-gray-300">संपर्क:</span>
+                <a href="tel:8459675917" className="text-white font-bold hover:text-amber-400 transition-colors font-mono py-1.5 px-1 inline-block min-h-[44px] flex items-center">
                   8459675917
                 </a>
               </div>
 
-              <div className="flex items-center space-x-2 text-gray-300">
+              <div className="flex items-center space-x-2 text-gray-200 min-h-[36px]">
                 <Mail className="w-4 h-4 text-brand-red shrink-0" />
-                <span className="text-gray-400">ईमेल:</span>
-                <a href="mailto:chavhanakash675@gmail.com" className="text-white font-bold hover:text-brand-saffron transition-colors">
+                <span className="text-gray-300">ईमेल:</span>
+                <a href="mailto:chavhanakash675@gmail.com" className="text-white font-bold hover:text-amber-400 transition-colors py-1.5 px-1 inline-block min-h-[44px] flex items-center truncate">
                   chavhanakash675@gmail.com
                 </a>
               </div>
 
-              <div className="flex items-center space-x-2 text-gray-300">
+              <div className="flex items-center space-x-2 text-gray-200 min-h-[36px]">
                 <MapPin className="w-4 h-4 text-brand-red shrink-0" />
-                <span className="text-gray-400">कार्यक्षेत्र:</span>
+                <span className="text-gray-300">कार्यक्षेत्र:</span>
                 <span className="text-white font-medium">महाराष्ट्र (३६ जिल्हे)</span>
               </div>
             </div>
@@ -63,7 +63,7 @@ export default function Footer() {
               प्रमुख विभाग
               <span className="absolute -bottom-1.5 left-0 w-8 h-0.5 bg-brand-red"></span>
             </h3>
-            <ul className="space-y-2 text-xs">
+            <ul className="space-y-1 text-xs sm:text-sm">
               {[
                 { name: "📚 बातमी संग्रह (Archive)", path: "/archive" },
                 { name: "महाराष्ट्र", path: "/category/महाराष्ट्र" },
@@ -75,9 +75,12 @@ export default function Footer() {
                 { name: "मनोरंजन", path: "/category/मनोरंजन" },
               ].map((item) => (
                 <li key={item.name}>
-                  <Link to={item.path} className="text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5 py-0.5">
-                    <span className="w-1 h-1 bg-brand-red rounded-full"></span>
-                    <span>{item.name}</span>
+                  <Link 
+                    to={item.path} 
+                    className="text-gray-200 hover:text-white transition-colors flex items-center space-x-2 py-2 px-2 rounded-lg hover:bg-white/10 min-h-[44px]"
+                  >
+                    <span className="w-1.5 h-1.5 bg-brand-red rounded-full shrink-0"></span>
+                    <span className="truncate">{item.name}</span>
                   </Link>
                 </li>
               ))}
@@ -90,20 +93,20 @@ export default function Footer() {
               स्थानिक ३६ जिल्हे
               <span className="absolute -bottom-1.5 left-0 w-8 h-0.5 bg-brand-red"></span>
             </h3>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-gray-400">
+            <div className="grid grid-cols-2 gap-1.5 text-xs">
               {MAHARASHTRA_DISTRICTS.slice(0, 14).map((district) => (
                 <Link
                   key={district.slug}
                   to={`/district/${district.slug}`}
-                  className="hover:text-brand-saffron transition-colors truncate py-0.5"
+                  className="min-h-[44px] flex items-center px-2.5 py-2 rounded-lg bg-white/5 hover:bg-white/15 hover:text-amber-400 text-gray-200 transition-colors truncate border border-white/5"
                 >
-                  • {district.nameMarathi}
+                  <span className="truncate">• {district.nameMarathi}</span>
                 </Link>
               ))}
             </div>
             <Link 
               to="/location/district/महाराष्ट्र" 
-              className="inline-block mt-3 text-xs font-bold text-brand-saffron hover:underline"
+              className="inline-flex items-center min-h-[44px] mt-3 py-2 px-2 text-xs sm:text-sm font-bold text-amber-400 hover:text-amber-300 hover:underline"
             >
               सर्व ३६ जिल्ह्यांच्या बातम्या पहा →
             </Link>
@@ -116,61 +119,35 @@ export default function Footer() {
               <span className="absolute -bottom-1.5 left-0 w-8 h-0.5 bg-brand-red"></span>
             </h3>
             
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/about" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span>आमच्याबद्दल (About Us)</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span className="font-bold text-brand-saffron">संपर्क करा (Contact Us)</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy-policy" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span>गोपनीयता धोरण (Privacy Policy)</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span>अटी आणि शर्ती (Terms & Conditions)</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/editorial-policy" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span>संपादकीय धोरण (Editorial Policy)</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/correction-policy" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span>दुरुस्ती धोरण (Correction Policy)</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/cookie-policy" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span>कुकी धोरण (Cookie Policy)</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/disclaimer" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-red" />
-                  <span>अस्वीकरण (Disclaimer)</span>
-                </Link>
-              </li>
+            <ul className="space-y-1 text-xs sm:text-sm">
+              {[
+                { name: "आमच्याबद्दल (About Us)", path: "/about" },
+                { name: "संपर्क करा (Contact Us)", path: "/contact", isHighlight: true },
+                { name: "गोपनीयता धोरण (Privacy Policy)", path: "/privacy-policy" },
+                { name: "अटी आणि शर्ती (Terms & Conditions)", path: "/terms" },
+                { name: "संपादकीय धोरण (Editorial Policy)", path: "/editorial-policy" },
+                { name: "दुरुस्ती धोरण (Correction Policy)", path: "/correction-policy" },
+                { name: "कुकी धोरण (Cookie Policy)", path: "/cookie-policy" },
+                { name: "अस्वीकरण (Disclaimer)", path: "/disclaimer" },
+              ].map((policy) => (
+                <li key={policy.path}>
+                  <Link 
+                    to={policy.path} 
+                    className="text-gray-200 hover:text-white transition-colors flex items-center space-x-2 py-2 px-2 rounded-lg hover:bg-white/10 min-h-[44px]"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5 text-brand-red shrink-0" />
+                    <span className={policy.isHighlight ? "font-bold text-amber-400 truncate" : "truncate"}>
+                      {policy.name}
+                    </span>
+                  </Link>
+                </li>
+              ))}
             </ul>
 
             <div className="pt-2">
               <Link 
                 to="/contact?type=news_tip" 
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-brand-red text-white text-xs font-bold rounded-lg transition-colors border border-white/15"
+                className="inline-flex items-center justify-center min-h-[44px] gap-1.5 px-4 py-2.5 bg-white/10 hover:bg-brand-red text-white text-xs sm:text-sm font-bold rounded-xl transition-colors border border-white/15 w-full sm:w-auto"
               >
                 <span>📢 बातमी पाठवा (Submit News Tip)</span>
               </Link>
@@ -180,30 +157,23 @@ export default function Footer() {
         </div>
 
         {/* Bottom Legal Strip & Copyright */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-4 text-center md:text-left">
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-200 gap-4 text-center md:text-left">
           <div>
             <p>&copy; {new Date().getFullYear()} <strong className="text-white">राज्यवाणी (Rajyavani)</strong>. सर्व हक्क राखीव. (All rights reserved).</p>
-            <p className="text-[11px] text-gray-300 font-medium mt-0.5">
+            <p className="text-[11px] text-gray-300 font-medium mt-1">
               महाराष्ट्राचे विश्वासार्ह डिजिटल वृत्तपत्र | संपादक: आकाश चव्हाण | संपर्क: 8459675917
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-gray-300">
-            <Link to="/about" className="hover:text-white transition-colors">About Us</Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/disclaimer" className="hover:text-white transition-colors">Disclaimer</Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/editorial-policy" className="hover:text-white transition-colors">Editorial Policy</Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/correction-policy" className="hover:text-white transition-colors">Correction Policy</Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/cookie-policy" className="hover:text-white transition-colors">Cookie Policy</Link>
+          <div className="flex flex-wrap justify-center gap-1.5 text-xs text-gray-200">
+            <Link to="/about" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">About Us</Link>
+            <Link to="/contact" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Contact Us</Link>
+            <Link to="/privacy-policy" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Terms</Link>
+            <Link to="/disclaimer" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Disclaimer</Link>
+            <Link to="/editorial-policy" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Editorial Policy</Link>
+            <Link to="/correction-policy" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Correction Policy</Link>
+            <Link to="/cookie-policy" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Cookie Policy</Link>
           </div>
         </div>
 

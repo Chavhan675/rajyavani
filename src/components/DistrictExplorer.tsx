@@ -34,7 +34,7 @@ export default function DistrictExplorer() {
   }, [activeDivision, searchQuery]);
 
   return (
-    <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 my-10 content-visibility-auto">
+    <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 my-10">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-gray-100">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -73,7 +73,7 @@ export default function DistrictExplorer() {
           <button
             key={tab.key}
             onClick={() => setActiveDivision(tab.key)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-4 py-2.5 min-h-[44px] inline-flex items-center justify-center rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
               activeDivision === tab.key
                 ? 'bg-brand-red text-white shadow-sm'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
