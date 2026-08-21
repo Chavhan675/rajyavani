@@ -132,14 +132,9 @@ export default function HomePage() {
       <BreakingNewsTicker articles={articlesToUse} />
       
       <main className="flex-1 w-full min-h-[1200px]">
-        {/* Top Ad Unit */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 min-h-[122px]">
-          <AdUnit format="horizontal" />
-        </div>
-
         <Hero articles={articlesToUse} />
         
-        {/* Mid Page Ad Unit */}
+        {/* Top Feature Ad Unit */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 min-h-[122px]">
           <AdUnit format="horizontal" />
         </div>

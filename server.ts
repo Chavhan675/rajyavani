@@ -1,4 +1,5 @@
 import express from "express";
+import compression from "compression";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
@@ -37,6 +38,10 @@ async function getUserRoleREST(uid: string, token: string) {
 dotenv.config();
 
 const app = express();
+app.use(compression({
+  threshold: 1024,
+  level: 6
+}));
 app.use(express.json());
 
 // Set modern browser performance, caching, and security headers
