@@ -40,6 +40,14 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    esbuild: {
+      drop: ['console', 'debugger'],
+      legalComments: 'none',
+      treeShaking: true,
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      minifyWhitespace: true,
+    },
     build: {
       sourcemap: false,
       chunkSizeWarningLimit: 1000,

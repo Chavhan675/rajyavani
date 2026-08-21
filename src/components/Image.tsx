@@ -4,7 +4,7 @@ import { getCategoryFallbackImage, getSvgEditorialPlaceholder } from '../lib/def
 /**
  * Optimizes image URLs (e.g. Unsplash) with compression factor, modern web format auto-negotiation, and width.
  */
-export function optimizeImageUrl(url: string, targetWidth: number = 800, quality: number = 70): string {
+export function optimizeImageUrl(url: string, targetWidth: number = 600, quality: number = 65): string {
   if (!url || typeof url !== 'string') {
     return url;
   }
@@ -19,19 +19,14 @@ export function optimizeImageUrl(url: string, targetWidth: number = 800, quality
       parsed.searchParams.set('w', targetWidth.toString());
       return parsed.toString();
     } catch {
-      let optimized = url
-        .replace(/([?&])q=\d+/, '$1q=' + quality)
-        .replace(/([?&])w=\d+/, '$1w=' + targetWidth);
-      if (!optimized.includes('auto=')) {
-        optimized += (optimized.includes('?') ? '&' : '?') + 'auto=format,compress';
-      }
-      if (!optimized.includes('q=')) {
-        optimized += (optimized.includes('?') ? '&' : '?') + `q=${quality}`;
-      }
-      if (!optimized.includes('w=')) {
-        optimized += `&w=${targetWidth}`;
-      }
-      return optimized;
+      let cleanUrl = url
+        .replace(/([?&])q=\d+/g, '')
+        .replace(/([?&])w=\d+/g, '')
+        .replace(/([?&])auto=[^&]*/g, '')
+        .replace(/([?&])fit=[^&]*/g, '');
+      
+      const delimiter = cleanUrl.includes('?') ? '&' : '?';
+      return `${cleanUrl}${delimiter}auto=format,compress&fit=crop&q=${quality}&w=${targetWidth}`;
     }
   }
 
@@ -41,11 +36,11 @@ export function optimizeImageUrl(url: string, targetWidth: number = 800, quality
 /**
  * Generates responsive srcset for dynamic CDN images (Unsplash).
  */
-export function getResponsiveSrcSet(url: string, quality: number = 70): string | undefined {
+export function getResponsiveSrcSet(url: string, quality: number = 65): string | undefined {
   if (!url || typeof url !== 'string' || !url.includes('images.unsplash.com')) {
     return undefined;
   }
-  const widths = [360, 480, 640, 800, 1024, 1280];
+  const widths = [180, 360, 540, 720, 960];
   return widths.map(w => `${optimizeImageUrl(url, w, quality)} ${w}w`).join(', ');
 }
 
@@ -55,15 +50,15 @@ export function getResponsiveSrcSet(url: string, quality: number = 70): string |
 export function getResponsiveSizes(size: 'thumbnail' | 'card' | 'featured' | 'social'): string {
   switch (size) {
     case 'thumbnail':
-      return '(max-width: 640px) 120px, 240px';
+      return '(max-width: 640px) 120px, 180px';
     case 'card':
-      return '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px';
+      return '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px';
     case 'featured':
-      return '(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 1200px';
+      return '(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px';
     case 'social':
       return '100vw';
     default:
-      return '(max-width: 640px) 100vw, 600px';
+      return '(max-width: 640px) 100vw, 480px';
   }
 }
 
@@ -73,15 +68,15 @@ export function getResponsiveSizes(size: 'thumbnail' | 'card' | 'featured' | 'so
 export function getIntrinsicDimensions(size: 'thumbnail' | 'card' | 'featured' | 'social') {
   switch (size) {
     case 'thumbnail':
-      return { width: 240, height: 160 };
+      return { width: 180, height: 120 };
     case 'card':
-      return { width: 600, height: 338 };
+      return { width: 480, height: 270 };
     case 'featured':
-      return { width: 1200, height: 675 };
-    case 'social':
-      return { width: 1200, height: 630 };
-    default:
       return { width: 800, height: 450 };
+    case 'social':
+      return { width: 800, height: 420 };
+    default:
+      return { width: 480, height: 270 };
   }
 }
 
@@ -173,8 +168,8 @@ export default function Image({
 
   // Determine target width & quality
   const isSvg = rawSrc.startsWith('data:image/svg+xml');
-  const targetWidth = size === 'thumbnail' ? 240 : size === 'card' ? 600 : size === 'featured' ? 1200 : 800;
-  const quality = size === 'featured' ? 75 : 68;
+  const targetWidth = size === 'thumbnail' ? 180 : size === 'card' ? 420 : size === 'featured' ? 800 : 480;
+  const quality = size === 'featured' ? 70 : 65;
   const optimizedSrc = isSvg ? rawSrc : optimizeImageUrl(rawSrc, targetWidth, quality);
   const srcSet = isSvg ? undefined : getResponsiveSrcSet(rawSrc, quality);
   const sizes = getResponsiveSizes(size);
