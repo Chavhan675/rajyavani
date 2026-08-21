@@ -19,7 +19,7 @@ export const mockArticles: NewsArticle[] = [
     title: "NEET UG CAP Round-1: महाराष्ट्रातील MBBS आणि BDS प्रवेशाचे सुधारित वेळापत्रक जाहीर; २३ ऑगस्टला गुणवत्ता यादी",
     summary: "महाराष्ट्रातील वैद्यकीय आणि दंतवैद्यकीय (MBBS/BDS) पदवी प्रवेशासाठी राबवल्या जाणाऱ्या 'NEET UG CAP Round-1' च्या वेळापत्रकात राज्य सामाईक प्रवेश परीक्षा कक्षाने (State CET Cell) महत्त्वपूर्ण बदल केले आहेत.",
     content: `<p><strong>मुंबई:</strong> महाराष्ट्रातील वैद्यकीय आणि दंतवैद्यकीय (MBBS/BDS) पदवी प्रवेशासाठी राबवल्या जाणाऱ्या 'NEET UG CAP Round-1' च्या वेळापत्रकात राज्य सामाईक प्रवेश परीक्षा कक्षाने (State CET Cell) महत्त्वपूर्ण बदल केले आहेत.</p><p>नव्या वेळापत्रकानुसार सुधारित तात्पुरती गुणवत्ता यादी २३ ऑगस्ट रोजी प्रसिद्ध होणार असून, महाविद्यालयांचे पसंतीक्रम भरण्याची प्रक्रिया २६ ऑगस्टपासून सुरू होणार आहे. लाखो वैद्यकीय विद्यार्थ्यांचे लक्ष या प्रवेश प्रक्रियेकडे लागले आहे.</p>`,
-    imageUrl: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format,compress&fm=webp&fit=crop&q=42&w=720",
+    imageUrl: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format,compress&fm=webp&fit=crop&q=38&w=480",
     category: categories[4],
     location: { state: "महाराष्ट्र", district: "मुंबई" },
     publishedAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),

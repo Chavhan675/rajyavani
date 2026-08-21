@@ -38,15 +38,15 @@ export function optimizeImageUrl(url: string, targetWidth: number = 360, quality
 /**
  * Generates compact, optimized responsive srcset for dynamic CDN images (Unsplash).
  */
-export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 42): string | undefined {
+export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 38): string | undefined {
   if (!url || typeof url !== 'string' || !url.includes('images.unsplash.com')) {
     return undefined;
   }
   const widths = size === 'thumbnail' 
     ? [100, 160] 
     : size === 'card' 
-      ? [200, 320, 420] 
-      : [360, 540, 720];
+      ? [180, 300, 400] 
+      : [360, 480, 720];
   return widths.map(w => `${optimizeImageUrl(url, w, quality)} ${w}w`).join(', ');
 }
 
@@ -60,7 +60,7 @@ export function getResponsiveSizes(size: 'thumbnail' | 'card' | 'featured' | 'so
     case 'card':
       return '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px';
     case 'featured':
-      return '(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 720px';
+      return '(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px';
     case 'social':
       return '100vw';
     default:
@@ -174,8 +174,8 @@ export default function Image({
 
   // Determine target width & quality
   const isSvg = rawSrc.startsWith('data:image/svg+xml');
-  const targetWidth = size === 'thumbnail' ? 140 : size === 'card' ? 360 : size === 'featured' ? 720 : 400;
-  const quality = 42;
+  const targetWidth = size === 'thumbnail' ? 140 : size === 'card' ? 320 : size === 'featured' ? 480 : 360;
+  const quality = 38;
   const optimizedSrc = isSvg ? rawSrc : optimizeImageUrl(rawSrc, targetWidth, quality);
   const srcSet = isSvg ? undefined : getResponsiveSrcSet(rawSrc, size, quality);
   const sizes = getResponsiveSizes(size);

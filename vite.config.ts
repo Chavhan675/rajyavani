@@ -23,8 +23,14 @@ export default defineConfig(() => {
       sourcemap: false,
       chunkSizeWarningLimit: 1000,
       target: 'es2020',
-      cssCodeSplit: false,
+      cssCodeSplit: true,
       minify: 'esbuild',
+      modulePreload: {
+        resolveDependencies(_filename, deps) {
+          // Exclude heavy lazy dependencies from homepage modulepreload
+          return deps.filter(dep => !dep.includes('firebase') && !dep.includes('charts') && !dep.includes('AdminPage'));
+        },
+      },
       rollupOptions: {
         output: {
           manualChunks(id) {

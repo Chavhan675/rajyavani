@@ -23,11 +23,10 @@
     <link rel="dns-prefetch" href="https://images.unsplash.com">
     
     <!-- LCP Hero Image Preload matching the exact responsive srcset & sizes -->
-    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=720" imagesrcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=540 540w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=720 720w" imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 720px" fetchpriority="high" />
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" imagesrcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=40&w=720 720w" imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px" fetchpriority="high" />
 
-    <!-- Primary Web Fonts: Non-blocking with swap display -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <!-- Primary Web Fonts: Asynchronous non-render-blocking font loading -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" media="print" onload="this.media='all'; this.onload=null;">
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap">
     </noscript>
@@ -221,9 +220,9 @@
             <div class="lg:col-span-2 bg-white rounded-2xl overflow-hidden border border-gray-200/90 shadow-sm flex flex-col">
               <div class="relative w-full aspect-[16/9] bg-gray-200 overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=720" 
-                  srcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=540 540w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=42&w=720 720w"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 720px"
+                  src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" 
+                  srcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=40&w=720 720w"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px"
                   alt="राज्यवाणी ताज्या बातम्या" 
                   class="w-full h-full object-cover"
                   fetchpriority="high"
