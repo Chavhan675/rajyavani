@@ -1,11 +1,40 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
+
+function inlineCssPlugin(): Plugin {
+  return {
+    name: 'inline-css-plugin',
+    apply: 'build',
+    enforce: 'post',
+    transformIndexHtml(html, ctx) {
+      if (!ctx.bundle) return html;
+      let outputHtml = html;
+      for (const [fileName, file] of Object.entries(ctx.bundle)) {
+        if (fileName.endsWith('.css') && file.type === 'asset' && typeof file.source === 'string') {
+          // Remove the <link rel="stylesheet" ...> tag for this CSS file
+          const linkPattern = new RegExp(`<link[^>]*href="[^"]*${fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`, 'g');
+          outputHtml = outputHtml.replace(linkPattern, '');
+          
+          // Also catch generic relative paths /assets/...
+          const baseName = path.basename(fileName);
+          const baseLinkPattern = new RegExp(`<link[^>]*href="[^"]*${baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`, 'g');
+          outputHtml = outputHtml.replace(baseLinkPattern, '');
+
+          // Inject as inline style tag right before </head>
+          const inlineStyle = `<style id="inlined-app-styles">${file.source}</style>`;
+          outputHtml = outputHtml.replace('</head>', `${inlineStyle}\n</head>`);
+        }
+      }
+      return outputHtml;
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), inlineCssPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
@@ -15,7 +44,7 @@ export default defineConfig(() => {
       sourcemap: false,
       chunkSizeWarningLimit: 1000,
       target: 'es2020',
-      cssCodeSplit: true,
+      cssCodeSplit: false,
       minify: 'esbuild',
       rollupOptions: {
         output: {
@@ -48,3 +77,4 @@ export default defineConfig(() => {
     },
   };
 });
+
