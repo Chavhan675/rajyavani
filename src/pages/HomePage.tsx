@@ -127,14 +127,17 @@ export default function HomePage() {
     if (isSynthetic) return;
 
     // Fetch in idle callback to avoid blocking initial interactivity & layout paints
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(fetchArticles, { timeout: 4000 });
-    } else {
-      setTimeout(fetchArticles, 1000);
-    }
+    const timer = setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(fetchArticles, { timeout: 6000 });
+      } else {
+        fetchArticles();
+      }
+    }, 2500);
 
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
   }, []);
 

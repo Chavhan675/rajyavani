@@ -68,7 +68,7 @@ export default function NewsGrid({ title, articles, loading = false, skeletonCou
   if (articles.length === 0) return null;
 
   return (
-    <section className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ contain: 'layout style' }}>
       {title && (
         <div className="flex items-center justify-between mb-6 border-b-2 border-brand-black pb-2">
           <h2 className="text-2xl font-extrabold text-brand-black relative">
@@ -82,7 +82,12 @@ export default function NewsGrid({ title, articles, loading = false, skeletonCou
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {articles.map((article) => (
-          <Link to={`/article/${article.id}`} key={article.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group cursor-pointer flex flex-col transition-all hover:shadow-md hover:-translate-y-1 block">
+          <Link 
+            to={`/article/${article.id}`} 
+            key={article.id} 
+            style={{ contain: 'layout paint' }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group cursor-pointer flex flex-col transition-all hover:shadow-md hover:-translate-y-1 block"
+          >
             <div className="relative h-48 overflow-hidden bg-gray-200">
               <Image 
                 src={article.imageUrl}

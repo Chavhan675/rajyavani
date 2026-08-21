@@ -19,14 +19,14 @@
     <!-- DNS and Connection Preconnects -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
     <link rel="dns-prefetch" href="https://images.unsplash.com">
     
     <!-- LCP Hero Image Preload matching the exact responsive srcset & sizes -->
-    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" imagesrcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=40&w=720 720w" imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px" fetchpriority="high" />
+    <link rel="preload" as="image" type="image/webp" href="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" imagesrcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=40&w=720 720w" imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px" fetchpriority="high" />
 
-    <!-- Primary Web Fonts: Asynchronous non-render-blocking font loading -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" media="print" onload="this.media='all'; this.onload=null;">
+    <!-- Primary Web Fonts: Preloaded asynchronous non-render-blocking font loading -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap">
     </noscript>
