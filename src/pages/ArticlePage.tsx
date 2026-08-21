@@ -12,7 +12,7 @@ import { getCategoryFallbackImage } from '../lib/defaultImages';
 import { MapPin, Clock, User, Tag, Share2, AlertTriangle, Loader2, ChevronRight, Home, Sparkles, Newspaper, Bookmark, Trash2 } from 'lucide-react';
 import BookmarkButton from '../components/BookmarkButton';
 import FloatingShareButton from '../components/FloatingShareButton';
-import { format } from 'date-fns';
+import { formatMarathiFullDate, formatMarathiDateOnly } from '../lib/formatTime';
 import { useAuth } from '../lib/AuthContext';
 
 export default function ArticlePage() {
@@ -301,12 +301,12 @@ export default function ArticlePage() {
                 <div className="flex flex-wrap items-center text-xs text-gray-700 font-medium gap-x-4 gap-y-1 mt-1">
                   <span className="flex items-center">
                     <Clock className="w-3.5 h-3.5 mr-1 text-gray-600" /> 
-                    प्रसिद्धी: {format(new Date(article.publishedAt || article.createdAt), "dd MMMM yyyy, hh:mm a")}
+                    प्रसिद्धी: {formatMarathiFullDate(article.publishedAt || article.createdAt)}
                   </span>
                   {article.updatedAt && article.updatedAt > (article.publishedAt || article.createdAt) + 60000 && (
                     <span className="flex items-center text-amber-900 font-bold">
                       <Clock className="w-3.5 h-3.5 mr-1 text-amber-800" /> 
-                      शेवटचे अपडेट: {format(new Date(article.updatedAt), "dd MMMM yyyy, hh:mm a")}
+                      शेवटचे अपडेट: {formatMarathiFullDate(article.updatedAt)}
                     </span>
                   )}
                 </div>
@@ -492,7 +492,7 @@ export default function ArticlePage() {
                     </h3>
                     <span className="text-xs font-bold text-gray-700 flex items-center mt-auto">
                       <Clock className="w-3 h-3 mr-1 text-gray-600" />
-                      {format(new Date(rel.publishedAt || rel.createdAt || Date.now()), "dd MMM yyyy")}
+                      {formatMarathiDateOnly(rel.publishedAt || rel.createdAt || Date.now())}
                     </span>
                   </div>
                 </Link>
@@ -515,7 +515,7 @@ export default function ArticlePage() {
         imageUrl={article.imageUrl || getCategoryFallbackImage(article.category, article.title)}
         category={article.category}
         authorName={article.authorName}
-        publishedDate={format(new Date(article.publishedAt || article.createdAt || Date.now()), "dd MMMM yyyy")}
+        publishedDate={formatMarathiDateOnly(article.publishedAt || article.createdAt || Date.now())}
       />
 
       <Footer />

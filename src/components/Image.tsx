@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { getCategoryFallbackImage, getSvgEditorialPlaceholder } from '../lib/defaultImages';
 
 /**
- * Optimizes image URLs (e.g. Unsplash) with compression factor, modern web format auto-negotiation, and width.
+ * Optimizes image URLs (e.g. Unsplash) with WebP modern format, compression factor, and dimensions.
  */
-export function optimizeImageUrl(url: string, targetWidth: number = 360, quality: number = 55): string {
+export function optimizeImageUrl(url: string, targetWidth: number = 360, quality: number = 50): string {
   if (!url || typeof url !== 'string') {
     return url;
   }
 
-  // Unsplash dynamic image optimization
+  // Unsplash dynamic image optimization: Force WebP format and strict target width & compression
   if (url.includes('images.unsplash.com')) {
     try {
       const parsed = new URL(url);
       parsed.searchParams.set('auto', 'format,compress');
+      parsed.searchParams.set('fm', 'webp');
       parsed.searchParams.set('fit', 'crop');
       parsed.searchParams.set('q', quality.toString());
       parsed.searchParams.set('w', targetWidth.toString());
@@ -22,11 +23,12 @@ export function optimizeImageUrl(url: string, targetWidth: number = 360, quality
       let cleanUrl = url
         .replace(/([?&])q=\d+/g, '')
         .replace(/([?&])w=\d+/g, '')
+        .replace(/([?&])fm=[^&]*/g, '')
         .replace(/([?&])auto=[^&]*/g, '')
         .replace(/([?&])fit=[^&]*/g, '');
       
       const delimiter = cleanUrl.includes('?') ? '&' : '?';
-      return `${cleanUrl}${delimiter}auto=format,compress&fit=crop&q=${quality}&w=${targetWidth}`;
+      return `${cleanUrl}${delimiter}auto=format,compress&fm=webp&fit=crop&q=${quality}&w=${targetWidth}`;
     }
   }
 
@@ -36,7 +38,7 @@ export function optimizeImageUrl(url: string, targetWidth: number = 360, quality
 /**
  * Generates compact, optimized responsive srcset for dynamic CDN images (Unsplash).
  */
-export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 55): string | undefined {
+export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 50): string | undefined {
   if (!url || typeof url !== 'string' || !url.includes('images.unsplash.com')) {
     return undefined;
   }

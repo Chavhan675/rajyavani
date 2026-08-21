@@ -1,21 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import Header from "../components/Header";
 import BreakingNewsTicker from "../components/BreakingNewsTicker";
 import Hero from "../components/Hero";
 import NewsGrid from "../components/NewsGrid";
-import Footer from "../components/Footer";
 import AdUnit from "../components/AdUnit";
-import DistrictExplorer from "../components/DistrictExplorer";
 import { mockArticles } from "../data";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
 import { MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 import SEO from "../components/SEO";
 
+// Lazy load below-the-fold components to minimize main-thread execution & unused JS
+const DistrictExplorer = lazy(() => import("../components/DistrictExplorer"));
+const Footer = lazy(() => import("../components/Footer"));
+
+const CACHE_KEY = 'rajyavani_homepage_cache_v2';
+
 export default function HomePage() {
-  const [dbArticles, setDbArticles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dbArticles, setDbArticles] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return [];
+  });
+  const [loading, setLoading] = useState(false);
   
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const navigate = useNavigate();
@@ -32,6 +46,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const fetchArticles = async () => {
       try {
         const { collection, query, where, orderBy, getDocs, limit } = await import('firebase/firestore');
@@ -43,6 +58,7 @@ export default function HomePage() {
           limit(20)
         );
         const snapshot = await getDocs(q);
+        if (!isMounted) return;
         const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
         // Map backend schema to frontend Hero/NewsGrid expected shape
@@ -71,27 +87,36 @@ export default function HomePage() {
           tags: item.tags || []
         }));
         
-        setDbArticles(mapped);
+        if (mapped.length > 0) {
+          setDbArticles(mapped);
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
+          } catch {}
+        }
       } catch (error) {
         console.error("Error fetching articles:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     
-    // Fetch in idle callback or next microtask to keep main thread completely unblocked for initial paint
+    // Fetch in idle callback to avoid blocking initial interactivity & layout paints
     if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(fetchArticles, { timeout: 1500 });
+      (window as any).requestIdleCallback(fetchArticles, { timeout: 2000 });
     } else {
-      setTimeout(fetchArticles, 100);
+      setTimeout(fetchArticles, 150);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Use DB articles if available, otherwise fallback to mock data
   const articlesToUse = dbArticles.length > 0 ? [...dbArticles, ...mockArticles].slice(0, 20) : mockArticles;
   
-  const maharashtraNews = articlesToUse.filter(a => a.location.state === "महाराष्ट्र" || a.location.district);
-  const nationalNews = articlesToUse.filter(a => a.location.state === "राष्ट्रीय" || (!a.location.state && !a.location.district));
+  const maharashtraNews = articlesToUse.filter(a => a.location?.state === "महाराष्ट्र" || a.location?.district);
+  const nationalNews = articlesToUse.filter(a => a.location?.state === "राष्ट्रीय" || (!a.location?.state && !a.location?.district));
   
   return (
     <div className="min-h-screen flex flex-col bg-brand-gray/50">
@@ -166,15 +191,19 @@ export default function HomePage() {
            </div>
         </section>
 
-        {/* Dedicated District Explorer Component for all 36 districts */}
+        {/* Dedicated District Explorer Component for all 36 districts (Suspense lazy loaded) */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <DistrictExplorer />
+          <Suspense fallback={<div className="h-48 bg-gray-100 rounded-3xl animate-pulse my-10" />}>
+            <DistrictExplorer />
+          </Suspense>
         </div>
 
         <NewsGrid title="राष्ट्रीय बातम्या" articles={nationalNews} skeletonCount={4} />
       </main>
 
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

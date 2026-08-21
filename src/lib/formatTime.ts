@@ -26,3 +26,36 @@ export function formatMarathiTime(dateInput?: string | number | Date | null): st
     return 'काही वेळापूर्वी';
   }
 }
+
+export function formatMarathiFullDate(dateInput?: string | number | Date | null): string {
+  if (!dateInput) return '';
+  try {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('mr-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch {
+    return '';
+  }
+}
+
+export function formatMarathiDateOnly(dateInput?: string | number | Date | null): string {
+  if (!dateInput) return '';
+  try {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('mr-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch {
+    return '';
+  }
+}
