@@ -109,8 +109,19 @@ export default function HomePage() {
     };
   }, []);
 
-  // Use DB articles if available, otherwise fallback to mock data
-  const articlesToUse = dbArticles.length > 0 ? [...dbArticles, ...mockArticles].slice(0, 20) : mockArticles;
+  // Use DB articles if available, deduplicating against mockArticles by article id
+  const articlesToUse = React.useMemo(() => {
+    if (!dbArticles || dbArticles.length === 0) return mockArticles;
+    const seen = new Set<string>();
+    const combined: typeof mockArticles = [];
+    for (const article of [...dbArticles, ...mockArticles]) {
+      if (article?.id && !seen.has(article.id)) {
+        seen.add(article.id);
+        combined.push(article);
+      }
+    }
+    return combined.slice(0, 20);
+  }, [dbArticles]);
   
   const maharashtraNews = articlesToUse.filter(a => a.location?.state === "महाराष्ट्र" || a.location?.district);
   const nationalNews = articlesToUse.filter(a => a.location?.state === "राष्ट्रीय" || (!a.location?.state && !a.location?.district));

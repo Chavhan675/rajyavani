@@ -22,14 +22,14 @@ export default function BreakingNewsTicker({ articles }: TickerProps) {
       <div className="overflow-hidden whitespace-nowrap relative flex-1">
         <div className="inline-block animate-[marquee_20s_linear_infinite] hover:[animation-play-state:paused]">
           {displayArticles.map((article, i) => (
-            <Link to={`/article/${article.id}`} key={article.id} className="mx-4 text-sm font-medium hover:text-amber-300 transition-colors">
+            <Link to={`/article/${article.id}`} key={`ticker-orig-${article.id}-${i}`} className="mx-4 text-sm font-medium hover:text-amber-300 transition-colors">
               <span className="text-amber-400 mr-2">•</span>
               {article.title}
             </Link>
           ))}
           {/* Duplicate for seamless scrolling */}
           {displayArticles.map((article, i) => (
-            <Link to={`/article/${article.id}`} key={article.id + "-dup"} className="mx-4 text-sm font-medium hover:text-amber-300 transition-colors">
+            <Link to={`/article/${article.id}`} key={`ticker-dup-${article.id}-${i}`} className="mx-4 text-sm font-medium hover:text-amber-300 transition-colors">
               <span className="text-amber-400 mr-2">•</span>
               {article.title}
             </Link>
