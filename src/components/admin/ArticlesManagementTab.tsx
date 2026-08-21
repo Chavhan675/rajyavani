@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, limit, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { useAuth } from '../../lib/AuthContext';
 import { 
   Newspaper, 
   Search, 
@@ -13,13 +14,16 @@ import {
   RefreshCw, 
   Loader2, 
   FileText,
-  Filter
+  Filter,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import Image from '../Image';
 
 export default function ArticlesManagementTab() {
+  const { getToken } = useAuth();
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -27,6 +31,8 @@ export default function ArticlesManagementTab() {
   const [searchTerm, setSearchTerm] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchArticles = async () => {
     try {
@@ -71,20 +77,46 @@ export default function ArticlesManagementTab() {
     }
   };
 
-  const handleDelete = async (articleId: string, title: string) => {
-    if (!window.confirm(`तुम्ही खात्रीने "${title.substring(0, 40)}..." ही बातमी डिलीट करू इच्छिता?`)) {
-      return;
-    }
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { id: articleId, title } = deleteTarget;
 
     try {
+      setIsDeleting(true);
       setProcessingId(articleId);
-      await deleteDoc(doc(db, 'articles', articleId));
+
+      let deleted = false;
+      // 1. First attempt direct Firestore Client delete
+      try {
+        await deleteDoc(doc(db, 'articles', articleId));
+        deleted = true;
+      } catch (firestoreErr) {
+        console.warn("Client Firestore delete failed, trying admin REST API:", firestoreErr);
+      }
+
+      // 2. Fallback to Admin REST API if client delete failed
+      if (!deleted) {
+        const token = await getToken();
+        const res = await fetch(`/api/admin/articles/${encodeURIComponent(articleId)}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Server deletion failed');
+        }
+      }
+
       setArticles(prev => prev.filter(a => a.id !== articleId));
-      setMessage({ type: 'success', text: 'बातमी यशस्वीरीत्या हटवली.' });
+      setMessage({ type: 'success', text: `"${title.substring(0, 30)}..." बातमी यशस्वीरीत्या हटवली.` });
+      setDeleteTarget(null);
     } catch (err: any) {
-      console.error(err);
-      setMessage({ type: 'error', text: 'बातमी हटवण्यात अडचण आली.' });
+      console.error("Delete article error:", err);
+      setMessage({ type: 'error', text: 'बातमी हटवण्यात अडचण आली: ' + (err.message || 'त्रुटी') });
     } finally {
+      setIsDeleting(false);
       setProcessingId(null);
     }
   };
@@ -302,10 +334,10 @@ export default function ArticlesManagementTab() {
                           </button>
                         )}
                         <button
-                          onClick={() => handleDelete(art.id, art.title)}
-                          disabled={processingId === art.id}
+                          onClick={() => setDeleteTarget({ id: art.id, title: art.title })}
+                          disabled={processingId === art.id || isDeleting}
                           className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors cursor-pointer"
-                          title="हटवा"
+                          title="बातमी कायमस्वरूपी हटवा (Delete Article)"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -318,6 +350,70 @@ export default function ArticlesManagementTab() {
           </tbody>
         </table>
       </div>
+
+      {/* Custom Deletion Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 max-w-md w-full p-6 relative">
+            <button
+              onClick={() => {
+                if (!isDeleting) setDeleteTarget(null);
+              }}
+              className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center mb-4">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <h4 className="text-lg font-bold text-gray-900 mb-1">
+              बातमी डिलीट करण्याची खात्री करा
+            </h4>
+            <p className="text-xs text-gray-500 mb-4">
+              Delete Article Permanently
+            </p>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 mb-5 text-sm text-gray-800 font-medium">
+              "{deleteTarget.title}"
+            </div>
+
+            <p className="text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 mb-6 leading-relaxed">
+              ⚠️ ही क्रिया पूर्ववत करता येणार नाही. ही बातमी डेटाबेसमधून कायमस्वरूपी काढून टाकली जाईल.
+            </p>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                रद्द करा (Cancel)
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md shadow-red-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>हटवत आहे...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>होय, बातमी हटवा</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

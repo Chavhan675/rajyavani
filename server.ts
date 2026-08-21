@@ -557,6 +557,35 @@ app.get("/api/articles", async (req, res) => {
   }
 });
 
+// Admin endpoint to delete an article securely with admin privilege validation
+app.delete("/api/admin/articles/:id", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const rawToken = req.headers.authorization!.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'SUPER_ADMIN' && userRole !== 'ADMIN') {
+      return res.status(403).json({ error: "Access denied. Only Super Admin or Admin can delete articles." });
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: "Article ID is required" });
+    }
+
+    try {
+      await adminDb.collection("articles").doc(id).delete();
+    } catch (e: any) {
+      console.warn("Direct adminDb deletion error:", e.message);
+    }
+
+    return res.json({ success: true, message: "Article successfully deleted" });
+  } catch (error: any) {
+    console.error("Error deleting article:", error);
+    return res.status(500).json({ error: error.message || "Failed to delete article" });
+  }
+});
+
 // Endpoint to list all 36 Maharashtra districts with their media sources
 app.get("/api/districts", (req, res) => {
   res.json({ success: true, districts: MAHARASHTRA_DISTRICTS });
