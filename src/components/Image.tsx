@@ -4,7 +4,7 @@ import { getCategoryFallbackImage, getSvgEditorialPlaceholder } from '../lib/def
 /**
  * Optimizes image URLs (e.g. Unsplash) with WebP modern format, compression factor, and dimensions.
  */
-export function optimizeImageUrl(url: string, targetWidth: number = 360, quality: number = 50): string {
+export function optimizeImageUrl(url: string, targetWidth: number = 360, quality: number = 42): string {
   if (!url || typeof url !== 'string') {
     return url;
   }
@@ -38,14 +38,14 @@ export function optimizeImageUrl(url: string, targetWidth: number = 360, quality
 /**
  * Generates compact, optimized responsive srcset for dynamic CDN images (Unsplash).
  */
-export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 50): string | undefined {
+export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 42): string | undefined {
   if (!url || typeof url !== 'string' || !url.includes('images.unsplash.com')) {
     return undefined;
   }
   const widths = size === 'thumbnail' 
-    ? [120, 180] 
+    ? [100, 160] 
     : size === 'card' 
-      ? [240, 360, 480] 
+      ? [200, 320, 420] 
       : [360, 540, 720];
   return widths.map(w => `${optimizeImageUrl(url, w, quality)} ${w}w`).join(', ');
 }

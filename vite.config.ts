@@ -20,7 +20,7 @@ export default defineConfig(() => {
       minifyWhitespace: true,
     },
     build: {
-      sourcemap: true,
+      sourcemap: false,
       chunkSizeWarningLimit: 1000,
       target: 'es2020',
       cssCodeSplit: false,

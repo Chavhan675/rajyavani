@@ -512,6 +512,51 @@ Provide an exhaustive, practical response tailored to Maharashtra students and j
 });
 
 
+// High-performance REST endpoint to fetch latest published articles (avoids heavy client-side SDK)
+app.get("/api/articles", async (req, res) => {
+  try {
+    const limitNum = Math.min(parseInt(req.query.limit as string) || 20, 50);
+    const category = req.query.category as string;
+    const district = req.query.district as string;
+
+    let articles: any[] = [];
+    try {
+      let query: any = adminDb.collection("articles").where("status", "==", "PUBLISHED");
+      if (category) {
+        query = query.where("category", "==", category);
+      }
+      if (district) {
+        query = query.where("district", "==", district);
+      }
+      query = query.orderBy("publishedAt", "desc").limit(limitNum);
+      const snapshot = await query.get();
+      if (!snapshot.empty) {
+        articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+    } catch (dbErr) {
+      // Fallback silently if adminDb is not yet populated
+    }
+
+    if (articles.length === 0) {
+      const { mockArticles } = await import("./src/data.js");
+      let filtered = [...mockArticles];
+      if (category) {
+        filtered = filtered.filter(a => (a.category as unknown as string) === category);
+      }
+      if (district) {
+        filtered = filtered.filter(a => a.location?.district === district || (a as any).district === district);
+      }
+      articles = filtered.slice(0, limitNum);
+    }
+
+    // Set high-efficiency cache headers
+    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+    return res.json({ success: true, articles });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Endpoint to list all 36 Maharashtra districts with their media sources
 app.get("/api/districts", (req, res) => {
   res.json({ success: true, districts: MAHARASHTRA_DISTRICTS });

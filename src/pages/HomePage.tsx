@@ -49,17 +49,11 @@ export default function HomePage() {
     let isMounted = true;
     const fetchArticles = async () => {
       try {
-        const { collection, query, where, orderBy, getDocs, limit } = await import('firebase/firestore');
-        const { db } = await import('../lib/firebase');
-        const q = query(
-          collection(db, 'articles'),
-          where('status', '==', 'PUBLISHED'),
-          orderBy('publishedAt', 'desc'),
-          limit(20)
-        );
-        const snapshot = await getDocs(q);
-        if (!isMounted) return;
-        const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const res = await fetch('/api/articles?limit=20');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!isMounted || !data.success || !Array.isArray(data.articles)) return;
+        const fetched = data.articles;
         
         // Map backend schema to frontend Hero/NewsGrid expected shape
         const mapped = fetched.map((item: any) => ({
@@ -71,14 +65,14 @@ export default function HomePage() {
           imagePrompt: item.imagePrompt,
           imageAlt: item.imageAlt || item.title,
           category: item.category,
-          author: item.authorName || "जिल्हा विशेष वार्ताहर",
+          author: item.authorName || (typeof item.author === 'string' ? item.author : "जिल्हा विशेष वार्ताहर"),
           authorAvatar: item.authorAvatar,
-          publishedAt: new Date(item.publishedAt).toISOString(),
-          lastUpdated: item.updatedAt ? new Date(item.updatedAt).toISOString() : null,
-          readTime: "4 min read",
-          isBreaking: item.isDeveloping || false,
+          publishedAt: typeof item.publishedAt === 'number' ? new Date(item.publishedAt).toISOString() : (item.publishedAt || new Date().toISOString()),
+          lastUpdated: item.updatedAt ? new Date(item.updatedAt).toISOString() : (item.lastUpdated || null),
+          readTime: item.readTime || "4 min read",
+          isBreaking: item.isBreaking || item.isDeveloping || false,
           aiGenerated: item.aiGenerated || false,
-          location: {
+          location: item.location || {
             state: (item.district || item.category === "महाराष्ट्र") ? "महाराष्ट्र" : "राष्ट्रीय",
             district: item.district,
             taluka: item.taluka,

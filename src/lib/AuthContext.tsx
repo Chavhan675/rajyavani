@@ -259,6 +259,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthModalOpen(true);
   };
 
+  const handleOpenProfileModal = (open: boolean) => {
+    if (open) initAuthListener();
+    setProfileModalOpen(open);
+  };
+
+  const handleOpenBookmarksModal = (open: boolean) => {
+    if (open) initAuthListener();
+    setBookmarksModalOpen(open);
+  };
+
   useEffect(() => {
     // Check if user has an existing stored session in localStorage
     const hasLocalSession = typeof window !== 'undefined' && Boolean(
@@ -268,28 +278,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (hasLocalSession) {
       initAuthListener();
-      return;
     }
-
-    // Otherwise defer initialization till idle (5s) or first user action
-    let timer: any;
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      timer = (window as any).requestIdleCallback(() => {
-        initAuthListener();
-      }, { timeout: 6000 });
-    } else {
-      timer = setTimeout(() => {
-        initAuthListener();
-      }, 6000);
-    }
-
-    return () => {
-      if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-        (window as any).cancelIdleCallback(timer);
-      } else {
-        clearTimeout(timer);
-      }
-    };
   }, [initAuthListener]);
 
   // 1. Email & Password Login
@@ -585,9 +574,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthModalTab,
         openAuthModal,
         profileModalOpen,
-        setProfileModalOpen,
+        setProfileModalOpen: handleOpenProfileModal,
         bookmarksModalOpen,
-        setBookmarksModalOpen,
+        setBookmarksModalOpen: handleOpenBookmarksModal,
         loginWithEmail,
         registerWithEmail,
         resetPassword,
