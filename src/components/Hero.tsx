@@ -198,18 +198,18 @@ export default function Hero({ articles, loading = false }: HeroProps) {
                 </h2>
                 
                 <div className="flex flex-col space-y-1.5 mt-auto pt-2">
-                  <div className="flex items-center space-x-1.5 text-[11px] font-medium text-gray-700 truncate">
-                    <User className="w-3 h-3 text-gray-500 shrink-0" />
+                  <div className="flex items-center space-x-1.5 text-[11px] font-bold text-gray-800 truncate">
+                    <User className="w-3 h-3 text-gray-700 shrink-0" />
                     <span className="truncate">{article.author}</span>
                   </div>
                   
-                  <div className="flex items-center justify-between text-[10px] text-gray-600 font-bold border-t border-gray-100 pt-1.5">
+                  <div className="flex items-center justify-between text-[10px] text-gray-800 font-bold border-t border-gray-100 pt-1.5">
                     <div className="flex items-center space-x-1">
-                      <Clock className="w-3 h-3 text-gray-500" />
+                      <Clock className="w-3 h-3 text-gray-700" />
                       <span>{formatMarathiTime(article.publishedAt)}</span>
                     </div>
                     {article.aiGenerated && (
-                      <span className="text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded text-[9px] font-black">
+                      <span className="text-amber-900 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded text-[9px] font-black">
                         AI Draft
                       </span>
                     )}

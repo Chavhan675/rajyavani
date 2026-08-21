@@ -26,20 +26,7 @@ export default defineConfig(() => {
       cssCodeSplit: true,
       minify: 'esbuild',
       modulePreload: {
-        resolveDependencies(_filename, deps) {
-          // Exclude heavy lazy dependencies from homepage modulepreload
-          return deps.filter(dep => 
-            !dep.includes('firebase') && 
-            !dep.includes('charts') && 
-            !dep.includes('date') && 
-            !dep.includes('AdminPage') &&
-            !dep.includes('DistrictPage') &&
-            !dep.includes('ArticlePage') &&
-            !dep.includes('LegalPage') &&
-            !dep.includes('ContactPage') &&
-            !dep.includes('ArchivePage')
-          );
-        },
+        polyfill: true,
       },
       rollupOptions: {
         output: {

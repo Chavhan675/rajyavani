@@ -167,7 +167,7 @@ export default function Header() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-brand-red tracking-tight font-serif group-hover:opacity-95 transition-opacity">
               राज्यवाणी
             </h1>
-            <span className="text-[10px] sm:text-xs text-gray-700 font-bold tracking-widest uppercase mt-0.5">
+            <span className="text-[10px] sm:text-xs text-gray-900 font-extrabold tracking-widest uppercase mt-0.5">
               महाराष्ट्राचा बुलंद आवाज • सत्य, अचूक, निष्पक्ष
             </span>
           </Link>
@@ -179,7 +179,7 @@ export default function Header() {
             {user && (
               <button
                 onClick={() => setBookmarksModalOpen(true)}
-                className="text-gray-600 hover:text-brand-red transition-colors p-2 rounded-full hover:bg-gray-100 relative cursor-pointer"
+                className="text-gray-800 hover:text-brand-red transition-colors p-2 rounded-full hover:bg-gray-100 relative cursor-pointer"
                 title="जतन केलेल्या बातम्या"
                 aria-label="Saved Bookmarks"
               >
@@ -195,7 +195,7 @@ export default function Header() {
             {/* Search Trigger */}
             <button 
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="text-gray-600 hover:text-brand-red transition-colors p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+              className="text-gray-800 hover:text-brand-red transition-colors p-2 rounded-full hover:bg-gray-100 cursor-pointer"
               aria-label="Search"
             >
               {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
