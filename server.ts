@@ -39,10 +39,13 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// Set modern browser performance and security headers
+// Set modern browser performance, caching, and security headers
 app.use((req, res, next) => {
   res.setHeader("Permissions-Policy", "unload=()");
   res.setHeader("X-Content-Type-Options", "nosniff");
+  if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|webp|avif|json)$/) || req.url.startsWith("/assets/")) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  }
   next();
 });
 

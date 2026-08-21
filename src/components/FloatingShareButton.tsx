@@ -28,17 +28,22 @@ export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({
   const [hasScrolled, setHasScrolled] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Monitor scrolling to subtly adjust button or reveal helper pill
+  // Monitor scrolling to subtly adjust button or reveal helper pill (unblocked with requestAnimationFrame)
   useEffect(() => {
+    let rafId: number | null = null;
     const handleScroll = () => {
-      if (window.scrollY > 200) {
-        setHasScrolled(true);
-      } else {
-        setHasScrolled(false);
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(() => {
+          setHasScrolled(window.scrollY > 200);
+          rafId = null;
+        });
       }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Format WhatsApp message with article title, summary teaser, clickable URL and branding

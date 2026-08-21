@@ -4,7 +4,7 @@ import { getCategoryFallbackImage, getSvgEditorialPlaceholder } from '../lib/def
 /**
  * Optimizes image URLs (e.g. Unsplash) with compression factor, modern web format auto-negotiation, and width.
  */
-export function optimizeImageUrl(url: string, targetWidth: number = 600, quality: number = 65): string {
+export function optimizeImageUrl(url: string, targetWidth: number = 360, quality: number = 55): string {
   if (!url || typeof url !== 'string') {
     return url;
   }
@@ -34,17 +34,17 @@ export function optimizeImageUrl(url: string, targetWidth: number = 600, quality
 }
 
 /**
- * Generates responsive srcset for dynamic CDN images (Unsplash).
+ * Generates compact, optimized responsive srcset for dynamic CDN images (Unsplash).
  */
-export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 60): string | undefined {
+export function getResponsiveSrcSet(url: string, size: 'thumbnail' | 'card' | 'featured' | 'social' = 'card', quality: number = 55): string | undefined {
   if (!url || typeof url !== 'string' || !url.includes('images.unsplash.com')) {
     return undefined;
   }
   const widths = size === 'thumbnail' 
-    ? [120, 180, 240] 
+    ? [120, 180] 
     : size === 'card' 
       ? [240, 360, 480] 
-      : [360, 540, 720, 960];
+      : [360, 540, 720];
   return widths.map(w => `${optimizeImageUrl(url, w, quality)} ${w}w`).join(', ');
 }
 
@@ -56,13 +56,13 @@ export function getResponsiveSizes(size: 'thumbnail' | 'card' | 'featured' | 'so
     case 'thumbnail':
       return '(max-width: 640px) 120px, 180px';
     case 'card':
-      return '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px';
+      return '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px';
     case 'featured':
-      return '(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px';
+      return '(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 720px';
     case 'social':
       return '100vw';
     default:
-      return '(max-width: 640px) 100vw, 480px';
+      return '(max-width: 640px) 100vw, 360px';
   }
 }
 
@@ -74,13 +74,13 @@ export function getIntrinsicDimensions(size: 'thumbnail' | 'card' | 'featured' |
     case 'thumbnail':
       return { width: 180, height: 120 };
     case 'card':
-      return { width: 480, height: 270 };
+      return { width: 360, height: 202 };
     case 'featured':
-      return { width: 800, height: 450 };
+      return { width: 720, height: 405 };
     case 'social':
-      return { width: 800, height: 420 };
+      return { width: 720, height: 378 };
     default:
-      return { width: 480, height: 270 };
+      return { width: 360, height: 202 };
   }
 }
 
@@ -172,8 +172,8 @@ export default function Image({
 
   // Determine target width & quality
   const isSvg = rawSrc.startsWith('data:image/svg+xml');
-  const targetWidth = size === 'thumbnail' ? 180 : size === 'card' ? 420 : size === 'featured' ? 800 : 480;
-  const quality = size === 'featured' ? 70 : 65;
+  const targetWidth = size === 'thumbnail' ? 140 : size === 'card' ? 360 : size === 'featured' ? 720 : 400;
+  const quality = size === 'featured' ? 60 : 55;
   const optimizedSrc = isSvg ? rawSrc : optimizeImageUrl(rawSrc, targetWidth, quality);
   const srcSet = isSvg ? undefined : getResponsiveSrcSet(rawSrc, size, quality);
   const sizes = getResponsiveSizes(size);

@@ -1,12 +1,10 @@
 import React from "react";
 import { Bot, Clock, MapPin, Tag, User, Trash2 } from "lucide-react";
 import { NewsArticle } from "../types";
-import { formatDistanceToNow } from "date-fns";
+import { formatMarathiTime } from "../lib/formatTime";
 import Image from "./Image";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
-import { doc, deleteDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
 
 interface HeroProps {
   articles: NewsArticle[];
@@ -21,6 +19,8 @@ export default function Hero({ articles, loading = false }: HeroProps) {
     e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this news article?")) {
       try {
+        const { doc, deleteDoc } = await import("firebase/firestore");
+        const { db } = await import("../lib/firebase");
         await deleteDoc(doc(db, "articles", id));
         window.location.reload();
       } catch (err) {
@@ -147,7 +147,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
               
               <div className="flex items-center space-x-1.5 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm">
                 <Clock className="w-3.5 h-3.5 text-gray-200" />
-                <span className="text-white font-semibold">Published {formatDistanceToNow(new Date(mainArticle.publishedAt), { addSuffix: true })}</span>
+                <span className="text-white font-semibold">{formatMarathiTime(mainArticle.publishedAt)}</span>
               </div>
 
               {mainArticle.location?.district && (
@@ -206,7 +206,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
                   <div className="flex items-center justify-between text-[10px] text-gray-600 font-bold border-t border-gray-100 pt-1.5">
                     <div className="flex items-center space-x-1">
                       <Clock className="w-3 h-3 text-gray-500" />
-                      <span>{formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}</span>
+                      <span>{formatMarathiTime(article.publishedAt)}</span>
                     </div>
                     {article.aiGenerated && (
                       <span className="text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded text-[9px] font-black">

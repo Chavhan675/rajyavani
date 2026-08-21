@@ -1,12 +1,10 @@
 import React from "react";
 import { Bot, Clock, MapPin, User, Tag, Trash2 } from "lucide-react";
 import { NewsArticle } from "../types";
-import { formatDistanceToNow } from "date-fns";
+import { formatMarathiTime } from "../lib/formatTime";
 import Image from "./Image";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
-import { doc, deleteDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
 
 interface NewsGridProps {
   title: string;
@@ -23,6 +21,8 @@ export default function NewsGrid({ title, articles, loading = false, skeletonCou
     e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this news article?")) {
       try {
+        const { doc, deleteDoc } = await import("firebase/firestore");
+        const { db } = await import("../lib/firebase");
         await deleteDoc(doc(db, "articles", id));
         window.location.reload();
       } catch (err) {
@@ -149,7 +149,7 @@ export default function NewsGrid({ title, articles, loading = false, skeletonCou
                 <div className="flex items-center justify-between text-xs text-gray-900 font-bold pt-3 border-t border-gray-200">
                   <div className="flex items-center space-x-1.5">
                     <Clock className="w-3.5 h-3.5 text-gray-900" />
-                    <span className="text-gray-900 font-bold">{formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}</span>
+                    <span className="text-gray-900 font-bold">{formatMarathiTime(article.publishedAt)}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-brand-red font-black">{article.views?.toLocaleString('mr-IN') || 0} views</span>
