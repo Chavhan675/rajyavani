@@ -23,7 +23,7 @@
     <link rel="dns-prefetch" href="https://images.unsplash.com">
     
     <!-- LCP Hero Image Preload matching the exact responsive srcset & sizes -->
-    <link rel="preload" as="image" type="image/webp" href="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" imagesrcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=40&w=720 720w" imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px" fetchpriority="high" />
+    <link rel="preload" as="image" type="image/webp" href="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" imagesrcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=720 720w" imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px" fetchpriority="high" />
 
     <!-- Primary Web Fonts: Preloaded asynchronous non-render-blocking font loading -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -46,19 +46,35 @@
       }
       .bg-brand-red, .bg-\[\#c91010\] { background-color: #c91010; }
       .text-brand-red, .text-\[\#c91010\] { color: #c91010; }
+      .bg-brand-saffron, .bg-\[\#f58416\] { background-color: #f58416; }
+      .bg-brand-black, .bg-\[\#111111\] { background-color: #111111; }
+      .bg-brand-gray { background-color: #f4f4f5; }
       .bg-gray-50 { background-color: #f9fafb; }
       .bg-gray-100 { background-color: #f3f4f6; }
       .bg-gray-200 { background-color: #e5e7eb; }
+      .bg-gray-800 { background-color: #1f2937; }
       .bg-gray-950 { background-color: #030712; }
+      .bg-amber-50 { background-color: #fffbeb; }
+      .bg-red-100 { background-color: #fee2e2; }
+      .bg-blue-100 { background-color: #dbeafe; }
+      .bg-emerald-100 { background-color: #d1fae5; }
       .text-white { color: #ffffff; }
+      .text-gray-100 { color: #f3f4f6; }
       .text-gray-300 { color: #d1d5db; }
+      .text-gray-400 { color: #9ca3af; }
       .text-gray-500 { color: #6b7280; }
       .text-gray-600 { color: #4b5563; }
       .text-gray-900 { color: #111827; }
+      .text-blue-800 { color: #1e40af; }
+      .text-emerald-800 { color: #065f46; }
+      .text-amber-400 { color: #fbbf24; }
       .min-h-screen { min-height: 100vh; }
       .flex { display: flex; }
+      .inline-flex { display: inline-flex; }
       .flex-col { flex-direction: column; }
+      .flex-row { flex-direction: row; }
       .flex-1 { flex: 1 1 0%; }
+      .shrink-0 { flex-shrink: 0; }
       .items-center { align-items: center; }
       .justify-between { justify-content: space-between; }
       .justify-center { justify-content: center; }
@@ -71,52 +87,109 @@
       .absolute { position: absolute; }
       .inset-0 { inset: 0px; }
       .top-0 { top: 0px; }
+      .z-10 { z-index: 10; }
+      .z-20 { z-index: 20; }
       .z-40 { z-index: 40; }
       .overflow-hidden { overflow: hidden; }
       .rounded-xl { border-radius: 0.75rem; }
       .rounded-2xl { border-radius: 1rem; }
+      .rounded-3xl { border-radius: 1.5rem; }
+      .rounded-full { border-radius: 9999px; }
       .rounded { border-radius: 0.25rem; }
+      .rounded-md { border-radius: 0.375rem; }
+      .rounded-lg { border-radius: 0.5rem; }
       .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+      .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
       .border { border-width: 1px; }
       .border-b { border-bottom-width: 1px; }
       .border-t { border-top-width: 1px; }
       .border-gray-100 { border-color: #f3f4f6; }
       .border-gray-200 { border-color: #e5e7eb; }
+      .border-gray-800 { border-color: #1f2937; }
+      .border-amber-200 { border-color: #fde68a; }
       .aspect-\[16\/9\] { aspect-ratio: 16 / 9; }
       .object-cover { object-fit: cover; }
       .grid { display: grid; }
+      .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
       .gap-6 { gap: 1.5rem; }
+      .gap-4 { gap: 1rem; }
       .gap-3 { gap: 0.75rem; }
       .gap-2 { gap: 0.5rem; }
+      .gap-1\.5 { gap: 0.375rem; }
       .p-4 { padding: 1rem; }
+      .p-6 { padding: 1.5rem; }
+      .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
       .px-4 { padding-left: 1rem; padding-right: 1rem; }
+      .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
       .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+      .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
       .py-3\.5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
       .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+      .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+      .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+      .mb-2 { margin-bottom: 0.5rem; }
+      .mb-3 { margin-bottom: 0.75rem; }
+      .mb-4 { margin-bottom: 1rem; }
       .mb-6 { margin-bottom: 1.5rem; }
       .mb-8 { margin-bottom: 2rem; }
-      .mb-2 { margin-bottom: 0.5rem; }
+      .mt-0\.5 { margin-top: 0.125rem; }
       .font-black { font-weight: 900; }
       .font-extrabold { font-weight: 800; }
       .font-bold { font-weight: 700; }
+      .font-medium { font-weight: 500; }
       .text-xs { font-size: 0.75rem; line-height: 1rem; }
-      .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+      .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
       .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+      .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+      .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+      .text-\[10px\] { font-size: 10px; }
+      .text-\[11px\] { font-size: 11px; }
       .leading-none { line-height: 1; }
       .leading-tight { line-height: 1.25; }
+      .tracking-tight { letter-spacing: -0.025em; }
+      .tracking-wider { letter-spacing: 0.05em; }
+      .uppercase { text-transform: uppercase; }
+      .whitespace-nowrap { white-space: nowrap; }
+      .w-2 { width: 0.5rem; }
+      .h-2 { height: 0.5rem; }
+      .w-3\.5 { width: 0.875rem; }
+      .h-3\.5 { height: 0.875rem; }
+      .w-4 { width: 1rem; }
+      .h-4 { height: 1rem; }
+      .w-8 { width: 2rem; }
+      .h-8 { height: 2rem; }
+      .w-10 { width: 2.5rem; }
+      .h-10 { height: 2.5rem; }
+      .w-20 { width: 5rem; }
+      .min-w-\[200px\] { min-width: 200px; }
       @media (min-width: 640px) {
         .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
         .sm\:p-6 { padding: 1.5rem; }
         .sm\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
         .sm\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .sm\:text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .sm\:inline { display: inline; }
+      }
+      @media (min-width: 768px) {
+        .md\:block { display: block; }
+        .md\:flex-row { flex-direction: row; }
+        .md\:mb-0 { margin-bottom: 0px; }
+        .md\:w-auto { width: auto; }
       }
       @media (min-width: 1024px) {
         .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
         .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        .lg\:col-span-8 { grid-column: span 8 / span 8; }
+        .lg\:col-span-4 { grid-column: span 4 / span 4; }
         .lg\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .lg\:text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .lg\:h-\[550px\] { height: 550px; }
+        .lg\:min-h-\[550px\] { min-height: 550px; }
       }
       @keyframes pulse { 50% { opacity: .5; } }
       .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
     </style>
     
     <!-- Open Graph & Social Sharing -->
