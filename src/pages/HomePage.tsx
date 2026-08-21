@@ -8,9 +8,8 @@ import AdUnit from "../components/AdUnit";
 import DistrictExplorer from "../components/DistrictExplorer";
 import { mockArticles } from "../data";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
-import { db } from '../lib/firebase';
-import { Loader2, MapPin, Briefcase, GraduationCap, Sparkles, ChevronRight, ShieldCheck, ExternalLink } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import SEO from "../components/SEO";
 
@@ -36,6 +35,7 @@ export default function HomePage() {
     const fetchArticles = async () => {
       try {
         const { collection, query, where, orderBy, getDocs, limit } = await import('firebase/firestore');
+        const { db } = await import('../lib/firebase');
         const q = query(
           collection(db, 'articles'),
           where('status', '==', 'PUBLISHED'),

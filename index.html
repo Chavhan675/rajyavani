@@ -83,7 +83,98 @@
     </script>
   </head>
   <body class="bg-brand-gray antialiased">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Instant First-Paint Layout Shell for Sub-Second FCP & Speed Index -->
+      <div class="min-h-screen flex flex-col bg-[#f8fafc] text-gray-900">
+        <header class="sticky top-0 z-40 bg-white border-b border-gray-200">
+          <div class="bg-[#c91010] text-white px-4 py-1.5 text-xs font-bold">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> महाराष्ट्र राज्य २४x७ डिजिटल वृत्तसेवा</span>
+              <span class="hidden sm:inline">विश्वसनीय • वेगवान • निष्पक्ष</span>
+            </div>
+          </div>
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-[#c91010] flex items-center justify-center text-white font-black text-2xl shadow-sm">रा</div>
+              <div>
+                <div class="text-2xl sm:text-3xl font-black text-[#c91010] leading-none tracking-tight">राज्यवाणी</div>
+                <div class="text-[10px] sm:text-xs text-gray-500 font-bold mt-0.5">महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-lg bg-gray-100 animate-pulse"></div>
+              <div class="w-20 h-8 rounded-lg bg-gray-100 animate-pulse"></div>
+            </div>
+          </div>
+          <div class="border-t border-gray-100 bg-gray-50/70 hidden md:block">
+            <div class="max-w-7xl mx-auto px-4 py-2 flex space-x-6 text-xs font-bold text-gray-600">
+              <span class="text-[#c91010]">मुख्यपृष्ठ</span>
+              <span>महाराष्ट्र</span>
+              <span>राजकारण</span>
+              <span>शेती</span>
+              <span>गुन्हेगारी</span>
+              <span>शिक्षण</span>
+              <span>व्यापार</span>
+              <span>क्रीडा</span>
+              <span>मनोरंजन</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <!-- Ticker placeholder -->
+          <div class="w-full h-10 bg-amber-50 border border-amber-200/80 rounded-xl mb-6 flex items-center px-3 gap-2">
+            <span class="bg-[#c91010] text-white text-[11px] font-black px-2 py-0.5 rounded">ताजी बातमी</span>
+            <div class="h-3 bg-amber-200/60 rounded flex-1 animate-pulse"></div>
+          </div>
+
+          <!-- Hero Grid Layout -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 bg-white rounded-2xl overflow-hidden border border-gray-200/90 shadow-sm flex flex-col">
+              <div class="relative w-full aspect-[16/9] bg-gray-200 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fit=crop&q=60&w=720" 
+                  alt="राज्यवाणी ताज्या बातम्या" 
+                  class="w-full h-full object-cover"
+                  fetchpriority="high"
+                  width="720"
+                  height="405"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4 sm:p-6 text-white">
+                  <span class="bg-[#c91010] text-white text-xs font-black px-2.5 py-1 rounded w-fit mb-2">महाराष्ट्र विशेष</span>
+                  <div class="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-tight text-white mb-2">
+                    महाराष्ट्रातील ३६ जिल्ह्यांतील सर्व ताज्या व विश्लेषणात्मक घडामोडी
+                  </div>
+                  <div class="flex items-center gap-3 text-xs text-gray-300">
+                    <span>राज्यवाणी प्रतिनिधी</span>
+                    <span>•</span>
+                    <span>आत्ताच प्रसिद्ध</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4 flex flex-col justify-between">
+              <div class="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-sm h-full flex flex-col justify-center space-y-2">
+                <div class="w-16 h-4 bg-red-100 text-[#c91010] rounded text-[10px] font-bold px-1.5 py-0.5">शेती विशेष</div>
+                <div class="h-5 bg-gray-200 rounded w-5/6 animate-pulse"></div>
+                <div class="h-3 bg-gray-100 rounded w-full animate-pulse"></div>
+              </div>
+              <div class="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-sm h-full flex flex-col justify-center space-y-2">
+                <div class="w-16 h-4 bg-blue-100 text-blue-800 rounded text-[10px] font-bold px-1.5 py-0.5">राजकारण</div>
+                <div class="h-5 bg-gray-200 rounded w-5/6 animate-pulse"></div>
+                <div class="h-3 bg-gray-100 rounded w-full animate-pulse"></div>
+              </div>
+              <div class="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-sm h-full flex flex-col justify-center space-y-2">
+                <div class="w-16 h-4 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold px-1.5 py-0.5">शिक्षण</div>
+                <div class="h-5 bg-gray-200 rounded w-5/6 animate-pulse"></div>
+                <div class="h-3 bg-gray-100 rounded w-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

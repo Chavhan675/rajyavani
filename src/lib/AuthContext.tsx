@@ -1,17 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { 
-  User, 
-  signOut as firebaseSignOut, 
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  updatePassword,
-  sendPasswordResetEmail,
-  sendEmailVerification
-} from 'firebase/auth';
-import { auth, db } from './firebase';
-import { doc, getDoc, setDoc, updateDoc, collection, addDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
 
 export type UserRoleType = 'SUPER_ADMIN' | 'USER';
 
@@ -89,7 +77,7 @@ const SUPER_ADMIN_EMAILS = [
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register' | 'forgot'>('login');
@@ -102,6 +90,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Helper to record audit trail in Firestore
   const logAuthActivity = async (payload: Omit<AuditLog, 'timestamp'>) => {
     try {
+      const { collection, addDoc } = await import('firebase/firestore');
+      const { db } = await import('./firebase');
       await addDoc(collection(db, 'auth_audit_logs'), {
         ...payload,
         userAgent: typeof window !== 'undefined' ? window.navigator.userAgent.substring(0, 300) : '',
@@ -162,103 +152,101 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user, resetInactivityTimer]);
 
   useEffect(() => {
-    // Check if running in a synthetic test / Lighthouse audit environment
-    const isBotOrAudit = typeof navigator !== 'undefined' && (
-      /Lighthouse|PageSpeed|GTmetrix|Chrome-Lighthouse|Googlebot/i.test(navigator.userAgent)
-    );
-
-    if (isBotOrAudit) {
-      setLoading(false);
-      return;
-    }
-
     let unsubscribe: (() => void) | undefined;
 
-    const initAuthListener = () => {
+    const initAuthListener = async () => {
       if (unsubscribe) return;
-      unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-        setUser(currentUser);
-        
-        if (currentUser) {
-          const isOwner = currentUser.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
-          const defaultRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : 'USER';
+      try {
+        const { onAuthStateChanged, signOut: firebaseSignOut } = await import('firebase/auth');
+        const { auth, db } = await import('./firebase');
+        const { doc, getDoc, setDoc, updateDoc } = await import('firebase/firestore');
+
+        unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+          setUser(currentUser);
           
-          // Immediate local state fallback
-          setUserRole({
-            uid: currentUser.uid,
-            email: currentUser.email || null,
-            role: defaultRole,
-            displayName: currentUser.displayName || null,
-            photoURL: currentUser.photoURL || null,
-            emailVerified: currentUser.emailVerified,
-            bookmarks: []
-          });
+          if (currentUser) {
+            const isOwner = currentUser.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+            const defaultRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : 'USER';
+            
+            // Immediate local state fallback
+            setUserRole({
+              uid: currentUser.uid,
+              email: currentUser.email || null,
+              role: defaultRole,
+              displayName: currentUser.displayName || null,
+              photoURL: currentUser.photoURL || null,
+              emailVerified: currentUser.emailVerified,
+              bookmarks: []
+            });
 
-          // Sync with Firestore profile
-          const userRef = doc(db, 'users', currentUser.uid);
-          try {
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-              const data = userSnap.data() as UserRole;
-              // Respect suspended status
-              if (data.isSuspended) {
-                await firebaseSignOut(auth);
-                setUser(null);
-                setUserRole(null);
-                alert("तुमचे खाते सुरक्षिततेच्या कारणास्तव तात्पुरते निलंबित केले आहे. कृपया मुख्य व्यवस्थापकाशी संपर्क साधा.");
-                setLoading(false);
-                return;
-              }
+            // Sync with Firestore profile
+            const userRef = doc(db, 'users', currentUser.uid);
+            try {
+              const userSnap = await getDoc(userRef);
+              if (userSnap.exists()) {
+                const data = userSnap.data() as UserRole;
+                // Respect suspended status
+                if (data.isSuspended) {
+                  await firebaseSignOut(auth);
+                  setUser(null);
+                  setUserRole(null);
+                  alert("तुमचे खाते सुरक्षिततेच्या कारणास्तव तात्पुरते निलंबित केले आहे. कृपया मुख्य व्यवस्थापकाशी संपर्क साधा.");
+                  setLoading(false);
+                  return;
+                }
 
-              const currentRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : (data.role === 'SUPER_ADMIN' || (data.role as any) === 'ADMIN' ? 'SUPER_ADMIN' : 'USER');
-              setUserRole({
-                ...data,
-                role: currentRole,
-                emailVerified: currentUser.emailVerified
-              });
-              if (Array.isArray(data.bookmarks)) {
-                setBookmarks(data.bookmarks);
+                const currentRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : (data.role === 'SUPER_ADMIN' || (data.role as any) === 'ADMIN' ? 'SUPER_ADMIN' : 'USER');
+                setUserRole({
+                  ...data,
+                  role: currentRole,
+                  emailVerified: currentUser.emailVerified
+                });
+                if (Array.isArray(data.bookmarks)) {
+                  setBookmarks(data.bookmarks);
+                }
+                
+                // Update lastLoginAt
+                await updateDoc(userRef, { 
+                  lastLoginAt: Date.now(),
+                  emailVerified: currentUser.emailVerified 
+                }).catch(() => {});
+              } else {
+                const newUser: UserRole = {
+                  uid: currentUser.uid,
+                  email: (currentUser.email || '').substring(0, 256),
+                  role: defaultRole,
+                  displayName: currentUser.displayName ? currentUser.displayName.substring(0, 200) : '',
+                  photoURL: currentUser.photoURL || '',
+                  bookmarks: [],
+                  isSuspended: false,
+                  twoFactorEnabled: false,
+                  emailVerified: currentUser.emailVerified,
+                  lastLoginAt: Date.now(),
+                  createdAt: Date.now()
+                };
+                await setDoc(userRef, newUser);
+                setUserRole(newUser);
               }
-              
-              // Update lastLoginAt
-              await updateDoc(userRef, { 
-                lastLoginAt: Date.now(),
-                emailVerified: currentUser.emailVerified 
-              }).catch(() => {});
-            } else {
-              const newUser: UserRole = {
-                uid: currentUser.uid,
-                email: (currentUser.email || '').substring(0, 256),
-                role: defaultRole,
-                displayName: currentUser.displayName ? currentUser.displayName.substring(0, 200) : '',
-                photoURL: currentUser.photoURL || '',
-                bookmarks: [],
-                isSuspended: false,
-                twoFactorEnabled: false,
-                emailVerified: currentUser.emailVerified,
-                lastLoginAt: Date.now(),
-                createdAt: Date.now()
-              };
-              await setDoc(userRef, newUser);
-              setUserRole(newUser);
+            } catch (error) {
+              console.warn("User profile sync info:", error);
             }
-          } catch (error) {
-            console.warn("User profile sync info:", error);
+          } else {
+            setUserRole(null);
+            setBookmarks([]);
           }
-        } else {
-          setUserRole(null);
-          setBookmarks([]);
-        }
-        
-        setLoading(false);
-      });
+          
+          setLoading(false);
+        });
+      } catch (err) {
+        console.warn("Auth initialization deferred:", err);
+      }
     };
 
     // Defer initialization to idle time so that initial render and LCP happen with 0ms blocking
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
       const idleId = (window as any).requestIdleCallback(() => {
         initAuthListener();
-      }, { timeout: 2000 });
+      }, { timeout: 1500 });
 
       return () => {
         if ('cancelIdleCallback' in window) (window as any).cancelIdleCallback(idleId);
@@ -267,7 +255,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       const timer = setTimeout(() => {
         initAuthListener();
-      }, 1000);
+      }, 500);
 
       return () => {
         clearTimeout(timer);
@@ -279,6 +267,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 1. Email & Password Login
   const loginWithEmail = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      const { signInWithEmailAndPassword, signOut: firebaseSignOut } = await import('firebase/auth');
+      const { auth, db } = await import('./firebase');
+      const { doc, getDoc } = await import('firebase/firestore');
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
       // Check suspension
@@ -331,6 +323,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 2. Email & Password Registration
   const registerWithEmail = async (name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
+      const { auth, db } = await import('./firebase');
+      const { doc, setDoc } = await import('firebase/firestore');
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
       // Update display name
@@ -384,6 +380,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 3. Password Reset Flow
   const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      const { sendPasswordResetEmail } = await import('firebase/auth');
+      const { auth } = await import('./firebase');
+
       await sendPasswordResetEmail(auth, email);
       await logAuthActivity({
         email,
@@ -405,8 +404,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 5. Send Verification Email
   const sendVerificationEmail = async (): Promise<{ success: boolean; error?: string }> => {
-    if (!auth.currentUser) return { success: false, error: "कृपया प्रथम लॉगिन करा." };
     try {
+      const { auth } = await import('./firebase');
+      const { sendEmailVerification } = await import('firebase/auth');
+      if (!auth.currentUser) return { success: false, error: "कृपया प्रथम लॉगिन करा." };
       await sendEmailVerification(auth.currentUser);
       return { success: true };
     } catch (err: any) {
@@ -424,6 +425,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }): Promise<{ success: boolean; error?: string }> => {
     if (!user) return { success: false, error: "वापरकर्ता लॉगिन नाही." };
     try {
+      const { updateProfile } = await import('firebase/auth');
+      const { db } = await import('./firebase');
+      const { doc, updateDoc } = await import('firebase/firestore');
+
       if (data.displayName || data.photoURL) {
         await updateProfile(user, {
           displayName: data.displayName || user.displayName,
@@ -450,8 +455,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 7. Change Password
   const changePassword = async (newPassword: string): Promise<{ success: boolean; error?: string }> => {
-    if (!auth.currentUser) return { success: false, error: "कृपया प्रथम लॉगिन करा." };
     try {
+      const { auth } = await import('./firebase');
+      const { updatePassword } = await import('firebase/auth');
+
+      if (!auth.currentUser) return { success: false, error: "कृपया प्रथम लॉगिन करा." };
       await updatePassword(auth.currentUser, newPassword);
       await logAuthActivity({
         userId: auth.currentUser.uid,
@@ -484,6 +492,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           success: true
         });
       }
+      const { auth } = await import('./firebase');
+      const { signOut: firebaseSignOut } = await import('firebase/auth');
       await firebaseSignOut(auth);
       setProfileModalOpen(false);
       setBookmarksModalOpen(false);
@@ -501,9 +511,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const alreadyBookmarked = bookmarks.includes(articleId);
-    const userRef = doc(db, 'users', user.uid);
 
     try {
+      const { db } = await import('./firebase');
+      const { doc, updateDoc, arrayRemove, arrayUnion } = await import('firebase/firestore');
+      const userRef = doc(db, 'users', user.uid);
+
       if (alreadyBookmarked) {
         setBookmarks(prev => prev.filter(id => id !== articleId));
         await updateDoc(userRef, { bookmarks: arrayRemove(articleId) });
@@ -566,3 +579,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
