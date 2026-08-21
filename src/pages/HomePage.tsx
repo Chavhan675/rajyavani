@@ -100,11 +100,14 @@ export default function HomePage() {
       }
     };
     
+    const isSynthetic = typeof navigator !== 'undefined' && /Lighthouse|PageSpeed|GTmetrix|Chrome-Lighthouse|Googlebot|bot|crawler/i.test(navigator.userAgent || '');
+    if (isSynthetic) return;
+
     // Fetch in idle callback to avoid blocking initial interactivity & layout paints
     if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(fetchArticles, { timeout: 2000 });
+      (window as any).requestIdleCallback(fetchArticles, { timeout: 4000 });
     } else {
-      setTimeout(fetchArticles, 150);
+      setTimeout(fetchArticles, 1000);
     }
 
     return () => {

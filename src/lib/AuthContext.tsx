@@ -151,118 +151,146 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [user, resetInactivityTimer]);
 
-  useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
+  const authInitializedRef = useRef(false);
 
-    const initAuthListener = async () => {
-      if (unsubscribe) return;
-      try {
-        const { onAuthStateChanged, signOut: firebaseSignOut } = await import('firebase/auth');
-        const { auth, db } = await import('./firebase');
-        const { doc, getDoc, setDoc, updateDoc } = await import('firebase/firestore');
+  const initAuthListener = useCallback(async () => {
+    if (authInitializedRef.current) return;
+    authInitializedRef.current = true;
 
-        unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-          setUser(currentUser);
+    try {
+      const { onAuthStateChanged, signOut: firebaseSignOut } = await import('firebase/auth');
+      const { auth, db } = await import('./firebase');
+      const { doc, getDoc, setDoc, updateDoc } = await import('firebase/firestore');
+
+      onAuthStateChanged(auth, async (currentUser) => {
+        setUser(currentUser);
+        
+        if (currentUser) {
+          try {
+            localStorage.setItem('rajyavani_user_session', '1');
+          } catch {}
+
+          const isOwner = currentUser.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+          const defaultRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : 'USER';
           
-          if (currentUser) {
-            const isOwner = currentUser.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
-            const defaultRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : 'USER';
-            
-            // Immediate local state fallback
-            setUserRole({
-              uid: currentUser.uid,
-              email: currentUser.email || null,
-              role: defaultRole,
-              displayName: currentUser.displayName || null,
-              photoURL: currentUser.photoURL || null,
-              emailVerified: currentUser.emailVerified,
-              bookmarks: []
-            });
+          // Immediate local state fallback
+          setUserRole({
+            uid: currentUser.uid,
+            email: currentUser.email || null,
+            role: defaultRole,
+            displayName: currentUser.displayName || null,
+            photoURL: currentUser.photoURL || null,
+            emailVerified: currentUser.emailVerified,
+            bookmarks: []
+          });
 
-            // Sync with Firestore profile
-            const userRef = doc(db, 'users', currentUser.uid);
-            try {
-              const userSnap = await getDoc(userRef);
-              if (userSnap.exists()) {
-                const data = userSnap.data() as UserRole;
-                // Respect suspended status
-                if (data.isSuspended) {
-                  await firebaseSignOut(auth);
-                  setUser(null);
-                  setUserRole(null);
-                  alert("तुमचे खाते सुरक्षिततेच्या कारणास्तव तात्पुरते निलंबित केले आहे. कृपया मुख्य व्यवस्थापकाशी संपर्क साधा.");
-                  setLoading(false);
-                  return;
-                }
-
-                const currentRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : (data.role === 'SUPER_ADMIN' || (data.role as any) === 'ADMIN' ? 'SUPER_ADMIN' : 'USER');
-                setUserRole({
-                  ...data,
-                  role: currentRole,
-                  emailVerified: currentUser.emailVerified
-                });
-                if (Array.isArray(data.bookmarks)) {
-                  setBookmarks(data.bookmarks);
-                }
-                
-                // Update lastLoginAt
-                await updateDoc(userRef, { 
-                  lastLoginAt: Date.now(),
-                  emailVerified: currentUser.emailVerified 
-                }).catch(() => {});
-              } else {
-                const newUser: UserRole = {
-                  uid: currentUser.uid,
-                  email: (currentUser.email || '').substring(0, 256),
-                  role: defaultRole,
-                  displayName: currentUser.displayName ? currentUser.displayName.substring(0, 200) : '',
-                  photoURL: currentUser.photoURL || '',
-                  bookmarks: [],
-                  isSuspended: false,
-                  twoFactorEnabled: false,
-                  emailVerified: currentUser.emailVerified,
-                  lastLoginAt: Date.now(),
-                  createdAt: Date.now()
-                };
-                await setDoc(userRef, newUser);
-                setUserRole(newUser);
+          // Sync with Firestore profile
+          const userRef = doc(db, 'users', currentUser.uid);
+          try {
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              const data = userSnap.data() as UserRole;
+              // Respect suspended status
+              if (data.isSuspended) {
+                await firebaseSignOut(auth);
+                setUser(null);
+                setUserRole(null);
+                try {
+                  localStorage.removeItem('rajyavani_user_session');
+                } catch {}
+                alert("तुमचे खाते सुरक्षिततेच्या कारणास्तव तात्पुरते निलंबित केले आहे. कृपया मुख्य व्यवस्थापकाशी संपर्क साधा.");
+                setLoading(false);
+                return;
               }
-            } catch (error) {
-              console.warn("User profile sync info:", error);
+
+              const currentRole: UserRoleType = isOwner ? 'SUPER_ADMIN' : (data.role === 'SUPER_ADMIN' || (data.role as any) === 'ADMIN' ? 'SUPER_ADMIN' : 'USER');
+              setUserRole({
+                ...data,
+                role: currentRole,
+                emailVerified: currentUser.emailVerified
+              });
+              if (Array.isArray(data.bookmarks)) {
+                setBookmarks(data.bookmarks);
+              }
+              
+              // Update lastLoginAt
+              await updateDoc(userRef, { 
+                lastLoginAt: Date.now(),
+                emailVerified: currentUser.emailVerified 
+              }).catch(() => {});
+            } else {
+              const newUser: UserRole = {
+                uid: currentUser.uid,
+                email: (currentUser.email || '').substring(0, 256),
+                role: defaultRole,
+                displayName: currentUser.displayName ? currentUser.displayName.substring(0, 200) : '',
+                photoURL: currentUser.photoURL || '',
+                bookmarks: [],
+                isSuspended: false,
+                twoFactorEnabled: false,
+                emailVerified: currentUser.emailVerified,
+                lastLoginAt: Date.now(),
+                createdAt: Date.now()
+              };
+              await setDoc(userRef, newUser);
+              setUserRole(newUser);
             }
-          } else {
-            setUserRole(null);
-            setBookmarks([]);
+          } catch (error) {
+            console.warn("User profile sync info:", error);
           }
-          
-          setLoading(false);
-        });
-      } catch (err) {
-        console.warn("Auth initialization deferred:", err);
-      }
-    };
-
-    // Defer initialization to idle time so that initial render and LCP happen with 0ms blocking
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const idleId = (window as any).requestIdleCallback(() => {
-        initAuthListener();
-      }, { timeout: 1500 });
-
-      return () => {
-        if ('cancelIdleCallback' in window) (window as any).cancelIdleCallback(idleId);
-        if (unsubscribe) unsubscribe();
-      };
-    } else {
-      const timer = setTimeout(() => {
-        initAuthListener();
-      }, 500);
-
-      return () => {
-        clearTimeout(timer);
-        if (unsubscribe) unsubscribe();
-      };
+        } else {
+          try {
+            localStorage.removeItem('rajyavani_user_session');
+          } catch {}
+          setUserRole(null);
+          setBookmarks([]);
+        }
+        
+        setLoading(false);
+      });
+    } catch (err) {
+      console.warn("Auth initialization deferred:", err);
     }
   }, []);
+
+  const openAuthModal = (tab: 'login' | 'register' | 'forgot' = 'login') => {
+    initAuthListener();
+    setAuthModalTab(tab);
+    setAuthModalOpen(true);
+  };
+
+  useEffect(() => {
+    // Check if user has an existing stored session in localStorage
+    const hasLocalSession = typeof window !== 'undefined' && Boolean(
+      localStorage.getItem('rajyavani_user_session') ||
+      Object.keys(localStorage).some(k => k.startsWith('firebase:authUser'))
+    );
+
+    if (hasLocalSession) {
+      initAuthListener();
+      return;
+    }
+
+    // Otherwise defer initialization till idle (5s) or first user action
+    let timer: any;
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      timer = (window as any).requestIdleCallback(() => {
+        initAuthListener();
+      }, { timeout: 6000 });
+    } else {
+      timer = setTimeout(() => {
+        initAuthListener();
+      }, 6000);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        (window as any).cancelIdleCallback(timer);
+      } else {
+        clearTimeout(timer);
+      }
+    };
+  }, [initAuthListener]);
 
   // 1. Email & Password Login
   const loginWithEmail = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
@@ -495,6 +523,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { auth } = await import('./firebase');
       const { signOut: firebaseSignOut } = await import('firebase/auth');
       await firebaseSignOut(auth);
+      try {
+        localStorage.removeItem('rajyavani_user_session');
+      } catch {}
       setProfileModalOpen(false);
       setBookmarksModalOpen(false);
     } catch (error) {
@@ -533,11 +564,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isBookmarked = (articleId: string) => bookmarks.includes(articleId);
-
-  const openAuthModal = useCallback((tab: 'login' | 'register' | 'forgot' = 'login') => {
-    setAuthModalTab(tab);
-    setAuthModalOpen(true);
-  }, []);
 
   const getToken = async () => {
     if (user) {

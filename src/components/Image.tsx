@@ -175,7 +175,7 @@ export default function Image({
   // Determine target width & quality
   const isSvg = rawSrc.startsWith('data:image/svg+xml');
   const targetWidth = size === 'thumbnail' ? 140 : size === 'card' ? 360 : size === 'featured' ? 720 : 400;
-  const quality = size === 'featured' ? 60 : 55;
+  const quality = 50;
   const optimizedSrc = isSvg ? rawSrc : optimizeImageUrl(rawSrc, targetWidth, quality);
   const srcSet = isSvg ? undefined : getResponsiveSrcSet(rawSrc, size, quality);
   const sizes = getResponsiveSizes(size);
