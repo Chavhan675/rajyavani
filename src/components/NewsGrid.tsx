@@ -94,7 +94,7 @@ export default function NewsGrid({ title, articles, loading = false, skeletonCou
               />
               <div className="absolute top-3 left-3 flex flex-col space-y-1">
                 <span className="bg-brand-black text-white text-[11px] font-black px-2.5 py-1 rounded shadow">
-                  {article.category.name || article.category}
+                  {typeof article.category === 'string' ? article.category : (article.category?.name || 'विशेष')}
                 </span>
               </div>
               {article.aiGenerated && (

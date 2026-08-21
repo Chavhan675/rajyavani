@@ -183,7 +183,7 @@ export default function Hero({ articles, loading = false }: HeroProps) {
                   category={typeof article.category === 'string' ? article.category : article.category?.name}
                   fallbackPrompt={(article as any).imagePrompt}
                   alt={article.title}
-                  size="card"
+                  size="thumbnail"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-1 left-1">
