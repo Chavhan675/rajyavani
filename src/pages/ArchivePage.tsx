@@ -30,15 +30,38 @@ import {
   Compass,
   Navigation
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import Image from '../components/Image';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import AdUnit from '../components/AdUnit';
+
+const QUICK_CATEGORIES = [
+  { label: 'सर्व बातम्या (All)', value: 'ALL' },
+  { label: 'महाराष्ट्र', value: 'महाराष्ट्र' },
+  { label: 'राजकारण', value: 'राजकारण' },
+  { label: 'शेती व कृषी', value: 'शेती' },
+  { label: 'गुन्हेगारी', value: 'गुन्हेगारी' },
+  { label: 'शिक्षण व करिअर', value: 'शिक्षण' },
+  { label: 'व्यापार व बाजार', value: 'व्यापार' },
+  { label: 'क्रीडा', value: 'क्रीडा' },
+  { label: 'मनोरंजन', value: 'मनोरंजन' },
+  { label: 'तंत्रज्ञान', value: 'तंत्रज्ञान' },
+  { label: 'आरोग्य', value: 'आरोग्य' },
+  { label: 'हवामान व पाऊस', value: 'हवामान' },
+  { label: 'मराठवाडा', value: 'मराठवाडा' },
+  { label: 'विदर्भ', value: 'विदर्भ' },
+  { label: 'उत्तर महाराष्ट्र', value: 'उत्तर महाराष्ट्र' },
+  { label: 'कोकण', value: 'कोकण' },
+];
 
 export default function ArchivePage() {
   const { bookmarks, toggleBookmark } = useAuth();
+  const { category: categoryParam, tag: tagParam, type: typeParam, name: nameParam } = useParams<{ category?: string; tag?: string; type?: string; name?: string }>();
+  const [searchParams] = useSearchParams();
+
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +75,33 @@ export default function ArchivePage() {
   const [customEndDate, setCustomEndDate] = useState('');
   const [sortBy, setSortBy] = useState<'NEWEST' | 'OLDEST' | 'POPULAR'>('NEWEST');
   const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
+
+  // Sync state with URL params
+  useEffect(() => {
+    if (categoryParam) {
+      const decoded = decodeURIComponent(categoryParam);
+      setSelectedCategory(decoded);
+    } else if (searchParams.get('category')) {
+      setSelectedCategory(searchParams.get('category') || 'ALL');
+    } else {
+      setSelectedCategory('ALL');
+    }
+
+    if (tagParam) {
+      const decoded = decodeURIComponent(tagParam);
+      setSearchTerm(decoded);
+    } else if (searchParams.get('q')) {
+      setSearchTerm(searchParams.get('q') || '');
+    }
+
+    if (typeParam === 'district' && nameParam) {
+      setSelectedDistrict(decodeURIComponent(nameParam));
+    } else if (searchParams.get('district')) {
+      setSelectedDistrict(searchParams.get('district') || 'ALL');
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [categoryParam, tagParam, typeParam, nameParam, searchParams]);
 
   // Dynamic talukas for currently selected district
   const availableTalukas = useMemo(() => {
@@ -117,6 +167,82 @@ export default function ArchivePage() {
     fetchArchiveArticles();
   }, []);
 
+  // Robust matching helper for Marathi / English / Regional news
+  const matchesCategoryOrRegion = (art: NewsArticle, targetCategory: string): boolean => {
+    if (!targetCategory || targetCategory === 'ALL') return true;
+    const target = targetCategory.trim().toLowerCase();
+    const artCatName = (art.category?.name || '').trim().toLowerCase();
+    const artCatSlug = (art.category?.slug || '').trim().toLowerCase();
+
+    // 1. Direct match
+    if (artCatName === target || artCatSlug === target) return true;
+
+    // 2. Synonyms and English slugs mapping
+    const categoryMap: Record<string, string[]> = {
+      'महाराष्ट्र': ['महाराष्ट्र', 'maharashtra', 'राज्य', 'राज्यव्यापी'],
+      'राजकारण': ['राजकारण', 'politics', 'political', 'निवडणूक', 'शासन', 'सरकार', 'मंत्रिमंडळ', 'विधानसभा', 'लोकसभा', 'महायुती', 'महाविकास आघाडी'],
+      'शेती': ['शेती', 'कृषी', 'agriculture', 'farming', 'शेतकरी', 'पीक', 'खरीप', 'रब्बी', 'हवामान', 'बाजारभाव', 'कांदा', 'सोयाबीन', 'कापूस'],
+      'गुन्हेगारी': ['गुन्हेगारी', 'crime', 'police', 'पोलीस', 'तपास', 'कारवाई', 'कोर्ट', 'सायबर', 'फसवणूक', 'गुन्हा', 'अटक'],
+      'शिक्षण': ['शिक्षण', 'education', 'exam', 'neet', 'cet', 'शाळा', 'महाविद्यालय', 'प्रवेश', 'विद्यापीठ', 'विद्यार्थी', 'निकाल', 'भरती'],
+      'व्यापार': ['व्यापार', 'business', 'economy', 'market', 'शेअर बाजार', 'उद्योग', 'अर्थकारण', 'rbi', 'सोने', 'बँक', 'गुंतवणूक'],
+      'क्रीडा': ['क्रीडा', 'sports', 'cricket', 'football', 'खेळ', 'सामना', 'टीम इंडिया', 'ऑलिम्पिक', 'स्पर्धा', 'विश्वचषक'],
+      'मनोरंजन': ['मनोरंजन', 'entertainment', 'cinema', 'bollywood', 'मराठी चित्रपट', 'सिनेमा', 'चित्रपट', 'मालिका', 'कलाकार', 'गाणी', 'ओटीटी'],
+      'तंत्रज्ञान': ['तंत्रज्ञान', 'technology', 'tech', 'ai', 'स्मार्टफोन', 'डिजिटल', 'सायबर', 'गॅजेट्स', 'ॲप', 'इंटरनेट', 'सायन्स'],
+      'आरोग्य': ['आरोग्य', 'health', 'medical', 'हॉस्पिटल', 'डॉक्टर', 'औषध', 'फिटनेस', 'आहार', 'आयुर्वेद', 'साथीचे आजार'],
+      'हवामान': ['हवामान', 'weather', 'monsoon', 'पाऊस', 'तापमान', 'अलर्ट', 'imd', 'अतिवृष्टी', 'चक्रीवादळ', 'गारपीट'],
+      'राष्ट्रीय': ['राष्ट्रीय', 'national', 'देश', 'भारत', 'नवी दिल्ली', 'पंतप्रधान', 'संसद'],
+    };
+
+    for (const [key, synonyms] of Object.entries(categoryMap)) {
+      if (target === key.toLowerCase() || synonyms.includes(target)) {
+        if (artCatName === key.toLowerCase() || synonyms.includes(artCatName) || synonyms.includes(artCatSlug)) {
+          return true;
+        }
+        // Check in tags or title
+        if ((art.tags || []).some(t => synonyms.some(s => t.toLowerCase().includes(s) || s.includes(t.toLowerCase())))) {
+          return true;
+        }
+        if (synonyms.some(s => art.title.toLowerCase().includes(s) || art.summary.toLowerCase().includes(s))) {
+          return true;
+        }
+      }
+    }
+
+    // 3. Regional divisions (मराठवाडा, विदर्भ, उत्तर महाराष्ट्र, कोकण, पश्चिम महाराष्ट्र)
+    const divisionDistricts: Record<string, string[]> = {
+      'मराठवाडा': ['छत्रपती संभाजीनगर', 'औरंगाबाद', 'जालना', 'बीड', 'परभणी', 'नांदेड', 'धाराशिव', 'उस्मानाबाद', 'लातूर', 'हिंगोली'],
+      'विदर्भ': ['नागपूर', 'अमरावती', 'अकोला', 'यवतमाळ', 'बुलढाणा', 'वाशीम', 'वर्धा', 'चंद्रपूर', 'गडचिरोली', 'भंडारा', 'गोंदिया'],
+      'उत्तर महाराष्ट्र': ['नाशिक', 'जळगाव', 'धुळे', 'नंदुरबार', 'अहिल्यानगर', 'अहमदनगर', 'खान्देश'],
+      'कोकण': ['मुंबई शहर', 'मुंबई उपनगर', 'मुंबई', 'ठाणे', 'पालघर', 'रायगड', 'रत्नागिरी', 'सिंधुदुर्ग'],
+      'पश्चिम महाराष्ट्र': ['पुणे', 'सातारा', 'सांगली', 'सोलापूर', 'कोल्हापूर', 'अहिल्यानगर']
+    };
+
+    for (const [divName, districtList] of Object.entries(divisionDistricts)) {
+      if (target === divName.toLowerCase() || target.includes(divName.toLowerCase())) {
+        const artDistrict = (art.district || art.location?.district || '').trim().toLowerCase();
+        const artContent = `${art.title} ${art.summary} ${art.content} ${(art.tags || []).join(' ')}`.toLowerCase();
+        
+        const districtMatch = districtList.some(d => artDistrict.includes(d.toLowerCase()) || artContent.includes(d.toLowerCase()));
+        if (districtMatch || artContent.includes(divName.toLowerCase())) {
+          return true;
+        }
+      }
+    }
+
+    // 4. District direct match if target is a district name
+    const artDistrict = (art.district || art.location?.district || '').trim().toLowerCase();
+    if (artDistrict && (artDistrict.includes(target) || target.includes(artDistrict))) {
+      return true;
+    }
+
+    // 5. Fallback in tags, title or summary
+    if ((art.tags || []).some(t => t.toLowerCase().includes(target) || target.includes(t.toLowerCase()))) return true;
+    if (art.title.toLowerCase().includes(target)) return true;
+    if (art.summary.toLowerCase().includes(target)) return true;
+
+    return false;
+  };
+
   // Filtering & Sorting Logic
   const filteredArticles = useMemo(() => {
     const now = new Date();
@@ -134,7 +260,7 @@ export default function ArchivePage() {
         const matchesDistrict = (art.district || art.location.district || '').toLowerCase().includes(query);
         const matchesTaluka = (art.taluka || art.location.taluka || '').toLowerCase().includes(query);
         const matchesVillage = (art.village || art.location.village || '').toLowerCase().includes(query);
-        const matchesCategory = art.category.name.toLowerCase().includes(query);
+        const matchesCategory = (art.category?.name || '').toLowerCase().includes(query);
         const matchesTags = (art.tags || []).some(t => t.toLowerCase().includes(query));
 
         if (!matchesTitle && !matchesSummary && !matchesDistrict && !matchesTaluka && !matchesVillage && !matchesCategory && !matchesTags) {
@@ -168,9 +294,9 @@ export default function ArchivePage() {
         }
       }
 
-      // Category Filter
+      // Category & Region Filter
       if (selectedCategory !== 'ALL') {
-        if (art.category.name !== selectedCategory && art.category.slug !== selectedCategory) {
+        if (!matchesCategoryOrRegion(art, selectedCategory)) {
           return false;
         }
       }
@@ -225,7 +351,7 @@ export default function ArchivePage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
       <SEO 
-        title="बातमी संग्रह (News Archive) | राज्यवाणी डिजिटल वृत्त"
+        title={`${selectedCategory !== 'ALL' ? `${selectedCategory} बातम्या | ` : ''}बातमी संग्रह (News Archive) | राज्यवाणी डिजिटल वृत्त`}
         description="महाराष्ट्रातील सर्व ३६ जिल्हे आणि भारतातील सर्व महत्त्वाच्या पडताळलेल्या बातम्यांचा कायमस्वरूपी ऐतिहासिक डेटाबेस."
         canonical="https://rajyavani.vercel.app/archive"
       />
@@ -254,7 +380,13 @@ export default function ArchivePage() {
               <span>मुख्यपृष्ठ</span>
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
-            <span className="text-brand-red font-black">बातमी संग्रह (Archive)</span>
+            <Link to="/archive" className="hover:text-brand-red transition-colors">बातमी संग्रह</Link>
+            {selectedCategory !== 'ALL' && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+                <span className="text-brand-red font-black">{selectedCategory}</span>
+              </>
+            )}
           </nav>
         </div>
 
@@ -278,13 +410,15 @@ export default function ArchivePage() {
           <div className="relative z-10 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider mb-3 text-amber-200 border border-white/20">
               <Archive className="w-3.5 h-3.5" />
-              <span>डिजिटल वृत्त इतिहास आणि शोध संग्रहालय</span>
+              <span>{selectedCategory !== 'ALL' ? `विशेष वर्गवारी: ${selectedCategory}` : 'डिजिटल वृत्त इतिहास आणि शोध संग्रहालय'}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-serif tracking-tight text-white mb-3">
-              राज्यवाणी बातमी संग्रह (News Archive)
+              {selectedCategory !== 'ALL' ? `${selectedCategory} बातम्या संग्रह` : 'राज्यवाणी बातमी संग्रह (News Archive)'}
             </h1>
             <p className="text-sm sm:text-base text-red-100 leading-relaxed max-w-2xl">
-              महाराष्ट्रातील सर्व ३६ जिल्हे आणि भारतातील सर्व महत्त्वाच्या पडताळलेल्या बातम्यांचा कायमस्वरूपी ऐतिहासिक डेटाबेस. तारीख, जिल्हा, वर्गवारी किंवा कीवर्डनुसार जुन्या व ताज्या बातम्या शोधा. जुनी बातमी कधीही हटवली जात नाही.
+              {selectedCategory !== 'ALL'
+                ? `महाराष्ट्र आणि देशातील '${selectedCategory}' संबंधित सर्व महत्त्वाच्या, ताज्या व पडताळलेल्या बातम्या येथे एकाच ठिकाणी उपलब्ध आहेत.`
+                : 'महाराष्ट्रातील सर्व ३६ जिल्हे आणि भारतातील सर्व महत्त्वाच्या पडताळलेल्या बातम्यांचा कायमस्वरूपी ऐतिहासिक डेटाबेस. तारीख, जिल्हा, वर्गवारी किंवा कीवर्डनुसार जुन्या व ताज्या बातम्या शोधा.'}
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-4 text-xs font-semibold text-amber-100">
@@ -301,6 +435,32 @@ export default function ArchivePage() {
                 <span>दर ३ तासांनी स्वयंचलित संकलन</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Quick Category Filtering Chips */}
+        <div className="bg-white rounded-2xl p-4 shadow-xs border border-gray-200">
+          <div className="flex items-center gap-2 mb-2 text-xs font-black text-gray-900 uppercase tracking-wider">
+            <Tag className="w-3.5 h-3.5 text-brand-red" />
+            <span>वर्गवारीनुसार थेट शोधा (Quick Category Explorer):</span>
+          </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {QUICK_CATEGORIES.map((c) => {
+              const isSelected = selectedCategory === c.value;
+              return (
+                <button
+                  key={c.value}
+                  onClick={() => setSelectedCategory(c.value)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 min-h-[36px] flex items-center ${
+                    isSelected
+                      ? 'bg-brand-red text-white shadow-xs'
+                      : 'bg-gray-100 text-gray-800 hover:bg-red-50 hover:text-brand-red'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -545,6 +705,16 @@ export default function ArchivePage() {
           </div>
         </div>
 
+        {/* Top Ad Unit for Archive Page */}
+        <div className="my-6 min-h-[110px]">
+          <AdUnit 
+            format="horizontal" 
+            article={filteredArticles[0] || articles[0]} 
+            title="संबंधित विशेष बातमी / Featured News"
+            subtitle="वाचकांसाठी महत्त्वाची आणि ताजी घडामोड - सविस्तर बातमी वाचण्यासाठी येथे क्लिक करा"
+          />
+        </div>
+
         {/* Loading State */}
         {loading && (
           <div className="py-20 text-center space-y-3">
@@ -768,6 +938,16 @@ export default function ArchivePage() {
             })}
           </div>
         )}
+
+        {/* Bottom Ad Unit */}
+        <div className="my-8 min-h-[110px]">
+          <AdUnit 
+            format="horizontal" 
+            article={filteredArticles[1] || filteredArticles[0] || articles[1]} 
+            title="वाचकांसाठी विशेष घडामोडी व माहिती / Sponsored Story"
+            subtitle="ताज्या घडामोडी, महत्त्वाच्या शासकीय योजना व वृत्त वाचण्यासाठी येथे क्लिक करा"
+          />
+        </div>
 
         {/* Bottom Back to Home Bar */}
         <div className="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">

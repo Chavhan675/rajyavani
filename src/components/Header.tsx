@@ -28,8 +28,8 @@ const primaryNavItems = [
 ];
 
 const regionalCategories = [
-  { name: "मुंबई", path: "/location/district/मुंबई" },
-  { name: "पुणे", path: "/location/district/पुणे" },
+  { name: "मुंबई", path: "/district/mumbai-city" },
+  { name: "पुणे", path: "/district/pune" },
   { name: "मराठवाडा", path: "/category/मराठवाडा" },
   { name: "विदर्भ", path: "/category/विदर्भ" },
   { name: "उत्तर महाराष्ट्र", path: "/category/उत्तर महाराष्ट्र" },
@@ -322,14 +322,16 @@ export default function Header() {
         <nav className="hidden md:flex items-center justify-between border-t border-b border-gray-200 mt-3 py-1.5 overflow-x-auto scrollbar-none">
           <div className="flex items-center space-x-1 lg:space-x-1.5 shrink-0">
             {primaryNavItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const currentPath = decodeURIComponent(location.pathname);
+              const targetPath = decodeURIComponent(item.path);
+              const isActive = currentPath === targetPath;
               return (
                 <Link
                   key={item.name}
                   to={item.path}
                   className={`px-3 py-2 text-xs sm:text-sm font-bold rounded-lg transition-colors whitespace-nowrap min-h-[40px] inline-flex items-center ${
                     isActive 
-                      ? 'bg-brand-red text-white' 
+                      ? 'bg-brand-red text-white shadow-xs' 
                       : 'text-gray-800 hover:text-brand-red hover:bg-red-50'
                   }`}
                 >
@@ -341,15 +343,24 @@ export default function Header() {
 
           {/* Regional Quick Links in Secondary Strip */}
           <div className="hidden xl:flex items-center space-x-1 border-l border-gray-200 pl-3 shrink-0">
-            {regionalCategories.map((r) => (
-              <Link
-                key={r.name}
-                to={r.path}
-                className="px-2.5 py-1.5 text-xs font-semibold text-gray-700 hover:text-brand-red hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap min-h-[36px] inline-flex items-center"
-              >
-                {r.name}
-              </Link>
-            ))}
+            {regionalCategories.map((r) => {
+              const currentPath = decodeURIComponent(location.pathname);
+              const targetPath = decodeURIComponent(r.path);
+              const isActive = currentPath === targetPath;
+              return (
+                <Link
+                  key={r.name}
+                  to={r.path}
+                  className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap min-h-[36px] inline-flex items-center ${
+                    isActive 
+                      ? 'bg-red-100 text-brand-red font-bold' 
+                      : 'text-gray-700 hover:text-brand-red hover:bg-gray-100'
+                  }`}
+                >
+                  {r.name}
+                </Link>
+              );
+            })}
           </div>
         </nav>
         

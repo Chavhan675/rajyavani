@@ -362,7 +362,7 @@ export default function DistrictPage() {
         </div>
 
         {/* Top Ad Unit */}
-        <div className="mb-8">
+        <div className="mb-8 min-h-[120px]">
           <AdUnit format="horizontal" />
         </div>
 
@@ -578,6 +578,16 @@ export default function DistrictPage() {
             </div>
           )}
         </section>
+
+        {/* District Page Mid Feature Ad Unit */}
+        <div className="my-8">
+          <AdUnit 
+            format="in-article"
+            article={displayedArticles[0] || articles[0]}
+            title={`${currentDistrict.nameMarathi} विशेष घडामोडी व बातमी`}
+            subtitle="जिल्ह्यातील वाचकांसाठी शासकीय योजना, घडामोडी व सविस्तर वृत्त - वाचण्यासाठी येथे क्लिक करा"
+          />
+        </div>
 
         {/* Division Neighbors */}
         {otherDivisionDistricts.length > 0 && (

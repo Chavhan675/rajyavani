@@ -217,7 +217,7 @@ export default function ArticlePage() {
       <Header />
       
       {/* Top Ad Unit */}
-      <div className="max-w-4xl mx-auto px-4 w-full py-4 border-b border-gray-100">
+      <div className="max-w-4xl mx-auto px-4 w-full py-4 sm:py-6 border-b border-gray-100">
         <AdUnit format="horizontal" />
       </div>
 
@@ -401,6 +401,14 @@ export default function ArticlePage() {
           </button>
         </div>
 
+        {/* Mid-Article High Visibility Ad Placement */}
+        <AdUnit 
+          format="in-article" 
+          article={relatedArticles[0]}
+          title="संबंधित विशेष वृत्त / Featured Story" 
+          subtitle="वाचकांसाठी महत्त्वाची घडामोड आणि सविस्तर विश्लेषण - वाचण्यासाठी येथे क्लिक करा"
+        />
+
         {/* Article Editorial Body */}
         <article 
           className="article-editorial-content mb-8 text-gray-900" 
@@ -502,8 +510,8 @@ export default function ArticlePage() {
         )}
 
         {/* Bottom Ad Unit */}
-        <div className="w-full py-4 my-8 border-y border-gray-100">
-          <AdUnit format="horizontal" />
+        <div className="w-full py-6 my-10 border-y border-gray-200">
+          <AdUnit format="horizontal" article={relatedArticles[1] || relatedArticles[0]} />
         </div>
       </main>
 

@@ -1,43 +1,361 @@
 import React from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Sparkles, Megaphone, ArrowUpRight, Flame, ShieldCheck, Newspaper, ArrowRight, Eye, Tag } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import Image from './Image';
 
-interface AdUnitProps {
-  format?: 'horizontal' | 'rectangle' | 'vertical';
+export interface AdUnitProps {
+  format?: 'horizontal' | 'rectangle' | 'vertical' | 'in-article' | 'billboard';
   className?: string;
   href?: string;
+  title?: string;
+  subtitle?: string;
+  article?: any; // Related or featured news article
 }
 
 export default function AdUnit({ 
   format = 'horizontal', 
   className = '',
-  href = 'https://omg10.com/4/11630717'
+  href = 'https://omg10.com/4/11630717',
+  title,
+  subtitle,
+  article
 }: AdUnitProps) {
-  let sizeClasses = 'w-full h-[90px] min-h-[90px]';
-  if (format === 'rectangle') sizeClasses = 'w-[300px] h-[250px] min-h-[250px] mx-auto';
-  if (format === 'vertical') sizeClasses = 'w-[160px] h-[600px] min-h-[600px] mx-auto';
 
+  // Handlers for monetization & article navigation
+  const handleAdClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Allows opening sponsor/ad network in background or new tab while tracking impression
+    if (href) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  // 1. In-Article Format
+  if (format === 'in-article') {
+    return (
+      <div className={`my-10 sm:my-12 w-full ${className}`}>
+        {/* Top Header Label */}
+        <div className="flex items-center justify-between text-[11px] font-bold tracking-wider text-slate-500 uppercase px-2 mb-2.5">
+          <span className="flex items-center gap-1.5 text-amber-900 bg-amber-100/90 px-3 py-1 rounded-full border border-amber-300 shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" style={{ animationDuration: '4s' }} />
+            {article ? 'संबंधित विशेष बातमी व जाहिरात • SPONSORED NEWS' : 'विशेष जाहिरात • SPONSORED'}
+          </span>
+          <span className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            पडताळणीकृत भागीदार (VERIFIED)
+          </span>
+        </div>
+
+        {article ? (
+          /* When related article is provided */
+          <div className="group relative overflow-hidden rounded-3xl border-2 border-amber-300/90 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-yellow-500/10 p-5 sm:p-7 shadow-md hover:shadow-xl hover:border-amber-500 transition-all duration-300 backdrop-blur-xs">
+            <div className="absolute -right-16 -bottom-16 w-52 h-52 bg-amber-400/20 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-400/30 transition-all" />
+            
+            <div className="relative flex flex-col md:flex-row items-center gap-5 sm:gap-6">
+              {/* Thumbnail Image */}
+              <div className="w-full md:w-56 h-40 md:h-36 shrink-0 rounded-2xl overflow-hidden shadow-md relative bg-slate-100">
+                <Image 
+                  src={article.imageUrl}
+                  alt={article.title}
+                  category={article.category?.name || article.category || 'महाराष्ट्र'}
+                  size="card"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-2 left-2 bg-brand-red text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-md shadow-xs">
+                  {article.category?.name || article.category || 'विशेष'}
+                </div>
+              </div>
+
+              {/* Text Info */}
+              <div className="flex-1 text-center md:text-left">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-lg mb-2">
+                  <Flame className="w-3.5 h-3.5 text-orange-600" />
+                  <span>{title || "ट्रेंडिंग घडामोडी / RELATED STORY"}</span>
+                </div>
+                
+                <h4 className="text-base sm:text-xl font-black text-slate-900 group-hover:text-brand-red transition-colors leading-snug line-clamp-2">
+                  {article.title}
+                </h4>
+
+                <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1.5 line-clamp-2 leading-relaxed">
+                  {article.summary || subtitle || "वाचकांसाठी महत्त्वाची घडामोड आणि सविस्तर माहिती वाचण्यासाठी येथे क्लिक करा."}
+                </p>
+
+                {/* Bottom Call to Action */}
+                <div className="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-3">
+                  <Link
+                    to={`/article/${article.id}`}
+                    onClick={() => {
+                      if (href) {
+                        try {
+                          const w = window.open(href, '_blank', 'noopener,noreferrer');
+                          if (w) w.blur();
+                          window.focus();
+                        } catch {}
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-red hover:bg-red-700 text-white text-xs sm:text-sm font-black rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer"
+                  >
+                    <Newspaper className="w-4 h-4" />
+                    <span>सविस्तर बातमी वाचा</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 border border-amber-400/60 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <span>प्रायोजित ऑफर उघडा</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-amber-700" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Standard Direct Sponsor Banner */
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="group block relative overflow-hidden rounded-3xl border-2 border-amber-300/90 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-yellow-500/10 p-6 sm:p-8 shadow-md hover:shadow-xl hover:border-amber-500 transition-all duration-300 cursor-pointer backdrop-blur-xs"
+          >
+            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-amber-400/20 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-400/30 transition-all" />
+
+            <div className="relative flex flex-col sm:flex-row items-center justify-between gap-5">
+              <div className="flex items-center gap-4 sm:gap-5 text-center sm:text-left">
+                <div className="relative shrink-0">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <Flame className="w-8 h-8" />
+                  </div>
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-orange-500"></span>
+                  </span>
+                </div>
+
+                <div>
+                  <div className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md mb-1.5">
+                    HOT DEALS & OPPORTUNITIES
+                  </div>
+                  <h4 className="text-base sm:text-xl font-black text-slate-900 group-hover:text-amber-900 transition-colors leading-tight">
+                    {title || "विशेष ऑफर्स आणि ट्रेंडिंग अपडेट्स (Exclusive Deals)"}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
+                    {subtitle || "आजच्या सर्वोत्तम संधी, योजना व विशेष माहिती जाणून घेण्यासाठी येथे क्लिक करा."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-md group-hover:shadow-lg group-hover:from-amber-700 group-hover:to-orange-700 transition-all duration-300">
+                <span>आता उघडा</span>
+                <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </div>
+            </div>
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  // 2. Rectangle Format
+  if (format === 'rectangle') {
+    return (
+      <div className={`my-8 flex flex-col items-center justify-center ${className}`}>
+        <div className="flex items-center justify-between w-full max-w-[360px] px-2 mb-2 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+            SPONSORED / प्रायोजित
+          </span>
+          <span className="text-[9px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">TRENDING</span>
+        </div>
+
+        {article ? (
+          <div className="group relative w-full max-w-[360px] min-h-[320px] bg-white border-2 border-amber-200 hover:border-amber-400 rounded-3xl flex flex-col justify-between p-5 text-left shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <div className="relative w-full h-36 rounded-xl overflow-hidden mb-3 bg-slate-100">
+              <Image 
+                src={article.imageUrl}
+                alt={article.title}
+                category={article.category?.name || article.category || 'विशेष'}
+                size="card"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <span className="absolute top-2 left-2 px-2 py-0.5 bg-amber-500 text-white rounded-md text-[10px] font-black tracking-wide shadow-xs">
+                FEATURED
+              </span>
+            </div>
+
+            <div className="flex-1 flex flex-col justify-between">
+              <h4 className="text-sm font-black text-slate-900 group-hover:text-brand-red transition-colors line-clamp-2 leading-snug mb-1.5">
+                {article.title}
+              </h4>
+              <p className="text-xs text-slate-600 line-clamp-2 mb-3 leading-relaxed">
+                {article.summary}
+              </p>
+
+              <Link
+                to={`/article/${article.id}`}
+                onClick={() => {
+                  if (href) {
+                    try {
+                      window.open(href, '_blank', 'noopener,noreferrer');
+                    } catch {}
+                  }
+                }}
+                className="w-full py-2.5 px-4 bg-brand-red hover:bg-red-700 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-xs group-hover:shadow-md cursor-pointer"
+              >
+                <span>सविस्तर वाचा</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="group relative w-full max-w-[360px] min-h-[300px] bg-gradient-to-b from-white via-amber-50/40 to-orange-50/50 border-2 border-amber-200 hover:border-amber-400 rounded-3xl flex flex-col items-center justify-between p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="px-3 py-1 bg-amber-500 text-white rounded-full text-[10px] font-black tracking-wide shadow-xs">
+                EXCLUSIVE
+              </span>
+              <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
+            </div>
+
+            <div className="my-auto flex flex-col items-center py-2">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center mb-3 shadow-md shadow-amber-500/20 group-hover:scale-110 transition-transform">
+                <Megaphone className="w-8 h-8" />
+              </div>
+              <h4 className="text-base font-black text-slate-900 group-hover:text-amber-800 transition-colors">
+                {title || "विशेष जाहिरात व ताज्या संधी"}
+              </h4>
+              <p className="text-xs text-slate-700 font-medium mt-1.5 max-w-[280px] leading-relaxed">
+                {subtitle || "सर्वोत्कृष्ट ऑफर्स, नवीन योजना व मोफत माहिती त्वरित मिळवा"}
+              </p>
+            </div>
+
+            <span className="w-full py-3 px-4 bg-slate-900 group-hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm group-hover:shadow-md">
+              <span>येथे क्लिक करा</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </span>
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  // 3. Default 'horizontal' & 'billboard'
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer nofollow"
-      style={{ contain: 'layout size' }}
-      className={`group relative bg-gradient-to-r from-gray-50 via-slate-100 to-gray-50 hover:from-amber-50/50 hover:to-orange-50/50 border border-gray-200 hover:border-amber-300 text-gray-700 flex flex-col items-center justify-center overflow-hidden rounded-xl transition-all duration-300 shadow-xs hover:shadow-sm cursor-pointer ${sizeClasses} ${className}`}
-    >
-      <div className="absolute top-1.5 right-2 flex items-center gap-1 text-[9px] font-semibold text-gray-400 group-hover:text-amber-600 uppercase tracking-wider">
-        <span>Sponsored</span>
-        <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100" />
+    <div className={`w-full my-8 sm:my-10 ${className}`}>
+      {/* Top Tag & Verified Partner Bar */}
+      <div className="flex items-center justify-between px-2 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+        <span className="flex items-center gap-2 font-bold text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+          </span>
+          {article ? 'प्रायोजित विशेष बातमी • SPONSORED ARTICLE' : 'प्रायोजित जाहिरात • SPONSORED HIGHLIGHT'}
+        </span>
+        <span className="text-[9px] text-slate-400 font-bold">VERIFIED MONETAG ADS</span>
       </div>
 
-      <div className="flex flex-col items-center justify-center px-4 text-center">
-        <span className="text-xs font-bold text-gray-800 group-hover:text-red-700 transition-colors">
-          विशेष जाहिरात / Trending Deals
-        </span>
-        <span className="text-[11px] text-gray-500 group-hover:text-gray-700 font-medium mt-0.5 flex items-center gap-1">
-          अधिक माहितीसाठी येथे क्लिक करा &rarr;
-        </span>
-      </div>
-    </a>
+      {article ? (
+        /* Horizontal Banner with Article Connection */
+        <div className="group relative w-full min-h-[110px] bg-gradient-to-r from-amber-50/90 via-white to-orange-50/90 hover:from-amber-100 hover:via-amber-50 hover:to-orange-100 border-2 border-amber-200/90 hover:border-amber-400 flex flex-col md:flex-row items-center justify-between p-4 sm:p-5 overflow-hidden rounded-3xl transition-all duration-300 shadow-sm hover:shadow-lg gap-4">
+          <div className="flex items-center gap-4 text-center sm:text-left w-full md:w-auto">
+            {/* Thumbnail */}
+            <div className="w-20 h-20 sm:w-24 sm:h-20 rounded-2xl overflow-hidden shrink-0 shadow-sm bg-slate-100 relative">
+              <Image 
+                src={article.imageUrl}
+                alt={article.title}
+                category={article.category?.name || article.category || 'महाराष्ट्र'}
+                size="card"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            {/* Text details */}
+            <div className="flex-1">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-brand-red text-white text-[9px] font-black rounded-md uppercase">
+                  {article.category?.name || article.category || 'FEATURED'}
+                </span>
+                <span className="text-[10px] text-amber-800 font-bold">
+                  {title || "विशेष घडामोडी"}
+                </span>
+              </div>
+              
+              <h4 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-brand-red transition-colors line-clamp-2 leading-tight">
+                {article.title}
+              </h4>
+              
+              <p className="text-[11px] sm:text-xs text-slate-600 font-medium line-clamp-1 mt-0.5">
+                {article.summary || subtitle || "वाचकांसाठी विशेष पडताळलेले वृत्त - अधिक वाचण्यासाठी क्लिक करा"}
+              </p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="shrink-0 flex items-center gap-2 w-full md:w-auto justify-end">
+            <Link
+              to={`/article/${article.id}`}
+              onClick={() => {
+                if (href) {
+                  try {
+                    window.open(href, '_blank', 'noopener,noreferrer');
+                  } catch {}
+                }
+              }}
+              className="px-5 py-2.5 bg-brand-red hover:bg-red-700 text-white text-xs font-black rounded-xl shadow-xs group-hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>सविस्तर बातमी वाचा</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="p-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              title="प्रायोजित लिंक उघडा"
+            >
+              <ArrowUpRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      ) : (
+        /* Standard Horizontal Ad Unit */
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          className="group relative w-full min-h-[100px] bg-gradient-to-r from-amber-50/90 via-white to-orange-50/90 hover:from-amber-100 hover:via-amber-50 hover:to-orange-100 border-2 border-amber-200/90 hover:border-amber-400 flex flex-col sm:flex-row items-center justify-between px-6 py-5 overflow-hidden rounded-3xl transition-all duration-300 shadow-sm hover:shadow-lg cursor-pointer gap-4"
+        >
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                <span className="px-2.5 py-0.5 bg-amber-100 text-amber-900 text-[10px] font-black rounded-md">FEATURED OPPORTUNITY</span>
+                <h4 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-amber-900 transition-colors">
+                  {title || "विशेष जाहिरात / Trending Deals & Opportunities"}
+                </h4>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-700 font-medium">
+                {subtitle || "सर्वोत्कृष्ट ऑफर्स, नवीन योजना व महत्त्वाच्या माहितीसाठी त्वरित येथे क्लिक करा"}
+              </p>
+            </div>
+          </div>
+
+          <div className="shrink-0 flex items-center gap-1.5 px-5 py-2.5 bg-slate-900 group-hover:bg-amber-600 text-white text-xs font-black rounded-xl shadow-xs group-hover:shadow-md transition-all duration-300">
+            <span>अधिक माहिती उघडा</span>
+            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </div>
+        </a>
+      )}
+    </div>
   );
 }
-

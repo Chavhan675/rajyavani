@@ -172,11 +172,21 @@ export default function HomePage() {
         <Hero articles={articlesToUse} />
         
         {/* Top Feature Ad Unit */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 min-h-[122px]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[130px]">
           <AdUnit format="horizontal" />
         </div>
         
         <NewsGrid title="महाराष्ट्र विशेष" articles={maharashtraNews} skeletonCount={8} />
+
+        {/* Mid-Page Sponsor Highlight Ad Unit */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <AdUnit 
+            format="in-article" 
+            article={articlesToUse[2] || articlesToUse[0]}
+            title="विशेष बातमी व घडामोडी / Trending Feature" 
+            subtitle="महाराष्ट्रातील वाचकांसाठी खास घडामोडी, शासकीय योजना व वृत्त - सविस्तर वाचण्यासाठी क्लिक करा" 
+          />
+        </div>
 
         {/* District/Village highlights with all 36 Districts */}
         <section className="bg-white py-12 border-y border-gray-100 my-8">
@@ -234,6 +244,16 @@ export default function HomePage() {
         </div>
 
         <NewsGrid title="राष्ट्रीय बातम्या" articles={nationalNews} skeletonCount={4} />
+
+        {/* Bottom Feature Ad Unit */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <AdUnit 
+            format="horizontal" 
+            article={articlesToUse[3] || articlesToUse[1]}
+            title="संबंधित विशेष वृत्त / Featured Story"
+            subtitle="महाराष्ट्रातील वाचकांसाठी खास घडामोडी, महत्त्वाचे अपडेट्स व बातमी - वाचण्यासाठी क्लिक करा"
+          />
+        </div>
       </main>
 
       <Suspense fallback={null}>
