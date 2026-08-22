@@ -31,19 +31,20 @@
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap">
     </noscript>
 
-    <!-- Inlined Critical CSS for Instant 0-Delay First Contentful Paint & Sub-Second LCP -->
+    <!-- Inlined Critical CSS for Instant 0-Delay First Contentful Paint & Zero CLS -->
     <style id="critical-css">
       *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
       html, body {
         margin: 0;
         padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Mukta", 'Noto Sans Devanagari', sans-serif;
+        font-family: 'Mukta', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 'Noto Sans Devanagari', sans-serif;
         font-display: swap;
         background-color: #f4f4f5;
         color: #111111;
         -webkit-font-smoothing: antialiased;
         min-height: 100vh;
       }
+      .font-serif { font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; }
       .bg-brand-red, .bg-\[\#c91010\] { background-color: #c91010; }
       .text-brand-red, .text-\[\#c91010\] { color: #c91010; }
       .bg-brand-saffron, .bg-\[\#f58416\] { background-color: #f58416; }
@@ -52,21 +53,28 @@
       .bg-gray-50 { background-color: #f9fafb; }
       .bg-gray-100 { background-color: #f3f4f6; }
       .bg-gray-200 { background-color: #e5e7eb; }
+      .bg-gray-700 { background-color: #374151; }
       .bg-gray-800 { background-color: #1f2937; }
+      .bg-gray-900 { background-color: #111827; }
       .bg-gray-950 { background-color: #030712; }
-      .bg-amber-50 { background-color: #fffbeb; }
+      .bg-red-50 { background-color: #fef2f2; }
       .bg-red-100 { background-color: #fee2e2; }
-      .bg-blue-100 { background-color: #dbeafe; }
-      .bg-emerald-100 { background-color: #d1fae5; }
+      .bg-red-900\/60 { background-color: rgb(127 29 29 / 0.6); }
+      .bg-white\/20 { background-color: rgb(255 255 255 / 0.2); }
+      .bg-amber-50 { background-color: #fffbeb; }
+      .bg-amber-100 { background-color: #fef3c7; }
       .text-white { color: #ffffff; }
       .text-gray-100 { color: #f3f4f6; }
+      .text-gray-200 { color: #e5e7eb; }
       .text-gray-300 { color: #d1d5db; }
       .text-gray-400 { color: #9ca3af; }
       .text-gray-500 { color: #6b7280; }
       .text-gray-600 { color: #4b5563; }
+      .text-gray-700 { color: #374151; }
+      .text-gray-800 { color: #1f2937; }
       .text-gray-900 { color: #111827; }
-      .text-blue-800 { color: #1e40af; }
-      .text-emerald-800 { color: #065f46; }
+      .text-red-200 { color: #fecaca; }
+      .text-rose-400 { color: #fb7185; }
       .text-amber-400 { color: #fbbf24; }
       .min-h-screen { min-height: 100vh; }
       .flex { display: flex; }
@@ -80,6 +88,7 @@
       .justify-center { justify-content: center; }
       .justify-end { justify-content: flex-end; }
       .max-w-7xl { max-width: 80rem; margin-left: auto; margin-right: auto; }
+      .max-w-3xl { max-width: 48rem; }
       .w-full { width: 100%; }
       .h-full { height: 100%; }
       .relative { position: relative; }
@@ -87,9 +96,14 @@
       .absolute { position: absolute; }
       .inset-0 { inset: 0px; }
       .top-0 { top: 0px; }
+      .bottom-0 { bottom: 0px; }
+      .left-0 { left: 0px; }
+      .right-0 { right: 0px; }
+      .z-0 { z-index: 0; }
       .z-10 { z-index: 10; }
       .z-20 { z-index: 20; }
       .z-40 { z-index: 40; }
+      .z-50 { z-index: 50; }
       .overflow-hidden { overflow: hidden; }
       .rounded-xl { border-radius: 0.75rem; }
       .rounded-2xl { border-radius: 1rem; }
@@ -98,14 +112,20 @@
       .rounded { border-radius: 0.25rem; }
       .rounded-md { border-radius: 0.375rem; }
       .rounded-lg { border-radius: 0.5rem; }
+      .shadow-xs { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
       .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
       .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+      .shadow-inner { box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05); }
       .border { border-width: 1px; }
       .border-b { border-bottom-width: 1px; }
       .border-t { border-top-width: 1px; }
       .border-gray-100 { border-color: #f3f4f6; }
       .border-gray-200 { border-color: #e5e7eb; }
+      .border-gray-300 { border-color: #d1d5db; }
+      .border-gray-700 { border-color: #374151; }
       .border-gray-800 { border-color: #1f2937; }
+      .border-red-700 { border-color: #b91c1c; }
+      .border-white\/30 { border-color: rgb(255 255 255 / 0.3); }
       .border-amber-200 { border-color: #fde68a; }
       .aspect-\[16\/9\] { aspect-ratio: 16 / 9; }
       .object-cover { object-fit: cover; }
@@ -116,70 +136,115 @@
       .gap-3 { gap: 0.75rem; }
       .gap-2 { gap: 0.5rem; }
       .gap-1\.5 { gap: 0.375rem; }
+      .gap-1 { gap: 0.25rem; }
+      .space-x-1 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.25rem; }
+      .space-x-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.375rem; }
+      .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; }
+      .space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; }
+      .space-x-4 > :not([hidden]) ~ :not([hidden]) { margin-left: 1rem; }
+      .space-x-6 > :not([hidden]) ~ :not([hidden]) { margin-left: 1.5rem; }
+      .p-1 { padding: 0.25rem; }
+      .p-2 { padding: 0.5rem; }
+      .p-3 { padding: 0.75rem; }
       .p-4 { padding: 1rem; }
       .p-6 { padding: 1.5rem; }
+      .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+      .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+      .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
       .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+      .px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
       .px-4 { padding-left: 1rem; padding-right: 1rem; }
       .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+      .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
       .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
       .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-      .py-3\.5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+      .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
       .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
       .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+      .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
       .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+      .mb-1 { margin-bottom: 0.25rem; }
       .mb-2 { margin-bottom: 0.5rem; }
       .mb-3 { margin-bottom: 0.75rem; }
       .mb-4 { margin-bottom: 1rem; }
       .mb-6 { margin-bottom: 1.5rem; }
       .mb-8 { margin-bottom: 2rem; }
+      .mr-1 { margin-right: 0.25rem; }
+      .mr-2 { margin-right: 0.5rem; }
+      .mr-4 { margin-right: 1rem; }
       .mt-0\.5 { margin-top: 0.125rem; }
+      .mt-3 { margin-top: 0.75rem; }
+      .mt-auto { margin-top: auto; }
       .font-black { font-weight: 900; }
       .font-extrabold { font-weight: 800; }
       .font-bold { font-weight: 700; }
+      .font-semibold { font-weight: 600; }
       .font-medium { font-weight: 500; }
       .text-xs { font-size: 0.75rem; line-height: 1rem; }
       .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+      .text-base { font-size: 1rem; line-height: 1.5rem; }
       .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
       .text-2xl { font-size: 1.5rem; line-height: 2rem; }
       .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+      .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+      .text-5xl { font-size: 3rem; line-height: 1; }
+      .text-\[9px\] { font-size: 9px; }
       .text-\[10px\] { font-size: 10px; }
       .text-\[11px\] { font-size: 11px; }
       .leading-none { line-height: 1; }
       .leading-tight { line-height: 1.25; }
+      .leading-snug { line-height: 1.375; }
       .tracking-tight { letter-spacing: -0.025em; }
       .tracking-wider { letter-spacing: 0.05em; }
+      .tracking-widest { letter-spacing: 0.1em; }
       .uppercase { text-transform: uppercase; }
       .whitespace-nowrap { white-space: nowrap; }
-      .w-2 { width: 0.5rem; }
-      .h-2 { height: 0.5rem; }
+      .w-3 { width: 0.75rem; }
+      .h-3 { height: 0.75rem; }
       .w-3\.5 { width: 0.875rem; }
       .h-3\.5 { height: 0.875rem; }
       .w-4 { width: 1rem; }
       .h-4 { height: 1rem; }
-      .w-8 { width: 2rem; }
-      .h-8 { height: 2rem; }
-      .w-10 { width: 2.5rem; }
-      .h-10 { height: 2.5rem; }
-      .w-20 { width: 5rem; }
-      .min-w-\[200px\] { min-width: 200px; }
+      .w-5 { width: 1.25rem; }
+      .h-5 { height: 1.25rem; }
+      .w-6 { width: 1.5rem; }
+      .h-6 { height: 1.5rem; }
+      .w-28 { width: 7rem; }
+      .h-28 { height: 7rem; }
+      .h-\[90px\] { height: 90px; }
+      .min-h-\[40px\] { min-height: 40px; }
+      .min-h-\[90px\] { min-height: 90px; }
+      .min-h-\[122px\] { min-height: 122px; }
+      .min-h-\[160px\] { min-height: 160px; }
+      .min-h-\[460px\] { min-height: 460px; }
+      .h-\[460px\] { height: 460px; }
+      .min-h-\[1200px\] { min-height: 1200px; }
+      .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       @media (min-width: 640px) {
         .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
         .sm\:p-6 { padding: 1.5rem; }
         .sm\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .sm\:text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
         .sm\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
         .sm\:text-xs { font-size: 0.75rem; line-height: 1rem; }
         .sm\:inline { display: inline; }
+        .sm\:inline-block { display: inline-block; }
+        .sm\:w-32 { width: 8rem; }
+        .sm\:space-x-4 > :not([hidden]) ~ :not([hidden]) { margin-left: 1rem; }
       }
       @media (min-width: 768px) {
         .md\:block { display: block; }
-        .md\:flex-row { flex-direction: row; }
-        .md\:mb-0 { margin-bottom: 0px; }
-        .md\:w-auto { width: auto; }
+        .md\:flex { display: flex; }
+        .md\:hidden { display: none; }
+        .md\:items-start { align-items: flex-start; }
+        .md\:text-5xl { font-size: 3rem; line-height: 1; }
       }
       @media (min-width: 1024px) {
-        .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
         .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-        .lg\:col-span-2 { grid-column: span 2 / span 2; }
         .lg\:col-span-8 { grid-column: span 8 / span 8; }
         .lg\:col-span-4 { grid-column: span 4 / span 4; }
         .lg\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
@@ -244,94 +309,207 @@
   </head>
   <body class="bg-brand-gray antialiased">
     <div id="root">
-      <!-- Instant First-Paint Layout Shell for Sub-Second FCP & Speed Index -->
-      <div class="min-h-screen flex flex-col bg-[#f8fafc] text-gray-900">
-        <header class="sticky top-0 z-40 bg-white border-b border-gray-200">
-          <div class="bg-[#c91010] text-white px-4 py-1.5 text-xs font-bold">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> महाराष्ट्र राज्य २४x७ डिजिटल वृत्तसेवा</span>
-              <span class="hidden sm:inline">विश्वसनीय • वेगवान • निष्पक्ष</span>
-            </div>
-          </div>
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-xl bg-[#c91010] flex items-center justify-center text-white font-black text-2xl shadow-sm">रा</div>
-              <div>
-                <div class="text-2xl sm:text-3xl font-black text-[#c91010] leading-none tracking-tight">राज्यवाणी</div>
-                <div class="text-[10px] sm:text-xs text-gray-800 font-extrabold mt-0.5">महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र</div>
+      <!-- Instant First-Paint Layout Shell matching React DOM 1:1 for 0 CLS -->
+      <div class="min-h-screen flex flex-col bg-brand-gray/50">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-white shadow-xs border-b border-gray-100">
+          <div class="bg-brand-red text-white text-xs py-1.5 border-b border-red-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+              <div class="flex space-x-3 items-center">
+                <span class="font-bold tracking-wider uppercase text-[11px] bg-red-900/60 px-2 py-0.5 rounded">
+                  महाराष्ट्र न्यूज नेटवर्क
+                </span>
+                <span class="hidden sm:inline-block text-red-200">|</span>
+                <span class="hidden sm:inline-block text-gray-100 text-[11px]">
+                  महाराष्ट्र राज्य २४x७ डिजिटल वृत्तसेवा
+                </span>
+              </div>
+              <div class="flex items-center space-x-3 sm:space-x-4">
+                <div class="relative">
+                  <div class="flex items-center space-x-1.5 bg-white/20 px-3 py-0.5 rounded-full text-xs font-bold border border-white/30">
+                    <span>३६ जिल्हे</span>
+                  </div>
+                </div>
+                <div class="text-[11px] font-bold text-white flex items-center gap-1 hidden md:flex">
+                  <span>संपर्क (8459675917)</span>
+                </div>
+                <div class="hidden lg:flex items-center space-x-1 text-[11px] text-white/90">
+                  <span>मराठी आवृत्ती</span>
+                </div>
               </div>
             </div>
-            <div class="flex items-center space-x-2">
-              <div class="w-8 h-8 rounded-lg bg-gray-200 animate-pulse"></div>
-              <div class="w-20 h-8 rounded-lg bg-gray-200 animate-pulse"></div>
-            </div>
-          </div>
-          <div class="border-t border-gray-200 bg-gray-100 hidden md:block">
-            <div class="max-w-7xl mx-auto px-4 py-2 flex space-x-6 text-xs font-bold text-gray-900">
-              <span class="text-[#c91010]">मुख्यपृष्ठ</span>
-              <span>महाराष्ट्र</span>
-              <span>राजकारण</span>
-              <span>शेती</span>
-              <span>गुन्हेगारी</span>
-              <span>शिक्षण</span>
-              <span>व्यापार</span>
-              <span>क्रीडा</span>
-              <span>मनोरंजन</span>
-            </div>
-          </div>
-        </header>
-
-        <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <!-- Ticker placeholder -->
-          <div class="w-full h-10 bg-amber-50 border border-amber-200/80 rounded-xl mb-6 flex items-center px-3 gap-2">
-            <span class="bg-[#c91010] text-white text-[11px] font-black px-2 py-0.5 rounded">ताजी बातमी</span>
-            <div class="h-3 bg-amber-200/60 rounded flex-1 animate-pulse"></div>
           </div>
 
-          <!-- Hero Grid Layout -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="lg:col-span-2 bg-white rounded-2xl overflow-hidden border border-gray-200/90 shadow-sm flex flex-col">
-              <div class="relative w-full aspect-[16/9] bg-gray-200 overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" 
-                  srcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=40&w=720 720w"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px"
-                  alt="राज्यवाणी ताज्या बातम्या" 
-                  class="w-full h-full object-cover"
-                  fetchpriority="high"
-                  width="720"
-                  height="405"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4 sm:p-6 text-white">
-                  <span class="bg-[#c91010] text-white text-xs font-black px-2.5 py-1 rounded w-fit mb-2">महाराष्ट्र विशेष</span>
-                  <div class="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-tight text-white mb-2">
-                    महाराष्ट्रातील ३६ जिल्ह्यांतील सर्व ताज्या व विश्लेषणात्मक घडामोडी
-                  </div>
-                  <div class="flex items-center gap-3 text-xs text-gray-300">
-                    <span>राज्यवाणी प्रतिनिधी</span>
-                    <span>•</span>
-                    <span>आत्ताच प्रसिद्ध</span>
-                  </div>
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex justify-between items-center">
+              <div class="md:hidden text-gray-700 p-1.5 rounded-lg">
+                <span class="block w-6 h-0.5 bg-gray-700 mb-1"></span>
+                <span class="block w-6 h-0.5 bg-gray-700 mb-1"></span>
+                <span class="block w-6 h-0.5 bg-gray-700"></span>
+              </div>
+              <a href="/" class="flex flex-col items-center md:items-start group">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-brand-red tracking-tight font-serif">
+                  राज्यवाणी
+                </h1>
+                <span class="text-[10px] sm:text-xs text-gray-900 font-extrabold tracking-widest uppercase mt-0.5">
+                  महाराष्ट्राचा बुलंद आवाज • सत्य, अचूक, निष्पक्ष
+                </span>
+              </a>
+              <div class="flex items-center space-x-2 sm:space-x-3">
+                <div class="flex items-center space-x-1.5 bg-brand-red text-white px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm">
+                  <span>लॉगिन</span>
                 </div>
               </div>
             </div>
 
-            <div class="space-y-4 flex flex-col justify-between">
-              <div class="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-sm h-full flex flex-col justify-center space-y-2">
-                <div class="w-16 h-4 bg-red-100 text-[#c91010] rounded text-[10px] font-bold px-1.5 py-0.5">शेती विशेष</div>
-                <div class="h-5 bg-gray-200 rounded w-5/6 animate-pulse"></div>
-                <div class="h-3 bg-gray-100 rounded w-full animate-pulse"></div>
+            <nav class="hidden md:flex items-center justify-between border-t border-b border-gray-200 mt-3 py-1.5 overflow-x-auto scrollbar-none">
+              <div class="flex items-center space-x-1 lg:space-x-1.5 shrink-0">
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg bg-brand-red text-white min-h-[40px] inline-flex items-center">मुख्यपृष्ठ</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">महाराष्ट्र</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">राजकारण</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">शेती</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">गुन्हेगारी</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">शिक्षण</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">व्यापार</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">क्रीडा</span>
+                <span class="px-3 py-2 text-xs sm:text-sm font-bold rounded-lg text-gray-800 min-h-[40px] inline-flex items-center">मनोरंजन</span>
               </div>
-              <div class="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-sm h-full flex flex-col justify-center space-y-2">
-                <div class="w-16 h-4 bg-blue-100 text-blue-800 rounded text-[10px] font-bold px-1.5 py-0.5">राजकारण</div>
-                <div class="h-5 bg-gray-200 rounded w-5/6 animate-pulse"></div>
-                <div class="h-3 bg-gray-100 rounded w-full animate-pulse"></div>
+            </nav>
+          </div>
+        </header>
+
+        <!-- Breaking News Ticker (Matching BreakingNewsTicker.tsx) -->
+        <div class="bg-brand-black text-white px-4 py-2 flex items-center shadow-inner min-h-[40px]" style="contain: layout paint;">
+          <div class="flex items-center space-x-2 bg-brand-red px-3 py-1 rounded mr-4 shrink-0 z-10">
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span class="text-xs font-bold uppercase tracking-wider">ब्रेकिंग न्यूज</span>
+          </div>
+          <div class="overflow-hidden whitespace-nowrap relative flex-1" style="contain: paint;">
+            <div class="inline-block text-sm font-medium text-amber-300">
+              <span class="text-amber-400 mr-2">•</span>
+              महाराष्ट्रातील सर्व ३६ जिल्ह्यांतील ताज्या बातम्या व सविस्तर घडामोडी राज्यवाणीवर थेट उपलब्ध
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 w-full min-h-[1200px]">
+          <!-- Hero Section (Matching Hero.tsx) -->
+          <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="contain: layout paint;">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[460px] lg:min-h-[550px]">
+              <!-- Main Feature 8-Col Card -->
+              <div class="lg:col-span-8 relative group overflow-hidden rounded-xl bg-gray-950 shadow-sm border border-gray-800 block h-[460px] lg:h-[550px]">
+                <div class="absolute top-4 left-4 z-20 flex space-x-2">
+                  <span class="bg-brand-red text-white text-xs font-black px-3 py-1 rounded shadow-md">
+                    महाराष्ट्र विशेष
+                  </span>
+                </div>
+                <div class="relative h-full w-full overflow-hidden bg-gray-950">
+                  <img 
+                    src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480" 
+                    srcset="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=360 360w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=480 480w, https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format%2Ccompress&fm=webp&fit=crop&q=38&w=720 720w"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 720px"
+                    alt="राज्यवाणी ताज्या बातम्या" 
+                    class="w-full h-full object-cover"
+                    fetchpriority="high"
+                    width="720"
+                    height="405"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/80 to-transparent"></div>
+                </div>
+                <div class="absolute bottom-0 left-0 p-6 w-full z-10">
+                  <div class="flex items-center space-x-2 mb-3">
+                    <span class="text-xs font-black uppercase tracking-wider text-white bg-gray-950 px-3 py-1 rounded shadow-md border border-gray-700 flex items-center">
+                      महाराष्ट्र
+                    </span>
+                  </div>
+                  <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-3 line-clamp-2">
+                    महाराष्ट्रातील ३६ जिल्ह्यांतील सर्व ताज्या व विश्लेषणात्मक घडामोडी
+                  </h1>
+                  <p class="text-gray-100 text-xs sm:text-sm lg:text-base line-clamp-2 mb-4 max-w-3xl font-medium">
+                    स्थानिक स्वराज्य संस्था, राजकारण, कृषी, शिक्षण आणि सामाजिक विषयांवरील वस्तुनिष्ठ व अभ्यासपूर्ण वार्तांकन.
+                  </p>
+                  <div class="flex flex-wrap items-center text-xs font-semibold gap-2">
+                    <div class="flex items-center space-x-2 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm">
+                      <span class="text-white font-bold">राज्यवाणी विशेष प्रतिनिधी</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 bg-gray-950/95 text-white px-2.5 py-1 rounded-md border border-gray-800 shadow-sm">
+                      <span class="text-white font-semibold">आत्ताच प्रसिद्ध</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="bg-white rounded-2xl p-4 border border-gray-200/90 shadow-sm h-full flex flex-col justify-center space-y-2">
-                <div class="w-16 h-4 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold px-1.5 py-0.5">शिक्षण</div>
-                <div class="h-5 bg-gray-200 rounded w-5/6 animate-pulse"></div>
-                <div class="h-3 bg-gray-100 rounded w-full animate-pulse"></div>
+
+              <!-- Side Articles 4-Col (3 Cards) -->
+              <div class="lg:col-span-4 flex flex-col justify-between gap-4 h-full lg:h-[550px]">
+                <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-row p-3 gap-3 min-h-[160px]">
+                  <div class="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                    <div class="w-full h-full bg-gray-200 animate-pulse"></div>
+                    <div class="absolute top-1 left-1">
+                      <span class="bg-brand-red text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">शेती</span>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+                    <div class="text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2">
+                      महाराष्ट्रातील खरीप व रब्बी हंगाम: शेतकऱ्यांसाठी महत्त्वाची कृषी धोरणे व बाजारभाव
+                    </div>
+                    <div class="flex flex-col space-y-1.5 mt-auto pt-2">
+                      <div class="text-[11px] font-bold text-gray-800 truncate">कृषी प्रतिनिधी</div>
+                      <div class="flex items-center justify-between text-[10px] text-gray-800 font-bold border-t border-gray-100 pt-1.5">
+                        <span>१ तासापूर्वी</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-row p-3 gap-3 min-h-[160px]">
+                  <div class="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                    <div class="w-full h-full bg-gray-200 animate-pulse"></div>
+                    <div class="absolute top-1 left-1">
+                      <span class="bg-brand-red text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">राजकारण</span>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+                    <div class="text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2">
+                      विधानसभा व स्थानिक स्वराज्य संस्था निवडणूक तयारी: राजकीय घडामोडींचा सखोल आढावा
+                    </div>
+                    <div class="flex flex-col space-y-1.5 mt-auto pt-2">
+                      <div class="text-[11px] font-bold text-gray-800 truncate">राजकीय ब्युरो</div>
+                      <div class="flex items-center justify-between text-[10px] text-gray-800 font-bold border-t border-gray-100 pt-1.5">
+                        <span>२ तासांपूर्वी</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-row p-3 gap-3 min-h-[160px]">
+                  <div class="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                    <div class="w-full h-full bg-gray-200 animate-pulse"></div>
+                    <div class="absolute top-1 left-1">
+                      <span class="bg-brand-red text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">शिक्षण</span>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+                    <div class="text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2">
+                      महाराष्ट्र राज्य शिक्षण मंडळ व स्पर्धा परीक्षा: महत्त्वाच्या शैक्षणिक सूचना व तारखा
+                    </div>
+                    <div class="flex flex-col space-y-1.5 mt-auto pt-2">
+                      <div class="text-[11px] font-bold text-gray-800 truncate">शिक्षण वार्ताहर</div>
+                      <div class="flex items-center justify-between text-[10px] text-gray-800 font-bold border-t border-gray-100 pt-1.5">
+                        <span>३ तासांपूर्वी</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </div>
+          </section>
+
+          <!-- Top Feature Ad Unit Placeholder -->
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 min-h-[122px]">
+            <div style="contain: layout size;" class="bg-gray-100 border border-gray-300 text-gray-700 flex flex-col items-center justify-center text-xs font-bold tracking-wider uppercase overflow-hidden rounded-xl w-full h-[90px] min-h-[90px]">
+              <span class="mb-1 text-gray-700 text-xs font-bold">Advertisement</span>
+              <span class="text-[11px] text-gray-600 font-semibold">AdSense Space</span>
             </div>
           </div>
         </main>
