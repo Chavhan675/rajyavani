@@ -51,18 +51,6 @@ export default defineConfig(() => {
               if (id.includes('recharts') || id.includes('d3')) {
                 return 'vendor-charts';
               }
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons';
-              }
-              if (id.includes('date-fns')) {
-                return 'vendor-date';
-              }
-              if (id.includes('react-router') || id.includes('react-helmet')) {
-                return 'vendor-router';
-              }
-              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-                return 'vendor-react';
-              }
             }
           },
         },

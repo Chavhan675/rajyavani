@@ -17,7 +17,7 @@ import {
   RefreshCw,
   UserCheck
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatMarathiDateTime } from '../../lib/formatTime';
 
 export default function UserManagementTab() {
   const [users, setUsers] = useState<UserRole[]>([]);
@@ -272,7 +272,7 @@ export default function UserManagementTab() {
                     </td>
 
                     <td className="py-3 px-4 text-xs text-gray-500">
-                      {u.lastLoginAt ? format(new Date(u.lastLoginAt), "dd MMM yyyy, hh:mm a") : 'नोंद नाही'}
+                      {u.lastLoginAt ? formatMarathiDateTime(u.lastLoginAt) : 'नोंद नाही'}
                     </td>
 
                     <td className="py-3 px-4 text-right">

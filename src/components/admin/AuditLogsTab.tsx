@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   FileText
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatMarathiDateTime } from '../../lib/formatTime';
 
 export default function AuditLogsTab() {
   const [logs, setLogs] = useState<AuthAuditLog[]>([]);
@@ -195,7 +195,7 @@ export default function AuditLogsTab() {
               filteredLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-gray-50/60 transition-colors font-sans">
                   <td className="py-3 px-4 text-xs font-mono text-gray-600 whitespace-nowrap">
-                    {format(new Date(log.timestamp), "dd MMM yyyy, HH:mm:ss")}
+                    {formatMarathiDateTime(log.timestamp)}
                   </td>
 
                   <td className="py-3 px-4">

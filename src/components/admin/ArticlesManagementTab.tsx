@@ -19,7 +19,7 @@ import {
   X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { formatMarathiDateTime } from '../../lib/formatTime';
 import Image from '../Image';
 
 export default function ArticlesManagementTab() {
@@ -308,7 +308,7 @@ export default function ArticlesManagementTab() {
                     </td>
 
                     <td className="py-3 px-4 text-xs text-gray-500 font-mono">
-                      {art.publishedAt ? format(new Date(art.publishedAt), "dd MMM yyyy, HH:mm") : '-'}
+                      {art.publishedAt ? formatMarathiDateTime(art.publishedAt) : '-'}
                     </td>
 
                     <td className="py-3 px-4 text-right">

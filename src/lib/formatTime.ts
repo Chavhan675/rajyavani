@@ -1,5 +1,3 @@
-import { format, isValid } from 'date-fns';
-
 const MARATHI_MONTHS: { [key: string]: string } = {
   'Jan': 'जाने',
   'Feb': 'फेब्रु',
@@ -47,36 +45,32 @@ function parseDateInput(dateInput?: string | number | Date | null): Date | null 
   if (!dateInput) return null;
   try {
     const d = typeof dateInput === 'number' || typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return isValid(d) ? d : null;
+    return !isNaN(d.getTime()) ? d : null;
   } catch {
     return null;
   }
 }
 
 /**
- * Format timestamp into user-friendly Marathi date-time string using date-fns pattern.
- * e.g., 'dd MMM yyyy, hh:mm a' -> '२२ ऑगस्ट २०२६, ०१:१५ PM'
+ * Format timestamp into user-friendly Marathi date-time string without external dependencies.
+ * e.g., '२२ ऑगस्ट २०२६, ०१:१५ PM'
  */
 export function formatMarathiDateTime(
   dateInput?: string | number | Date | null,
-  pattern: string = 'dd MMM yyyy, hh:mm a'
+  _pattern: string = 'dd MMM yyyy, hh:mm a'
 ): string {
   const date = parseDateInput(dateInput);
   if (!date) return 'काही वेळापूर्वी';
 
   try {
-    const rawFormatted = format(date, pattern);
-    // Translate month names and day names if present in formatted output
-    let result = rawFormatted;
-    Object.entries(MARATHI_MONTHS).forEach(([en, mr]) => {
-      result = result.replace(new RegExp(`\\b${en}\\b`, 'g'), mr);
+    return date.toLocaleDateString('mr-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
-    Object.entries(MARATHI_DAYS).forEach(([en, mr]) => {
-      result = result.replace(new RegExp(`\\b${en}\\b`, 'g'), mr);
-    });
-    // Localize AM / PM
-    result = result.replace(/\bAM\b/g, 'सकाळी').replace(/\bPM\b/g, 'संध्याकाळी');
-    return result;
   } catch {
     return formatMarathiTime(dateInput);
   }
