@@ -1,6 +1,5 @@
 import React, { useEffect, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./lib/AuthContext";
 import { Loader2 } from "lucide-react";
 import HomePage from "./pages/HomePage";
@@ -40,47 +39,45 @@ function GoogleAnalyticsTracker() {
 
 export default function App() {
   return (
-    <HelmetProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <GoogleAnalyticsTracker />
-          <Suspense fallback={<PageFallback />}>
-            <Routes>
-              {/* Core News Pages */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/article/:id" element={<ArticlePage />} />
-              <Route path="/archive" element={<ArchivePage />} />
-              <Route path="/category/:category" element={<ArchivePage />} />
-              <Route path="/district/:slug" element={<DistrictPage />} />
-              <Route path="/location/district/:name" element={<DistrictPage />} />
-              <Route path="/location/:type/:name" element={<ArchivePage />} />
-              <Route path="/tag/:tag" element={<ArchivePage />} />
-              <Route path="/author/:authorId" element={<ArchivePage />} />
-              <Route path="/search" element={<ArchivePage />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <GoogleAnalyticsTracker />
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            {/* Core News Pages */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/article/:id" element={<ArticlePage />} />
+            <Route path="/archive" element={<ArchivePage />} />
+            <Route path="/category/:category" element={<ArchivePage />} />
+            <Route path="/district/:slug" element={<DistrictPage />} />
+            <Route path="/location/district/:name" element={<DistrictPage />} />
+            <Route path="/location/:type/:name" element={<ArchivePage />} />
+            <Route path="/tag/:tag" element={<ArchivePage />} />
+            <Route path="/author/:authorId" element={<ArchivePage />} />
+            <Route path="/search" element={<ArchivePage />} />
 
-              {/* Admin & Desk */}
-              <Route path="/admin" element={<AdminPage />} />
+            {/* Admin & Desk */}
+            <Route path="/admin" element={<AdminPage />} />
 
-              {/* Official Contact Page */}
-              <Route path="/contact" element={<ContactPage />} />
+            {/* Official Contact Page */}
+            <Route path="/contact" element={<ContactPage />} />
 
-              {/* Required Legal & Trust Pages */}
-              <Route path="/about" element={<LegalPage pageKey="about" />} />
-              <Route path="/privacy-policy" element={<LegalPage pageKey="privacy" />} />
-              <Route path="/terms" element={<LegalPage pageKey="terms" />} />
-              <Route path="/terms-and-conditions" element={<LegalPage pageKey="terms" />} />
-              <Route path="/disclaimer" element={<LegalPage pageKey="disclaimer" />} />
-              <Route path="/editorial-policy" element={<LegalPage pageKey="editorial" />} />
-              <Route path="/correction-policy" element={<LegalPage pageKey="correction" />} />
-              <Route path="/cookie-policy" element={<LegalPage pageKey="cookie" />} />
-              <Route path="/fact-checking" element={<LegalPage pageKey="factchecking" />} />
+            {/* Required Legal & Trust Pages */}
+            <Route path="/about" element={<LegalPage pageKey="about" />} />
+            <Route path="/privacy-policy" element={<LegalPage pageKey="privacy" />} />
+            <Route path="/terms" element={<LegalPage pageKey="terms" />} />
+            <Route path="/terms-and-conditions" element={<LegalPage pageKey="terms" />} />
+            <Route path="/disclaimer" element={<LegalPage pageKey="disclaimer" />} />
+            <Route path="/editorial-policy" element={<LegalPage pageKey="editorial" />} />
+            <Route path="/correction-policy" element={<LegalPage pageKey="correction" />} />
+            <Route path="/cookie-policy" element={<LegalPage pageKey="cookie" />} />
+            <Route path="/fact-checking" element={<LegalPage pageKey="factchecking" />} />
 
-              {/* 404 Fallback */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </AuthProvider>
-    </HelmetProvider>
+            {/* 404 Fallback */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

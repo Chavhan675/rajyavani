@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
   title?: string;
@@ -34,16 +33,23 @@ export default function SEO({
   const defaultImage = "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80";
   const canonicalUrl = canonical || "https://rajyavani.vercel.app/";
 
-  // Immediate synchronous DOM title set if document exists (prevents missing title during hydration in Lighthouse)
-  if (typeof document !== 'undefined') {
-    document.title = fullTitle;
-  }
-
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.title = fullTitle;
+      
+      // Update meta description
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute('content', description);
+      }
+      
+      // Update canonical link
+      let canonicalLink = document.querySelector('link[rel="canonical"]');
+      if (canonicalLink) {
+        canonicalLink.setAttribute('href', canonicalUrl);
+      }
     }
-  }, [fullTitle]);
+  }, [fullTitle, description, canonicalUrl]);
 
   // Schema.org structured data
   const jsonLd = type === 'article' ? {
@@ -104,8 +110,7 @@ export default function SEO({
   };
   
   return (
-    <Helmet>
-      <html lang="mr" />
+    <>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       {canonical && <link rel="canonical" href={canonical} />}
@@ -126,9 +131,7 @@ export default function SEO({
       <meta name="twitter:image" content={image || defaultImage} />
       
       {/* Structured Data JSON-LD */}
-      <script type="application/ld+json">
-        {JSON.stringify(jsonLd)}
-      </script>
-    </Helmet>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    </>
   );
 }

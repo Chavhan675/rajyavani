@@ -5,6 +5,28 @@ import './index.css';
 
 // Handle stale Vite chunk loads, deployment mismatches, and IndexedDB closing events gracefully
 if (typeof window !== 'undefined') {
+  const originalWarn = console.warn;
+  const originalError = console.error;
+  
+  const isFirestoreOfflineNotice = (args: any[]) => {
+    return args.some(arg => {
+      const str = String(arg || '');
+      return str.includes('@firebase/firestore') ||
+             str.includes('Could not reach Cloud Firestore backend') ||
+             str.includes('operate in offline mode until it is able to successfully connect');
+    });
+  };
+
+  console.warn = (...args: any[]) => {
+    if (isFirestoreOfflineNotice(args)) return;
+    originalWarn.apply(console, args);
+  };
+
+  console.error = (...args: any[]) => {
+    if (isFirestoreOfflineNotice(args)) return;
+    originalError.apply(console, args);
+  };
+
   window.addEventListener('vite:preloadError', (event) => {
     console.warn('Vite preload error detected. Hard refreshing to load latest app bundle...');
     event.preventDefault();

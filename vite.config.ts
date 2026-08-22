@@ -16,22 +16,24 @@ function asyncCssPlugin(): Plugin {
   };
 }
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const isProd = mode === 'production';
   return {
     plugins: [react(), tailwindcss(), asyncCssPlugin()],
     resolve: {
+      dedupe: ['react', 'react-dom'],
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    esbuild: {
+    esbuild: isProd ? {
       drop: ['console', 'debugger'],
       legalComments: 'none',
       treeShaking: true,
       minifyIdentifiers: true,
       minifySyntax: true,
       minifyWhitespace: true,
-    },
+    } : {},
     build: {
       sourcemap: true,
       chunkSizeWarningLimit: 1000,

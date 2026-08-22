@@ -6,7 +6,7 @@ import firebaseConfig from '../../firebase-applet-config.json';
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 try {
-  setLogLevel('error');
+  setLogLevel('silent');
 } catch {}
 
 let firestoreDb;
@@ -15,7 +15,7 @@ try {
     app,
     {
       localCache: memoryLocalCache(),
-      experimentalAutoDetectLongPolling: true,
+      experimentalForceLongPolling: true,
     },
     firebaseConfig.firestoreDatabaseId
   );
