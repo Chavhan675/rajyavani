@@ -48,7 +48,11 @@ app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader("Permissions-Policy", "unload=()");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|webp|avif|json)$/) || req.url.startsWith("/assets/")) {
+  if (req.url === "/sw.js" || req.url === "/service-worker.js" || req.url.startsWith("/sw.js") || req.url.startsWith("/service-worker.js")) {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Service-Worker-Allowed", "/");
+    res.setHeader("Content-Type", "application/javascript");
+  } else if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|webp|avif|json)$/) || req.url.startsWith("/assets/")) {
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
   }
   next();
