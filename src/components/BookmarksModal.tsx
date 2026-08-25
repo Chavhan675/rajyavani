@@ -115,7 +115,7 @@ export default function BookmarksModal() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[10px] font-bold text-brand-red uppercase tracking-wider bg-red-50 px-2 py-0.5 rounded">
-                        {item.category}
+                        {typeof item.category === 'object' && item.category !== null ? (item.category.name || 'महाराष्ट्र') : (item.category || 'महाराष्ट्र')}
                       </span>
                       {item.district && (
                         <span className="text-[10px] font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded border border-gray-300">

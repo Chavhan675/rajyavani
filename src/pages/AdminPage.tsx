@@ -762,7 +762,7 @@ export default function AdminPage() {
 
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                       <span className="bg-gray-100 text-gray-900 px-2.5 py-1 rounded border border-gray-300 font-bold">
-                        Category: {generatedDraft.category}
+                        Category: {typeof generatedDraft.category === 'object' && generatedDraft.category !== null ? (generatedDraft.category.name || 'महाराष्ट्र') : (generatedDraft.category || 'महाराष्ट्र')}
                       </span>
                       {generatedDraft.district && (
                         <span className="bg-gray-100 text-gray-900 px-2.5 py-1 rounded border border-gray-300 font-bold">

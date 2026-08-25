@@ -305,8 +305,8 @@ export async function executeNewsCollectionCycle(options: CollectionEngineOption
 
   logNotes.push(`सापडलेल्या बातम्या: ${rawFeedItems.length}, डुप्लिकेट विलीन: ${duplicatesMerged}, निवड: ${uniqueCandidateItems.length}`);
 
-  // 3. Batch Synthesis with Gemini AI in optimized parallel chunks of 4-5 items
-  const BATCH_SIZE = 5;
+  // 3. Batch Synthesis with Gemini AI in optimized focused chunks of 2 items (allows full 1,000+ word allocation per article within token limits)
+  const BATCH_SIZE = 2;
   const batches: Array<typeof uniqueCandidateItems> = [];
   for (let i = 0; i < uniqueCandidateItems.length && batches.length * BATCH_SIZE < targetCount + 10; i += BATCH_SIZE) {
     batches.push(uniqueCandidateItems.slice(i, i + BATCH_SIZE));

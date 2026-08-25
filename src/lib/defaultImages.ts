@@ -76,8 +76,8 @@ export const CATEGORY_DEFAULT_IMAGES: Record<string, string[]> = {
 /**
  * Deterministically pick an editorial image based on category and article title/seed.
  */
-export function getCategoryFallbackImage(category?: string, seedText?: string): string {
-  const normCategory = (category || "").trim();
+export function getCategoryFallbackImage(category?: any, seedText?: string): string {
+  const normCategory = (typeof category === 'object' && category !== null ? (category.name || category.slug || '') : (category || '')).trim();
   let list = CATEGORY_DEFAULT_IMAGES[normCategory];
 
   if (!list || list.length === 0) {
@@ -100,8 +100,9 @@ export function getCategoryFallbackImage(category?: string, seedText?: string): 
  * Generate a standalone, lightweight SVG Data URI with high-end Rajyavani news branding.
  * Guaranteed to never fail, require zero network roundtrips, and look ultra crisp and beautiful on all screen sizes.
  */
-export function getSvgEditorialPlaceholder(title?: string, category?: string): string {
-  const displayCategory = (category || "राज्यवाणी विशेष").replace(/<[^>]*>?/gm, "").substring(0, 30);
+export function getSvgEditorialPlaceholder(title?: string, category?: any): string {
+  const catStr = typeof category === 'object' && category !== null ? (category.name || 'महाराष्ट्र') : (category || "राज्यवाणी विशेष");
+  const displayCategory = catStr.replace(/<[^>]*>?/gm, "").substring(0, 30);
   const displayTitle = (title || "महाराष्ट्राच्या ताज्या व विश्वासार्ह घडामोडी").replace(/<[^>]*>?/gm, "").substring(0, 75);
 
   const svg = `

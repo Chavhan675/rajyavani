@@ -167,6 +167,9 @@ export default function ArticlePage() {
 
   const articleUrl = `https://rajyavani.vercel.app/article/${article.id}`;
   const locationParts = [article.village, article.taluka, article.district, "महाराष्ट्र"].filter(Boolean);
+  const categoryName = typeof article.category === 'object' && article.category !== null 
+    ? (article.category.name || 'महाराष्ट्र') 
+    : (article.category || 'महाराष्ट्र');
 
   // Compute word count and reading time in Marathi
   const textContent = (article.content || '').replace(/<[^>]+>/g, ' ');
@@ -187,7 +190,7 @@ export default function ArticlePage() {
           title: article.title,
           summary: article.summary,
           content: article.content,
-          category: article.category,
+          category: categoryName,
           district: article.district,
         }),
       });
@@ -234,13 +237,13 @@ export default function ArticlePage() {
       <SEO 
         title={article.title} 
         description={article.summary} 
-        image={article.imageUrl || getCategoryFallbackImage(article.category, article.title)}
+        image={article.imageUrl || getCategoryFallbackImage(categoryName, article.title)}
         type="article"
         canonical={articleUrl}
         authorName={article.authorName || "राज्यवाणी संपादकीय मंडळ"}
         datePublished={new Date(article.publishedAt || article.createdAt || Date.now()).toISOString()}
         dateModified={article.updatedAt ? new Date(article.updatedAt).toISOString() : new Date(article.publishedAt || article.createdAt || Date.now()).toISOString()}
-        category={article.category || "महाराष्ट्र"}
+        category={categoryName}
       />
       <Header />
       
@@ -255,7 +258,7 @@ export default function ArticlePage() {
         <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6 flex-wrap">
           <Link to="/" className="hover:text-brand-red flex items-center"><Home className="w-4 h-4" /></Link>
           <ChevronRight className="w-4 h-4" />
-          <Link to={`/category/${encodeURIComponent(article.category)}`} className="hover:text-brand-red font-medium">{article.category}</Link>
+          <Link to={`/category/${encodeURIComponent(categoryName)}`} className="hover:text-brand-red font-medium">{categoryName}</Link>
           
           {article.district && (
             <>
@@ -281,7 +284,7 @@ export default function ArticlePage() {
         <header className="mb-8">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="px-3 py-1 bg-brand-red text-white text-xs font-bold uppercase rounded-md">
-              {article.category || "विशेष बातमी"}
+              {categoryName}
             </span>
 
             {article.isDeveloping && (
@@ -372,7 +375,7 @@ export default function ArticlePage() {
         <figure className="mb-8 w-full rounded-2xl overflow-hidden shadow-lg border border-gray-100">
           <Image 
             src={article.imageUrl} 
-            category={article.category}
+            category={categoryName}
             fallbackPrompt={article.imagePrompt}
             alt={article.imageAlt || article.title}
             size="featured"
@@ -442,7 +445,7 @@ export default function ArticlePage() {
           title={article.title}
           summary={article.summary || ''}
           content={article.content || ''}
-          category={article.category || 'महाराष्ट्र'}
+          category={categoryName}
           fontSize={fontSize}
           setFontSize={setFontSize}
         />
@@ -531,32 +534,35 @@ export default function ArticlePage() {
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {relatedArticles.map((rel) => (
-                <Link 
-                  key={rel.id} 
-                  to={`/article/${rel.id}`}
-                  className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
-                >
-                  <div className="h-36 w-full overflow-hidden bg-gray-100 relative">
-                    <Image 
-                      src={rel.imageUrl} 
-                      category={rel.category} 
-                      alt={rel.title} 
-                      size="card"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <h3 className="text-sm font-bold text-gray-900 group-hover:text-brand-red transition-colors line-clamp-2 mb-2">
-                      {rel.title}
-                    </h3>
-                    <span className="text-xs font-bold text-gray-700 flex items-center mt-auto">
-                      <Clock className="w-3 h-3 mr-1 text-gray-600" />
-                      {formatMarathiDateOnly(rel.publishedAt || rel.createdAt || Date.now())}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+              {relatedArticles.map((rel) => {
+                const relCategory = typeof rel.category === 'object' && rel.category !== null ? (rel.category.name || 'महाराष्ट्र') : (rel.category || 'महाराष्ट्र');
+                return (
+                  <Link 
+                    key={rel.id} 
+                    to={`/article/${rel.id}`}
+                    className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
+                  >
+                    <div className="h-36 w-full overflow-hidden bg-gray-100 relative">
+                      <Image 
+                        src={rel.imageUrl} 
+                        category={relCategory} 
+                        alt={rel.title} 
+                        size="card"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col justify-between">
+                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-brand-red transition-colors line-clamp-2 mb-2">
+                        {rel.title}
+                      </h3>
+                      <span className="text-xs font-bold text-gray-700 flex items-center mt-auto">
+                        <Clock className="w-3 h-3 mr-1 text-gray-600" />
+                        {formatMarathiDateOnly(rel.publishedAt || rel.createdAt || Date.now())}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}
@@ -572,8 +578,8 @@ export default function ArticlePage() {
         title={article.title}
         url={articleUrl}
         summary={article.summary}
-        imageUrl={article.imageUrl || getCategoryFallbackImage(article.category, article.title)}
-        category={article.category}
+        imageUrl={article.imageUrl || getCategoryFallbackImage(categoryName, article.title)}
+        category={categoryName}
         authorName={article.authorName}
         publishedDate={formatMarathiDateOnly(article.publishedAt || article.createdAt || Date.now())}
       />

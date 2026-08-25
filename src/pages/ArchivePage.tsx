@@ -140,7 +140,9 @@ export default function ArchivePage() {
               summary: d.summary || '',
               content: d.content || '',
               imageUrl: d.imageUrl || '',
-              category: d.category || { id: 'c1', name: 'महाराष्ट्र', slug: 'maharashtra' },
+              category: typeof d.category === 'object' && d.category !== null 
+                ? d.category 
+                : { id: 'c1', name: d.category || 'महाराष्ट्र', slug: 'maharashtra' },
               location: d.location || { state: d.state || 'महाराष्ट्र', district: d.district || '' },
               publishedAt: d.publishedAt ? (typeof d.publishedAt === 'number' ? new Date(d.publishedAt).toISOString() : d.publishedAt) : new Date().toISOString(),
               author: d.authorName || d.author || 'राज्यवाणी ब्युरो',
@@ -181,7 +183,9 @@ export default function ArchivePage() {
           summary: d.summary || '',
           content: d.content || '',
           imageUrl: d.imageUrl || '',
-          category: d.category || { id: 'c1', name: 'महाराष्ट्र', slug: 'maharashtra' },
+          category: typeof d.category === 'object' && d.category !== null 
+            ? d.category 
+            : { id: 'c1', name: d.category || 'महाराष्ट्र', slug: 'maharashtra' },
           location: d.location || { state: d.state || 'महाराष्ट्र', district: d.district || '' },
           publishedAt: d.publishedAt ? (typeof d.publishedAt === 'number' ? new Date(d.publishedAt).toISOString() : d.publishedAt) : new Date().toISOString(),
           author: d.authorName || d.author || 'राज्यवाणी ब्युरो',
@@ -807,6 +811,7 @@ export default function ArchivePage() {
               const districtName = article.district || article.location?.district || '';
               const talukaName = article.taluka || article.location?.taluka || '';
               const villageName = article.village || article.location?.village || '';
+              const categoryName = typeof article.category === 'object' && article.category !== null ? (article.category.name || 'महाराष्ट्र') : (article.category || 'महाराष्ट्र');
               const stateName = article.state || article.location?.state || 'महाराष्ट्र';
               const formattedDate = new Date(article.publishedAt).toLocaleDateString('mr-IN', {
                 year: 'numeric',
@@ -824,13 +829,13 @@ export default function ArchivePage() {
                     <Image
                       src={article.imageUrl}
                       alt={article.title}
-                      category={article.category.name}
+                      category={categoryName}
                       size="card"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5 max-w-[85%]">
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-red text-white shadow-sm">
-                        {article.category.name}
+                        {categoryName}
                       </span>
                       {districtName && (
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/95 text-gray-800 shadow-sm backdrop-blur-sm">
@@ -930,6 +935,7 @@ export default function ArchivePage() {
               const districtName = article.district || article.location?.district || '';
               const talukaName = article.taluka || article.location?.taluka || '';
               const villageName = article.village || article.location?.village || '';
+              const categoryName = typeof article.category === 'object' && article.category !== null ? (article.category.name || 'महाराष्ट्र') : (article.category || 'महाराष्ट्र');
               const stateName = article.state || article.location?.state || 'महाराष्ट्र';
               const formattedDate = new Date(article.publishedAt).toLocaleDateString('mr-IN', {
                 year: 'numeric',
@@ -940,13 +946,13 @@ export default function ArchivePage() {
               return (
                 <div key={article.id} className="p-4 sm:p-5 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row gap-4 items-start">
                   <div className="w-full sm:w-48 aspect-video sm:aspect-square sm:w-36 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                    <Image src={article.imageUrl} alt={article.title} category={article.category.name} size="card" className="w-full h-full object-cover" />
+                    <Image src={article.imageUrl} alt={article.title} category={categoryName} size="card" className="w-full h-full object-cover" />
                   </div>
 
                   <div className="flex-1 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="px-2 py-0.5 bg-brand-red/10 text-brand-red rounded-md text-[10px] font-bold uppercase">
-                        {article.category.name}
+                        {categoryName}
                       </span>
                       <span className="text-xs font-bold text-gray-700">📍 {stateName} › {districtName}</span>
                       {talukaName && (

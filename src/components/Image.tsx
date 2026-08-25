@@ -88,7 +88,7 @@ export function getIntrinsicDimensions(size: 'thumbnail' | 'card' | 'featured' |
 
 interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src?: string | null;
-  category?: string;
+  category?: string | any;
   fallbackPrompt?: string;
   alt: string;
   size?: 'thumbnail' | 'card' | 'featured' | 'social';
@@ -108,6 +108,9 @@ export default function Image({
   showLogoBadge = false,
   ...props
 }: ImageProps) {
+  // Normalize category string safely
+  const safeCategory = typeof category === 'object' && category !== null ? (category.name || category.slug || 'महाराष्ट्र') : (category || '');
+  
   // Fallback stages:
   // Stage 0: direct src (if given)
   // Stage 1: server proxy for external 3rd-party images that might be CORS/hotlink blocked
@@ -116,7 +119,7 @@ export default function Image({
   const initialUrl = (src && typeof src === 'string' && src.trim() !== '') ? src.trim() : null;
 
   const [stage, setStage] = useState<number>(() => (initialUrl ? 0 : 2));
-  const [currentSrc, setCurrentSrc] = useState<string>(() => initialUrl || getCategoryFallbackImage(category, alt));
+  const [currentSrc, setCurrentSrc] = useState<string>(() => initialUrl || getCategoryFallbackImage(safeCategory, alt));
   const [isLoaded, setIsLoaded] = useState<boolean>(priority);
 
   useEffect(() => {
@@ -125,48 +128,48 @@ export default function Image({
       setCurrentSrc(src.trim());
     } else {
       setStage(2);
-      setCurrentSrc(getCategoryFallbackImage(category, alt));
+      setCurrentSrc(getCategoryFallbackImage(safeCategory, alt));
     }
     if (!priority) {
       setIsLoaded(false);
     }
-  }, [src, category, alt, priority]);
+  }, [src, safeCategory, alt, priority]);
 
   const handleError = () => {
     if (stage === 0) {
       // If original src was a non-unsplash external URL, try proxy first to bypass hotlinking blocks
       if (initialUrl && !initialUrl.includes('images.unsplash.com') && !initialUrl.startsWith('data:') && !initialUrl.startsWith('/')) {
         setStage(1);
-        setCurrentSrc(`/api/images/proxy?url=${encodeURIComponent(initialUrl)}&category=${encodeURIComponent(category || '')}&title=${encodeURIComponent(alt || '')}`);
+        setCurrentSrc(`/api/images/proxy?url=${encodeURIComponent(initialUrl)}&category=${encodeURIComponent(safeCategory || '')}&title=${encodeURIComponent(alt || '')}`);
         setIsLoaded(false);
         return;
       }
       // Otherwise skip directly to curated category image
       setStage(2);
-      setCurrentSrc(getCategoryFallbackImage(category, alt));
+      setCurrentSrc(getCategoryFallbackImage(safeCategory, alt));
       setIsLoaded(false);
     } else if (stage === 1) {
       // Proxy failed -> Try stage 2: Curated category editorial image
       setStage(2);
-      setCurrentSrc(getCategoryFallbackImage(category, alt));
+      setCurrentSrc(getCategoryFallbackImage(safeCategory, alt));
       setIsLoaded(false);
     } else if (stage === 2) {
       // Curated CDN failed -> Try stage 3: Standalone SVG placeholder (guaranteed zero network roundtrip)
       setStage(3);
-      setCurrentSrc(getSvgEditorialPlaceholder(alt, category));
+      setCurrentSrc(getSvgEditorialPlaceholder(alt, safeCategory));
       setIsLoaded(true);
     }
   };
 
   const rawSrc = (currentSrc && currentSrc.trim() !== '')
     ? currentSrc 
-    : getCategoryFallbackImage(category, alt);
+    : getCategoryFallbackImage(safeCategory, alt);
 
   if (!rawSrc || rawSrc.trim() === '') {
     return (
       <div className={`relative overflow-hidden bg-gray-950 ${className}`}>
         <img
-          src={getSvgEditorialPlaceholder(alt, category)}
+          src={getSvgEditorialPlaceholder(alt, safeCategory)}
           alt={alt || "बातमी चित्र"}
           className="w-full h-full object-cover"
         />

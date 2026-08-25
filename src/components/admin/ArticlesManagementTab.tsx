@@ -121,9 +121,12 @@ export default function ArticlesManagementTab() {
     }
   };
 
+  const getCatName = (cat: any) => typeof cat === 'object' && cat !== null ? (cat.name || 'महाराष्ट्र') : (cat || 'महाराष्ट्र');
+
   const filtered = articles.filter(a => {
     const matchesStatus = statusFilter === 'ALL' || a.status === statusFilter;
-    const matchesCategory = categoryFilter === 'ALL' || a.category === categoryFilter;
+    const catName = getCatName(a.category);
+    const matchesCategory = categoryFilter === 'ALL' || catName === categoryFilter;
     const matchesSearch = 
       (a.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (a.summary || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -131,7 +134,7 @@ export default function ArticlesManagementTab() {
     return matchesStatus && matchesCategory && matchesSearch;
   });
 
-  const categories = Array.from(new Set(articles.map(a => a.category).filter(Boolean)));
+  const categories = Array.from(new Set(articles.map(a => getCatName(a.category)).filter(Boolean)));
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -263,7 +266,7 @@ export default function ArticlesManagementTab() {
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                             <span className="text-[10px] font-bold text-brand-red uppercase tracking-wider bg-red-50 px-1.5 py-0.2 rounded">
-                              {art.category}
+                              {getCatName(art.category)}
                             </span>
                             {art.aiGenerated && (
                               <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded flex items-center gap-0.5">

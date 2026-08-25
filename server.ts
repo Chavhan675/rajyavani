@@ -143,7 +143,7 @@ app.post("/api/generate-article", requireAuth, async (req: AuthRequest, res: any
 
     const ai = getAiClient();
     
-    const prompt = `You are the Senior Chief Investigative Journalist and Executive Editor for 'Rajyavani' (राज्यवाणी), Maharashtra's premier digital news publication.
+    const buildGeneratePrompt = (wordCountFeedback?: string) => `You are the Senior Chief Investigative Journalist and Executive Editor for 'Rajyavani' (राज्यवाणी), Maharashtra's premier digital news publication.
 Your mission is to craft an EXHAUSTIVE, IN-DEPTH, FACT-BASED, and AUTHORITATIVE news article in Marathi, matching the highest editorial standards of leading national newspapers and investigative news organizations.
 
 CRITICAL DIRECTIVE: Every article must provide complete, end-to-end coverage so that readers never need to search for another source. You must explicitly address all key journalistic questions one by one in rich, thorough detail.
@@ -216,7 +216,7 @@ RULES:
 - MANDATORY MINIMUM WORD COUNT: The 'content' field MUST BE AT LEAST 1,000 WORDS (strictly 1,000 to 2,500+ words). Any article with fewer than 1,000 words is strictly rejected. Provide detailed, multi-paragraph reporting under each section with rich background, investigative facts, statistics, and official context.
 - Language: High-quality, authentic, grammatical Marathi journalistic prose.
 - Integrity: Never invent fake facts or quotes. Clearly mention if certain details are still officially unconfirmed.
-
+${wordCountFeedback ? `\nCRITICAL LENGTH CORRECTION REQUIRED:\n${wordCountFeedback}\n` : ''}
 Raw facts / sources provided:
 "${rawFacts}"
 
@@ -225,26 +225,51 @@ ${sources || 'None provided'}
 
 Generate the comprehensive, long-form Marathi news article according to the schema.`;
 
-    const response = await generateContentWithRetry({
-      model: "gemini-3.7-flash",
-      preferredModels: ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"],
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: articleSchema,
-        temperature: 0.2,
-        maxOutputTokens: 8192,
-      }
-    });
+    let result: any = null;
+    let attempts = 0;
+    const maxAttempts = 2;
 
-    if (response.text) {
-      const result = JSON.parse(response.text);
+    while (attempts < maxAttempts) {
+      attempts++;
+      const prompt = buildGeneratePrompt(
+        attempts > 1 ? `Previous draft was too brief. Write expansive multi-paragraph analyses for every single section (1,000+ words minimum required).` : undefined
+      );
+
+      const response = await generateContentWithRetry({
+        model: "gemini-3.7-flash",
+        preferredModels: ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"],
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: articleSchema,
+          temperature: 0.2,
+          maxOutputTokens: 8192,
+        }
+      });
+
+      if (response.text) {
+        try {
+          const parsed = JSON.parse(response.text);
+          const rawWords = (parsed.content || '').replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+          
+          if (rawWords >= 900 || attempts >= maxAttempts) {
+            result = parsed;
+            break;
+          }
+          console.warn(`[Generate Article] Word count was ${rawWords} (< 1000). Retrying with stronger emphasis...`);
+        } catch (parseErr) {
+          console.error('[Generate Article] Parse error:', parseErr);
+        }
+      }
+    }
+
+    if (result) {
       if (!result.imageUrl) {
         result.imageUrl = getCategoryFallbackImage(result.category, result.headline);
       }
       res.json(result);
     } else {
-      throw new Error("No text returned from Gemini");
+      throw new Error("No valid text returned from Gemini");
     }
 
   } catch (error: any) {
@@ -262,7 +287,7 @@ app.post("/api/expand-article", async (req, res) => {
       return res.status(400).json({ error: "Title or content is required to expand" });
     }
 
-    const expandPrompt = `You are the Chief Editor and Senior Investigative Journalist for 'राज्यवाणी' (Rajyavani).
+    const buildExpandPrompt = (feedback?: string) => `You are the Chief Editor and Senior Investigative Journalist for 'राज्यवाणी' (Rajyavani).
 Your task is to take the following existing short draft or news brief and EXPAND it into a COMPREHENSIVE, HIGHLY DETAILED, EXHAUSTIVE MARATHI NEWS ARTICLE OF MINIMUM 1,000 WORDS (1,000 to 2,500+ words).
 
 Existing Headline: "${title || ''}"
@@ -292,6 +317,7 @@ CRITICAL EDITORIAL MANDATE (STRICT MINIMUM 1,000 WORDS):
       <h4>❓ या बातमीबाबत वारंवार विचारले जाणारे प्रश्न (FAQ)</h4>
       <div class="faq-item"><p class="faq-question"><strong>प्रश्न १: ...</strong></p><p class="faq-answer">उत्तर: ...</p></div>
       <div class="faq-item"><p class="faq-question"><strong>प्रश्न २: ...</strong></p><p class="faq-answer">उत्तर: ...</p></div>
+      <div class="faq-item"><p class="faq-question"><strong>प्रश्न ३: ...</strong></p><p class="faq-answer">उत्तर: ...</p></div>
     </div>
 14. <h3>निष्कर्ष (Conclusion)</h3>
 15. Key Takeaways Box:
@@ -299,27 +325,52 @@ CRITICAL EDITORIAL MANDATE (STRICT MINIMUM 1,000 WORDS):
       <h4>📌 बातमीचे ठळक मुद्दे (Key Takeaways)</h4>
       <ul><li>...</li><li>...</li><li>...</li><li>...</li><li>...</li></ul>
     </div>
-
+${feedback ? `\nCRITICAL LENGTH CORRECTION REQUIRED:\n${feedback}\n` : ''}
 The output MUST be a JSON object adhering to the schema.`;
 
-    const response = await generateContentWithRetry({
-      model: "gemini-3.1-flash-lite",
-      preferredModels: ["gemini-3.1-flash-lite", "gemini-3.7-flash", "gemini-flash-latest"],
-      contents: expandPrompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: articleSchema,
-        temperature: 0.2,
-        maxOutputTokens: 8192,
-      }
-    });
+    let expandedResult: any = null;
+    let attempts = 0;
+    const maxAttempts = 2;
 
-    if (response.text) {
-      const result = JSON.parse(response.text);
-      if (!result.imageUrl) {
-        result.imageUrl = getCategoryFallbackImage(result.category, result.headline);
+    while (attempts < maxAttempts) {
+      attempts++;
+      const expandPrompt = buildExpandPrompt(
+        attempts > 1 ? `Previous draft was under 1,000 words. You MUST write comprehensive, multi-paragraph in-depth analysis for each section to exceed 1,000 words.` : undefined
+      );
+
+      const response = await generateContentWithRetry({
+        model: "gemini-3.7-flash",
+        preferredModels: ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"],
+        contents: expandPrompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: articleSchema,
+          temperature: 0.2,
+          maxOutputTokens: 8192,
+        }
+      });
+
+      if (response.text) {
+        try {
+          const parsed = JSON.parse(response.text);
+          const rawWords = (parsed.content || '').replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+          
+          if (rawWords >= 900 || attempts >= maxAttempts) {
+            expandedResult = parsed;
+            break;
+          }
+          console.warn(`[Expand Article] Word count was ${rawWords} (< 1000). Retrying...`);
+        } catch (parseErr) {
+          console.error('[Expand Article] Parse error:', parseErr);
+        }
       }
-      res.json({ success: true, article: result });
+    }
+
+    if (expandedResult) {
+      if (!expandedResult.imageUrl) {
+        expandedResult.imageUrl = getCategoryFallbackImage(expandedResult.category, expandedResult.headline);
+      }
+      res.json({ success: true, article: expandedResult });
     } else {
       throw new Error("No text returned from Gemini");
     }

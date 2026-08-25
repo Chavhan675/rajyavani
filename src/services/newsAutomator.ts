@@ -154,8 +154,8 @@ export const runNewsAutomator = async (recentArticles: any[], authorId: string, 
         filteredItems.push(item);
       }
 
-      // We select up to 5 top fresh distinct news items per batch
-      if (filteredItems.length >= 5) break;
+      // We select up to 2 top fresh distinct news items per batch to guarantee comprehensive 1,000+ words depth
+      if (filteredItems.length >= 2) break;
     }
 
     if (filteredItems.length === 0) {
@@ -163,7 +163,7 @@ export const runNewsAutomator = async (recentArticles: any[], authorId: string, 
       return { success: true, operations: [] };
     }
 
-    console.log(`[News Automator] Processing ${filteredItems.length} fresh items in a single AI batch...`);
+    console.log(`[News Automator] Processing ${filteredItems.length} fresh items in an in-depth AI batch...`);
 
     // Prepare candidate payloads with extracted images
     const candidateList = filteredItems.map((item, idx) => {

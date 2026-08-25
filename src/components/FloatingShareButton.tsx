@@ -6,7 +6,7 @@ interface FloatingShareButtonProps {
   url: string;
   summary?: string;
   imageUrl?: string;
-  category?: string;
+  category?: string | any;
   authorName?: string;
   publishedDate?: string;
 }
@@ -20,6 +20,10 @@ export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({
   authorName = 'राज्यवाणी संपादकीय मंडळ',
   publishedDate,
 }) => {
+  const catParam: any = category;
+  const catStr: string = (catParam && typeof catParam === 'object' && catParam.name)
+    ? String(catParam.name)
+    : (typeof catParam === 'string' && catParam ? catParam : 'महाराष्ट्र');
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isGeneratingCard, setIsGeneratingCard] = useState(false);
@@ -153,7 +157,7 @@ export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(category.toUpperCase(), width - 40, 46);
+      ctx.fillText(catStr.toUpperCase(), width - 40, 46);
       ctx.textAlign = 'left';
 
       // Left Column: Headline and Summary
@@ -169,7 +173,7 @@ export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({
 
       ctx.fillStyle = '#E63946';
       ctx.font = 'bold 15px sans-serif';
-      ctx.fillText(category, contentX + 15, 127);
+      ctx.fillText(catStr, contentX + 15, 127);
 
       // Headline (Multi-line wrap)
       ctx.fillStyle = '#111827';
