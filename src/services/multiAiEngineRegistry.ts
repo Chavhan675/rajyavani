@@ -1,0 +1,358 @@
+import { AiEngineConfig, AiEngineId } from '../types.js';
+
+export const MULTI_AI_ENGINES: Record<AiEngineId, AiEngineConfig> = {
+  ENGINE_MAHARASHTRA_GOVERNANCE: {
+    id: 'ENGINE_MAHARASHTRA_GOVERNANCE',
+    name: 'Maharashtra Governance & Policy AI',
+    nameMarathi: 'महाराष्ट्र शासन, GR व धोरण AI इंजिन',
+    domain: 'State Government, GRs, Cabinet Decisions, Public Schemes',
+    domainMarathi: 'मंत्रालय निर्णय, शासन निर्णय (GR), लोककल्याणकारी योजना व प्रशासकीय धोरणे',
+    description: 'मंत्रालय, कॅबिनेट बैठकांचे निर्णय, अधिकृत GRs, लाडकी बहीण, नमो शेतकरी योजना व शासकीय घोषणांचे सखोल विश्लेषण.',
+    iconName: 'Landmark',
+    badgeColor: 'bg-red-700 text-white',
+    category: 'महाराष्ट्र',
+    categorySlug: 'maharashtra',
+    enabled: true,
+    priorityWeight: 10,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे वरिष्ठ प्रशासकीय व धोरणात्मक वार्ताहर (Senior Governance Editor) आहात. महाराष्ट्र शासनाचे मंत्रिमंडळ निर्णय, नवीन GRs (शासन निर्णय), विकासात्मक प्रकल्प आणि सरकारी योजनांची अचूक, निःपक्षपाती व १०००+ शब्दांची सविस्तर पत्रकारिता करा.`,
+    searchKeywords: [
+      'महाराष्ट्र शासन निर्णय GR',
+      'मंत्रिमंडळ निर्णय महाराष्ट्र',
+      'लाडकी बहीण योजना शासन',
+      'डीजीआयपीआर महाराष्ट्र',
+      'शासकीय विकास प्रकल्प महाराष्ट्र'
+    ],
+    rssQuery: 'महाराष्ट्र+शासन+निर्णय+OR+मंत्रिमंडळ+OR+GR+OR+योजना',
+    status: 'ACTIVE',
+    totalArticlesPublished: 48,
+    lastRunAt: Date.now() - 3600000,
+    avgWordCount: 1140,
+    healthScore: 99
+  },
+
+  ENGINE_DISTRICTS_HYPERLOCAL: {
+    id: 'ENGINE_DISTRICTS_HYPERLOCAL',
+    name: '36 Districts Hyperlocal AI',
+    nameMarathi: '३६ जिल्हे व तालुका विशेष AI इंजिन',
+    domain: 'Hyperlocal Taluka, Village, Municipal Corporations & Collectorates',
+    domainMarathi: '३६ जिल्हे, ३५८ तालुके, ग्रामपंचायती, नगरपालिका व जिल्हाधिकारी कार्यालये',
+    description: 'महाराष्ट्रातील सर्व ३६ जिल्ह्यांतील गाव व तालुका पातळीवरील स्थानिक प्रश्न, प्रशासन व घडामोडींचे जलद कव्हरेज.',
+    iconName: 'MapPin',
+    badgeColor: 'bg-emerald-700 text-white',
+    category: 'जिल्हा विशेष',
+    categorySlug: 'districts',
+    enabled: true,
+    priorityWeight: 9,
+    defaultTargetArticles: 3,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे जिल्हा व तालुका विशेष ग्राउंड रिपोर्टर आहात. स्थानिक जिल्हाधिकारी निर्णय, जिल्हा परिषद, ग्रामपंचायत व तालुका पातळीवरील स्थानिक प्रश्नांवर १०००+ शब्दांचे वस्तुनिष्ठ व स्थानिक संदर्भयुक्त वृत्त लिहा.`,
+    searchKeywords: [
+      'जिल्हाधिकारी कार्यालय निर्णय',
+      'स्थानिक घडामोडी तालुका जिल्हा',
+      'जिल्हा परिषद विकासकामे',
+      'महाराष्ट्र जिल्हा विशेष वृत्त'
+    ],
+    rssQuery: 'जिल्हा+बातमी+OR+तालुका+OR+जिल्हाधिकारी+OR+जिल्हा+परिषद',
+    status: 'ACTIVE',
+    totalArticlesPublished: 112,
+    lastRunAt: Date.now() - 1800000,
+    avgWordCount: 1080,
+    healthScore: 98
+  },
+
+  ENGINE_AGRICULTURE_MANDI: {
+    id: 'ENGINE_AGRICULTURE_MANDI',
+    name: 'Agriculture, Mandi & Weather AI',
+    nameMarathi: 'कृषी, बाजारभाव व हवामान AI इंजिन',
+    domain: 'APMC Markets, Commodity Prices, Crop Advisory & Monsoon Weather',
+    domainMarathi: 'कृषी उत्पन्न बाजार समित्या (APMC), शेतीमाल भाव, पीक विमा व हवामान अंदाज',
+    description: 'सोयाबीन, कापूस, कांदा, तूर भाव, बाजार समित्यांचे थेट दर, हवामान अंदाज, पीक विमा व शेती तंत्रज्ञान मार्गदर्शन.',
+    iconName: 'Wheat',
+    badgeColor: 'bg-green-800 text-white',
+    category: 'शेती',
+    categorySlug: 'agriculture',
+    enabled: true,
+    priorityWeight: 9,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे मुख्य कृषी तज्ज्ञ व बाजारभाव विश्लेषक (Agri & Mandi Specialist) आहात. राज्यातील शेतकऱ्यांसाठी बाजारभाव तुलना, हवामान अंदाज, पीक सल्ला आणि शेती योजनांचे १०००+ शब्दांचे मार्गदर्शक वृत्त लिहा.`,
+    searchKeywords: [
+      'कांदा बाजारभाव APMC महाराष्ट्र',
+      'सोयाबीन कापूस दर आजचे भाव',
+      'हवामान अंदाज IMD महाराष्ट्र पाऊस',
+      'शेतकरी योजना पीक विमा नुकसान भरपाई'
+    ],
+    rssQuery: 'बाजारभाव+OR+कांदा+भाव+OR+सोयाबीन+दर+OR+हवामान+अंदाज+शेतकरी',
+    status: 'ACTIVE',
+    totalArticlesPublished: 64,
+    lastRunAt: Date.now() - 2700000,
+    avgWordCount: 1120,
+    healthScore: 97
+  },
+
+  ENGINE_NATIONAL_PARLIAMENT: {
+    id: 'ENGINE_NATIONAL_PARLIAMENT',
+    name: 'National & Parliament AI',
+    nameMarathi: 'राष्ट्रीय व संसद घडामोडी AI इंजिन',
+    domain: 'Central Govt, Parliament, Supreme Court, Defense & Foreign Policy',
+    domainMarathi: 'केंद्र सरकार, संसद अधिवेशने, सर्वोच्च न्यायालय, संरक्षण व राष्ट्रीय घडामोडी',
+    description: 'संसदेतील नवीन विधेयके, सर्वोच्च न्यायालयाचे ऐतिहासिक निकाल, केंद्रीय अर्थसंकल्प व राष्ट्रीय धोरणांचे विश्लेषण.',
+    iconName: 'Globe',
+    badgeColor: 'bg-blue-800 text-white',
+    category: 'राष्ट्रीय',
+    categorySlug: 'national',
+    enabled: true,
+    priorityWeight: 8,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे नवी दिल्लीतील वरिष्ठ राष्ट्रीय ब्युरो चीफ आहात. संसद, सर्वोच्च न्यायालय, केंद्र सरकारचे निर्णय आणि देशाच्या सुरक्षेशी संबंधित घडामोडींचे १०००+ शब्दांचे संतुलित व अभ्यासपूर्ण वृत्त लिहा.`,
+    searchKeywords: [
+      'संसद अधिवेशन निर्णय विधेयक',
+      'सर्वोच्च न्यायालय महत्वाचा निकाल',
+      'केंद्र सरकार नवीन योजना भारत',
+      'पंतप्रधान राष्ट्रीय घोषणा'
+    ],
+    rssQuery: 'संसद+OR+सर्वोच्च+न्यायालय+OR+केंद्र+सरकार+OR+राष्ट्रीय+बातम्या',
+    status: 'ACTIVE',
+    totalArticlesPublished: 42,
+    lastRunAt: Date.now() - 7200000,
+    avgWordCount: 1190,
+    healthScore: 99
+  },
+
+  ENGINE_CRIME_LAW_SENTINEL: {
+    id: 'ENGINE_CRIME_LAW_SENTINEL',
+    name: 'Crime & Law Enforcement Sentinel AI',
+    nameMarathi: 'गुन्हेगारी व कायदा-सुव्यवस्था AI इंजिन',
+    domain: 'Police Operations, Cyber Crime Alerts, High Court Rulings & Safety',
+    domainMarathi: 'पोलीस कारवाई, सायबर गुन्हे जनजागृती, उच्च न्यायालय निकाल व सार्वजनिक सुरक्षा',
+    description: 'पोलीस तपास, आर्थिक गुन्हे व सायबर फसवणूक जनजागृती, उच्च न्यायालयाचे आदेश व कायदा-सुव्यवस्था आढावा.',
+    iconName: 'ShieldAlert',
+    badgeColor: 'bg-slate-800 text-white',
+    category: 'क्राईम',
+    categorySlug: 'crime',
+    enabled: true,
+    priorityWeight: 8,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे कायदेविषयक व तपास पत्रकार (Investigative Crime Reporter) आहात. गुन्हे अन्वेषण, पोलीस कारवाई, न्यायालयीन आदेश व सायबर गुन्ह्यांपासून नागरिकांच्या सुरक्षेबाबत १०००+ शब्दांचे वस्तुनिष्ठ वृत्त लिहा.`,
+    searchKeywords: [
+      'पोलीस कारवाई महाराष्ट्र गुन्हे',
+      'सायबर सुरक्षा फसवणूक जनजागृती',
+      'मुंबई उच्च न्यायालय निर्णय आदेश',
+      'लाचलुचपत प्रतिबंधक विभाग कारवाई'
+    ],
+    rssQuery: 'पोलीस+कारवाई+OR+गुन्हे+अन्वेषण+OR+उच्च+न्यायालय+आदेश',
+    status: 'ACTIVE',
+    totalArticlesPublished: 56,
+    lastRunAt: Date.now() - 4500000,
+    avgWordCount: 1060,
+    healthScore: 96
+  },
+
+  ENGINE_BUSINESS_MARKETS: {
+    id: 'ENGINE_BUSINESS_MARKETS',
+    name: 'Business, Economy & Markets AI',
+    nameMarathi: 'अर्थव्यवस्था, व्यापार व बाजारपेठ AI इंजिन',
+    domain: 'BSE/NSE Sensex, Gold/Silver Rates, RBI Policies, Startups & MSME',
+    domainMarathi: 'शेअर बाजार, सोने-चांदी दर, रिझर्व्ह बँक, जीएसटी, उद्योग व स्टार्टअप्स',
+    description: 'शेअर बाजारातील चढ-उतार, सोने-चांदीचे आजचे दर, महागाई, बँक व्याजदर, एमआयडीसी औद्योगिक प्रकल्प व व्यापार घडामोडी.',
+    iconName: 'TrendingUp',
+    badgeColor: 'bg-amber-800 text-white',
+    category: 'व्यापार',
+    categorySlug: 'business',
+    enabled: true,
+    priorityWeight: 7,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे मुख्य आर्थिक विश्लेषक (Business & Markets Editor) आहात. सामान्य वाचकांना समजेल अशा सोप्या भाषेत शेअर बाजार, सोने-चांदी भाव, बँकिंग नियम व व्यापारावर १०००+ शब्दांचे अभ्यासपूर्ण वृत्त तयार करा.`,
+    searchKeywords: [
+      'शेअर बाजार सेन्सेक्स निफ्टी आज',
+      'सोने चांदी भाव आजचे दर महाराष्ट्र',
+      'रिझर्व्ह बँक व्याजदर निर्णय',
+      'उद्योग एमआयडीसी गुंतवणूक प्रकल्प'
+    ],
+    rssQuery: 'शेअर+बाजार+OR+सोने+भाव+OR+व्यापार+उद्योग+OR+अर्थव्यवस्था',
+    status: 'ACTIVE',
+    totalArticlesPublished: 38,
+    lastRunAt: Date.now() - 5400000,
+    avgWordCount: 1100,
+    healthScore: 98
+  },
+
+  ENGINE_SPORTS_KRIDA: {
+    id: 'ENGINE_SPORTS_KRIDA',
+    name: 'Sports & Krida AI',
+    nameMarathi: 'क्रीडा, क्रिकेट व ऑलिंपिक AI इंजिन',
+    domain: 'Cricket (IPL/BCCI), Wrestling (Maharashtra Kesari), Kabaddi & Athletes',
+    domainMarathi: 'क्रिकेट, महाराष्ट्र केसरी कुस्ती, प्रो कबड्डी व खेळाडूंच्या यशोगाथा',
+    description: 'भारतीय क्रिकेट संघ, आयपीएल, महाराष्ट्र केसरी कुस्ती, प्रो कबड्डी, आंतरराष्ट्रीय स्पर्धा व स्थानिक खेळाडूंच्या प्रेरणादायी बातम्या.',
+    iconName: 'Trophy',
+    badgeColor: 'bg-orange-700 text-white',
+    category: 'क्रीडा',
+    categorySlug: 'sports',
+    enabled: true,
+    priorityWeight: 7,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे वरिष्ठ क्रीडा संपादक (Sports Desk Lead) आहात. क्रिकेट, कुस्ती, कबड्डी आणि महाराष्ट्रातील उदयोन्मुख क्रीडापटूंच्या संघर्षावर व सामन्यांवर १०००+ शब्दांचे रोमांचक व माहितीपूर्ण क्रीडावृत्त लिहा.`,
+    searchKeywords: [
+      'क्रिकेट भारत सामना निकाल आज',
+      'महाराष्ट्र केसरी कुस्ती स्पर्धा',
+      'प्रो कबड्डी लीग निकाल',
+      'क्रीडा घडामोडी भारतीय खेळाडू'
+    ],
+    rssQuery: 'क्रिकेट+सामना+OR+क्रीडा+OR+महाराष्ट्र+केसरी+OR+खेळाडू',
+    status: 'ACTIVE',
+    totalArticlesPublished: 34,
+    lastRunAt: Date.now() - 6300000,
+    avgWordCount: 1040,
+    healthScore: 97
+  },
+
+  ENGINE_EDUCATION_CAREERS: {
+    id: 'ENGINE_EDUCATION_CAREERS',
+    name: 'Education, Jobs & MPSC/UPSC AI',
+    nameMarathi: 'शिक्षण, भरती व करिअर मार्गदर्शन AI इंजिन',
+    domain: 'MPSC/UPSC, Mega Bharti, SSC/HSC Board, CET Cell & Scholarships',
+    domainMarathi: 'एमपीएससी, पोलीस भरती, तलाठी भरती, बोर्ड परीक्षा व शिष्यवृत्ती',
+    description: 'सरकारी नोकरीच्या जाहिराती, एमपीएससी/यूपीएससी निकाल, हॉल तिकीट अपडेट्स, दहावी-बारावी बोर्ड व करिअर मार्गदर्शन.',
+    iconName: 'GraduationCap',
+    badgeColor: 'bg-indigo-800 text-white',
+    category: 'शिक्षण व नोकरी',
+    categorySlug: 'jobs',
+    enabled: true,
+    priorityWeight: 8,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे करिअर व शिक्षण समुपदेशक (Education & Careers Lead) आहात. सरकारी भरती (MPSC/पोलीस/शिक्षक), परीक्षांचे वेळापत्रक, पात्रता अटी व अभ्यास रणनीतीवर १०००+ शब्दांचे सविस्तर मार्गदर्शन वृत्त तयार करा.`,
+    searchKeywords: [
+      'MPSC परीक्षा जाहिरात निकाल तारीख',
+      'महाराष्ट्र शासकीय नोकरी भरती',
+      'दहावी बारावी बोर्ड परीक्षा निकाल',
+      'CET प्रवेश परीक्षा वेळापत्रक'
+    ],
+    rssQuery: 'MPSC+OR+नोकरी+भरती+OR+शिक्षण+परीक्षा+OR+शिष्यवृत्ती',
+    status: 'ACTIVE',
+    totalArticlesPublished: 52,
+    lastRunAt: Date.now() - 3000000,
+    avgWordCount: 1150,
+    healthScore: 99
+  },
+
+  ENGINE_TECH_SCIENCE_SPACE: {
+    id: 'ENGINE_TECH_SCIENCE_SPACE',
+    name: 'Science, Tech & Space AI',
+    nameMarathi: 'विज्ञान, तंत्रज्ञान व इस्रो AI इंजिन',
+    domain: 'ISRO Space Missions, Artificial Intelligence, Gadgets & Digital India',
+    domainMarathi: 'इस्रो मोहिमा, कृत्रिम बुद्धिमत्ता (AI), सायबर तंत्रज्ञान व नवनवीन गॅजेट्स',
+    description: 'इस्रोच्या अंतराळ मोहिमा, एआय क्रांती, नवीन स्मार्टफोन्स, सौर ऊर्जा, ई-वाहने (EV) व डिजिटल तंत्रज्ञानातील प्रगती.',
+    iconName: 'Cpu',
+    badgeColor: 'bg-cyan-800 text-white',
+    category: 'तंत्रज्ञान',
+    categorySlug: 'technology',
+    enabled: true,
+    priorityWeight: 6,
+    defaultTargetArticles: 1,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे विज्ञान व तंत्रज्ञान संपादक (Tech & Science Editor) आहात. इस्रो मोहिमा, एआय तंत्रज्ञान, सायबर सिक्युरिटी आणि आधुनिक विज्ञानावरील शोध मराठीत १०००+ शब्दांत सोप्या व प्रभावी भाषेत स्पष्ट करा.`,
+    searchKeywords: [
+      'इस्रो अंतराळ मोहीम उपग्रह ISRO',
+      'कृत्रिम बुद्धिमत्ता AI तंत्रज्ञान',
+      'डिजिटल इंडिया सायबर सुरक्षा',
+      'इलेक्ट्रिक वाहने सौर ऊर्जा धोरण'
+    ],
+    rssQuery: 'इस्रो+मोहीम+OR+तंत्रज्ञान+OR+AI+OR+डिजिटल+गॅजेट्स',
+    status: 'ACTIVE',
+    totalArticlesPublished: 26,
+    lastRunAt: Date.now() - 8100000,
+    avgWordCount: 1090,
+    healthScore: 98
+  },
+
+  ENGINE_ENTERTAINMENT_CULTURE: {
+    id: 'ENGINE_ENTERTAINMENT_CULTURE',
+    name: 'Entertainment, Cinema & Culture AI',
+    nameMarathi: 'मनोरंजन, संस्कृती व कला AI इंजिन',
+    domain: 'Marathi Cinema, Theatre (Natak), Culture, Heritage & Festivals',
+    domainMarathi: 'मराठी चित्रपट, नाटक, मालिका, संस्कृती, सण-उत्सव व कला विश्व',
+    description: 'मराठी चित्रपट समीक्षा, नाटके, संगीत, पंढरपूर वारी, गणेशोत्सव आणि महाराष्ट्राच्या समृद्ध सांस्कृतिक वारशाचे विशेष वार्तांकन.',
+    iconName: 'Film',
+    badgeColor: 'bg-fuchsia-800 text-white',
+    category: 'मनोरंजन',
+    categorySlug: 'entertainment',
+    enabled: true,
+    priorityWeight: 6,
+    defaultTargetArticles: 1,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे सांस्कृतिक व मनोरंजन विभाग प्रमुख आहात. मराठी नाटक, चित्रपट, साहित्य संमेलन, ऐतिहासिक वारसा आणि कला विश्वातील दिग्गजांवर १०००+ शब्दांचे रंजक व माहितीपूर्ण लेख वृत्त लिहा.`,
+    searchKeywords: [
+      'मराठी चित्रपट नवीन रिलीज बातमी',
+      'मराठी नाटक रंगभूमी पुरस्कार',
+      'महाराष्ट्र संस्कृती सण उत्सव विशेष',
+      'साहित्य संमेलन कला विश्व घडामोडी'
+    ],
+    rssQuery: 'मराठी+चित्रपट+OR+नाटक+OR+मनोरंजन+OR+संस्कृती+उत्सव',
+    status: 'ACTIVE',
+    totalArticlesPublished: 29,
+    lastRunAt: Date.now() - 9000000,
+    avgWordCount: 1060,
+    healthScore: 97
+  },
+
+  ENGINE_HEALTH_ENVIRONMENT: {
+    id: 'ENGINE_HEALTH_ENVIRONMENT',
+    name: 'Health, Wellness & Environment AI',
+    nameMarathi: 'आरोग्य, पर्यावरण व जीवनशैली AI इंजिन',
+    domain: 'Public Health, Medical Research, Western Ghats Ecology & Wellness',
+    domainMarathi: 'आरोग्य मार्गदर्शन, ऋतूमान आजार प्रतिबंध, पर्यावरण व जलसंधारण',
+    description: 'आरोग्य तपासणी, आजार प्रतिबंधक उपाय, आयुर्वेद, मानसिक स्वास्थ्य, सह्याद्री पर्यावरण संवर्धन व जलसंधारण प्रकल्प.',
+    iconName: 'HeartPulse',
+    badgeColor: 'bg-rose-800 text-white',
+    category: 'आरोग्य',
+    categorySlug: 'health',
+    enabled: true,
+    priorityWeight: 6,
+    defaultTargetArticles: 1,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे आरोग्य व पर्यावरण तज्ज्ञ (Health & Ecology Specialist) आहात. सार्वजनिक आरोग्य सूचना, वैज्ञानिक आरोग्य सल्ला आणि पर्यावरण संवर्धनावर १०००+ शब्दांचे मार्गदर्शक वृत्त लिहा.`,
+    searchKeywords: [
+      'आरोग्य सल्ला आजार प्रतिबंध उपाय',
+      'सार्वजनिक आरोग्य विभाग महाराष्ट्र सूचना',
+      'पर्यावरण संवर्धन जलसंधारण प्रकल्प',
+      'आयुर्वेद जीवनशैली मानसिक स्वास्थ्य'
+    ],
+    rssQuery: 'आरोग्य+सल्ला+OR+पर्यावरण+OR+रुग्णालय+OR+जीवनशैली',
+    status: 'ACTIVE',
+    totalArticlesPublished: 24,
+    lastRunAt: Date.now() - 9900000,
+    avgWordCount: 1075,
+    healthScore: 99
+  },
+
+  ENGINE_BREAKING_FACTCHECK: {
+    id: 'ENGINE_BREAKING_FACTCHECK',
+    name: 'Breaking News & Fact-Check Sentinel AI',
+    nameMarathi: 'ब्रेकिंग न्यूज व फॅक्ट-चेक ब्युरो AI इंजिन',
+    domain: 'Real-Time Breaking Alerts, Viral Claim Debunking & Disaster Warnings',
+    domainMarathi: 'ताजी महत्त्वाची बातमी, व्हायरल दाव्यांची सत्यता पडताळणी व आपत्कालीन सूचना',
+    description: '२४/७ ब्रेकिंग अपडेट्स, सोशल मीडियावरील अफवांचे खंडन, फॅक्ट-चेक पडताळणी अहवाल व आपत्ती व्यवस्थापन इशारे.',
+    iconName: 'CheckCircle2',
+    badgeColor: 'bg-red-900 text-white',
+    category: 'ब्रेकिंग',
+    categorySlug: 'breaking',
+    enabled: true,
+    priorityWeight: 10,
+    defaultTargetArticles: 2,
+    systemPromptRole: `तुम्ही 'राज्यवाणी'चे मुख्य फॅक्ट-चेक व ब्रेकिंग न्यूज ब्युरो प्रमुख (Chief Fact-Checker) आहात. ताजी घडामोड किंवा व्हायरल दाव्यांची अधिकृत स्त्रोतांच्या आधारे पडताळणी करून १०००+ शब्दांचा सविस्तर फॅक्ट-चेक अहवाल तयार करा.`,
+    searchKeywords: [
+      'ताजी महत्त्वाची मोठी बातमी महाराष्ट्र',
+      'व्हायरल बातमी सत्यता फॅक्ट चेक',
+      'आपत्ती व्यवस्थापन इशारा महाराष्ट्र',
+      'अधिकृत बातमी खंडन स्पष्टीकरण'
+    ],
+    rssQuery: 'मोठी+बातमी+OR+ब्रेकिंग+OR+फॅक्ट+चेक+OR+सत्यता+पडताळणी',
+    status: 'ACTIVE',
+    totalArticlesPublished: 44,
+    lastRunAt: Date.now() - 1200000,
+    avgWordCount: 1110,
+    healthScore: 100
+  }
+};
+
+export const ALL_AI_ENGINE_IDS = Object.keys(MULTI_AI_ENGINES) as AiEngineId[];
+
+export function getEngineById(id: AiEngineId): AiEngineConfig {
+  return MULTI_AI_ENGINES[id] || MULTI_AI_ENGINES.ENGINE_MAHARASHTRA_GOVERNANCE;
+}

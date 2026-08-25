@@ -1,10 +1,10 @@
 import React, { useEffect, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./lib/AuthContext";
-import { Loader2 } from "lucide-react";
 import HomePage from "./pages/HomePage";
+import { articleCache } from "./lib/cacheStore";
 
-// Code-split secondary pages for optimal Lighthouse performance and smaller bundles
+// Code-split secondary pages for optimal bundle sizes and fast initial loads
 const LegalPage = lazy(() => import("./pages/LegalPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
@@ -13,26 +13,50 @@ const ArchivePage = lazy(() => import("./pages/ArchivePage"));
 const DistrictPage = lazy(() => import("./pages/DistrictPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
-// Page Loading fallback
+// Ultra-fast slim top loader bar for instant perceived performance
 function PageFallback() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-brand-red" />
+    <div className="min-h-screen bg-brand-gray/30 flex flex-col">
+      <div className="w-full h-1 bg-red-100 overflow-hidden sticky top-0 z-50">
+        <div className="h-full bg-brand-red animate-pulse w-2/3 transition-all duration-300" />
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-6 flex-1">
+        <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-64 bg-gray-200 rounded-xl animate-pulse" />
+          <div className="h-64 bg-gray-200 rounded-xl animate-pulse" />
+          <div className="h-64 bg-gray-200 rounded-xl animate-pulse" />
+        </div>
+      </div>
     </div>
   );
 }
 
-// Component to track pageviews on route change in SPA
-function GoogleAnalyticsTracker() {
+// Automatically scroll to top & track pageviews on route change in SPA
+function RouteChangeHandler() {
   const location = useLocation();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
     if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
       (window as any).gtag("config", "G-0YZ3Q025WF", {
         page_path: location.pathname + location.search,
       });
     }
   }, [location]);
+
+  // Warm up other page route bundles after initial mount during idle browser time
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const timer = setTimeout(() => {
+        articleCache.preloadRoute('article');
+        articleCache.preloadRoute('district');
+        articleCache.preloadRoute('archive');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   return null;
 }
@@ -41,7 +65,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <GoogleAnalyticsTracker />
+        <RouteChangeHandler />
         <Suspense fallback={<PageFallback />}>
           <Routes>
             {/* Core News Pages */}

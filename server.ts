@@ -569,18 +569,139 @@ Provide an exhaustive, practical response tailored to Maharashtra students and j
 
 // High-performance In-Memory Server Cache for fast article delivery (<1ms response)
 const serverArticlesCache = new Map<string, { data: any; expiresAt: number }>();
+const serverSingleArticleCache = new Map<string, { data: any; related: any[]; expiresAt: number }>();
 
-export function invalidateServerArticlesCache() {
+export function invalidateServerArticlesCache(articleId?: string) {
+  if (articleId) {
+    serverSingleArticleCache.delete(articleId);
+  } else {
+    serverSingleArticleCache.clear();
+  }
   serverArticlesCache.clear();
 }
+
+// Fast endpoint to fetch single article by ID (<1ms from memory cache)
+app.get("/api/articles/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const withRelated = req.query.withRelated === 'true';
+
+    if (!id) {
+      return res.status(400).json({ success: false, error: "Article ID is required" });
+    }
+
+    // 1. Check server memory cache for instant <1ms response
+    const cached = serverSingleArticleCache.get(id);
+    if (cached && cached.expiresAt > Date.now()) {
+      res.setHeader("Cache-Control", "public, max-age=180, s-maxage=600, stale-while-revalidate=1800");
+      res.setHeader("X-Cache", "HIT");
+      return res.json({
+        success: true,
+        article: cached.data,
+        relatedArticles: withRelated ? cached.related : undefined
+      });
+    }
+
+    let article: any = null;
+    let relatedArticles: any[] = [];
+
+    // 2. Try Firestore Admin DB
+    try {
+      const docSnap = await adminDb.collection("articles").doc(id).get();
+      if (docSnap.exists) {
+        const d = docSnap.data();
+        if (d && d.status === 'PUBLISHED') {
+          article = { id: docSnap.id, ...d };
+        }
+      }
+    } catch (dbErr) {
+      // Continue to mock fallback
+    }
+
+    // 3. Fallback to local mock data
+    if (!article) {
+      const { mockArticles } = await import("./src/data.js");
+      const found = mockArticles.find(m => m.id === id);
+      if (found) {
+        article = {
+          ...found,
+          category: typeof found.category === 'object' ? found.category.name : found.category,
+          district: found.location?.district,
+          taluka: found.location?.taluka,
+          village: found.location?.village,
+          authorName: found.author,
+          isDeveloping: found.isBreaking,
+          publishedAt: new Date(found.publishedAt).getTime(),
+          updatedAt: found.lastUpdated ? new Date(found.lastUpdated).getTime() : undefined,
+        };
+      }
+    }
+
+    if (!article) {
+      return res.status(404).json({ success: false, error: "बातमी आढळली नाही (Article not found)" });
+    }
+
+    // 4. Fetch related articles in the same category
+    if (withRelated) {
+      try {
+        const cat = article.category || 'महाराष्ट्र';
+        const relSnap = await adminDb.collection("articles")
+          .where("status", "==", "PUBLISHED")
+          .where("category", "==", cat)
+          .limit(4)
+          .get();
+        if (!relSnap.empty) {
+          relatedArticles = relSnap.docs
+            .filter(d => d.id !== id)
+            .slice(0, 3)
+            .map(d => ({ id: d.id, ...d.data() }));
+        }
+      } catch {
+        const { mockArticles } = await import("./src/data.js");
+        relatedArticles = mockArticles
+          .filter(m => m.id !== id)
+          .slice(0, 3)
+          .map(m => ({
+            id: m.id,
+            title: m.title,
+            summary: m.summary,
+            imageUrl: m.imageUrl,
+            category: typeof m.category === 'object' ? m.category.name : m.category,
+            authorName: m.author,
+            publishedAt: new Date(m.publishedAt).getTime()
+          }));
+      }
+    }
+
+    // Cache in server memory for 5 minutes
+    serverSingleArticleCache.set(id, {
+      data: article,
+      related: relatedArticles,
+      expiresAt: Date.now() + (5 * 60 * 1000)
+    });
+
+    res.setHeader("Cache-Control", "public, max-age=180, s-maxage=600, stale-while-revalidate=1800");
+    res.setHeader("X-Cache", "MISS");
+    return res.json({
+      success: true,
+      article,
+      relatedArticles: withRelated ? relatedArticles : undefined
+    });
+  } catch (error: any) {
+    console.error("Error fetching single article:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // High-performance REST endpoint to fetch latest published articles (avoids heavy client-side SDK)
 app.get("/api/articles", async (req, res) => {
   try {
-    const limitNum = Math.min(parseInt(req.query.limit as string) || 20, 50);
+    const limitNum = Math.min(parseInt(req.query.limit as string) || 20, 60);
     const category = (req.query.category as string) || '';
     const district = (req.query.district as string) || '';
-    const cacheKey = `articles_${limitNum}_${category}_${district}`;
+    const tag = (req.query.tag as string) || '';
+    const search = (req.query.search as string) || '';
+    const cacheKey = `articles_${limitNum}_${category}_${district}_${tag}_${search}`;
 
     // Check server memory cache first for instant <1ms response
     const cached = serverArticlesCache.get(cacheKey);
@@ -593,10 +714,10 @@ app.get("/api/articles", async (req, res) => {
     let articles: any[] = [];
     try {
       let query: any = adminDb.collection("articles").where("status", "==", "PUBLISHED");
-      if (category) {
+      if (category && category !== 'ALL') {
         query = query.where("category", "==", category);
       }
-      if (district) {
+      if (district && district !== 'ALL') {
         query = query.where("district", "==", district);
       }
       query = query.orderBy("publishedAt", "desc").limit(limitNum);
@@ -611,13 +732,23 @@ app.get("/api/articles", async (req, res) => {
     if (articles.length === 0) {
       const { mockArticles } = await import("./src/data.js");
       let filtered = [...mockArticles];
-      if (category) {
+      if (category && category !== 'ALL') {
         filtered = filtered.filter(a => (a.category as unknown as string) === category);
       }
-      if (district) {
+      if (district && district !== 'ALL') {
         filtered = filtered.filter(a => a.location?.district === district || (a as any).district === district);
       }
       articles = filtered.slice(0, limitNum);
+    }
+
+    // Apply client search query filter in-memory if requested
+    if (search) {
+      const q = search.toLowerCase();
+      articles = articles.filter(a =>
+        (a.title && a.title.toLowerCase().includes(q)) ||
+        (a.summary && a.summary.toLowerCase().includes(q)) ||
+        (a.content && a.content.toLowerCase().includes(q))
+      );
     }
 
     // Cache in server memory for 60 seconds
@@ -656,6 +787,9 @@ app.delete("/api/admin/articles/:id", requireAuth, async (req: AuthRequest, res:
     } catch (e: any) {
       console.warn("Direct adminDb deletion error:", e.message);
     }
+
+    // Invalidate server memory cache immediately
+    invalidateServerArticlesCache(id);
 
     return res.json({ success: true, message: "Article successfully deleted" });
   } catch (error: any) {
@@ -827,8 +961,96 @@ app.get(["/api/images/proxy", "/images/proxy"], async (req: any, res: any) => {
   }
 });
 
-import { getSchedulerStatus, runNewsCollectionCycle, start3HourNewsScheduler, setAutoPilotConfig } from "./src/services/collectionScheduler.js";
-import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from "./src/services/trustedSources.js";
+import { 
+  getSchedulerStatus, 
+  runNewsCollectionCycle, 
+  runAllDistrictsRapidSweep,
+  start3HourNewsScheduler, 
+  setAutoPilotConfig,
+  getAllAiEnginesTelemetry,
+  runBalancedMultiEngineSweep,
+  executeSingleAiEngine,
+  persistArticlesToFirestore
+} from "./src/services/collectionScheduler.js";
+import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS, MAHARASHTRA_DIVISIONS_MAP, getDistrictsByDivision } from "./src/services/trustedSources.js";
+
+// 🤖 Multi-AI Engines: Get all 10+ AI Engines with Live Status & Telemetry
+app.get("/api/collector/engines", (req, res) => {
+  try {
+    const engines = getAllAiEnginesTelemetry();
+    res.json({
+      success: true,
+      totalEngines: engines.length,
+      engines: engines
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 🤖 Multi-AI Engines: Run Single AI Engine On Demand
+app.post("/api/collector/engines/run-single", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच हे AI इंजिन सुरू करू शकतात." });
+    }
+
+    const { engineId, targetArticles = 2 } = req.body;
+    if (!engineId) {
+      return res.status(400).json({ error: "AI Engine ID आवश्यक आहे." });
+    }
+
+    console.log(`[Server] 🤖 Single AI Engine triggered: ${engineId} by ${req.user?.email}`);
+    const result = await executeSingleAiEngine(engineId, {
+      targetArticles: Math.min(5, Math.max(1, targetArticles))
+    });
+
+    if (result.success && result.articles.length > 0) {
+      await persistArticlesToFirestore(result.articles);
+      invalidateServerArticlesCache();
+    }
+
+    res.json(result);
+  } catch (err: any) {
+    console.error("Error running single AI engine:", err);
+    res.status(500).json({ error: err.message || "AI इंजिन चालवणे अयशस्वी झाले." });
+  }
+});
+
+// 🤖 Multi-AI Engines: Run Balanced Multi-Engine Sweep (Parallel & Auto-Balancing across 10+ AI Engines)
+app.post("/api/collector/engines/run-balanced", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच संतुलित चक्र सुरू करू शकतात." });
+    }
+
+    const { engineIds, articlesPerEngine = 1, concurrencyLimit = 4 } = req.body || {};
+    console.log(`[Server] 🤖 Balanced Multi-Engine Sweep initiated by ${req.user?.email}`);
+
+    const result = await runBalancedMultiEngineSweep({
+      engineIds,
+      articlesPerEngine: Math.min(3, Math.max(1, articlesPerEngine)),
+      concurrencyLimit: Math.min(6, Math.max(2, concurrencyLimit)),
+      triggeredBy: 'ADMIN_BALANCED_SWEEP'
+    });
+
+    invalidateServerArticlesCache();
+    res.json(result);
+  } catch (err: any) {
+    console.error("Error in balanced multi-engine sweep:", err);
+    res.status(500).json({ error: err.message || "संतुलित AI चक्र अयशस्वी झाले." });
+  }
+});
 
 // Endpoint to get News Engine Status & Telemetry
 app.get("/api/collector/status", (req, res) => {
@@ -963,6 +1185,134 @@ app.post("/api/collector/turbo", requireAuth, async (req: AuthRequest, res: any)
   } catch (err: any) {
     console.error("Error in turbo collection:", err);
     res.status(500).json({ error: err.message || "टर्बो संकलन अयशस्वी झाले." });
+  }
+});
+
+// 🚀 Endpoint for All 36 Districts Rapid Sweep (Concurrent district ingestion)
+app.post("/api/collector/districts/all-rapid", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच हे चक्र सुरू करू शकतात." });
+    }
+
+    const { articlesPerDistrict = 1, concurrency = 6 } = req.body || {};
+    console.log(`[Server] 🚀 All 36 Districts Rapid Sweep initiated by ${req.user?.email}`);
+
+    const result = await runAllDistrictsRapidSweep({
+      articlesPerDistrict: Math.min(3, Math.max(1, articlesPerDistrict)),
+      concurrency: Math.min(8, Math.max(2, concurrency))
+    });
+
+    invalidateServerArticlesCache();
+    res.json(result);
+  } catch (err: any) {
+    console.error("Error in all districts rapid sweep:", err);
+    res.status(500).json({ error: err.message || "३६ जिल्हे संकलन अयशस्वी झाले." });
+  }
+});
+
+// 🚀 Endpoint for Administrative Division Rapid Collection (पश्चिम महाराष्ट्र, मराठवाडा, विदर्भ, etc.)
+app.post("/api/collector/districts/division-rapid", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच हे चक्र सुरू करू शकतात." });
+    }
+
+    const { division, articlesPerDistrict = 1 } = req.body || {};
+    if (!division) {
+      return res.status(400).json({ error: "विभाग (Division) आवश्यक आहे." });
+    }
+
+    console.log(`[Server] ⚡ Division Rapid Sweep initiated for: ${division}`);
+    const result = await runAllDistrictsRapidSweep({
+      division,
+      articlesPerDistrict: Math.min(3, Math.max(1, articlesPerDistrict)),
+      concurrency: 6
+    });
+
+    invalidateServerArticlesCache();
+    res.json(result);
+  } catch (err: any) {
+    console.error("Error in division rapid sweep:", err);
+    res.status(500).json({ error: err.message || "विभाग संकलन अयशस्वी झाले." });
+  }
+});
+
+// 🚀 Endpoint for Instant Single District Rapid Collection
+app.post("/api/collector/districts/single-rapid", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच हे चक्र सुरू करू शकतात." });
+    }
+
+    const { district, targetArticles = 2 } = req.body || {};
+    if (!district) {
+      return res.status(400).json({ error: "जिल्ह्याचे नाव आवश्यक आहे." });
+    }
+
+    console.log(`[Server] ⚡ Single District Rapid Ingestion initiated for: ${district}`);
+    const result = await runAllDistrictsRapidSweep({
+      districts: [district],
+      articlesPerDistrict: Math.min(5, Math.max(1, targetArticles)),
+      concurrency: 2
+    });
+
+    invalidateServerArticlesCache();
+    res.json(result);
+  } catch (err: any) {
+    console.error("Error in single district rapid ingestion:", err);
+    res.status(500).json({ error: err.message || "जिल्हा संकलन अयशस्वी झाले." });
+  }
+});
+
+// 📊 Telemetry: Get Live Article Distribution Across All 36 Districts
+app.get("/api/collector/districts/coverage", async (req, res) => {
+  try {
+    const districtCounts: Record<string, number> = {};
+    for (const d of MAHARASHTRA_36_DISTRICTS) {
+      districtCounts[d] = 0;
+    }
+
+    try {
+      const snap = await adminDb.collection('articles')
+        .where('status', '==', 'PUBLISHED')
+        .select('district')
+        .get();
+
+      snap.forEach(doc => {
+        const d = doc.data().district;
+        if (d && districtCounts[d] !== undefined) {
+          districtCounts[d]++;
+        }
+      });
+    } catch (dbErr) {
+      // Fallback
+    }
+
+    res.json({
+      success: true,
+      districts: MAHARASHTRA_36_DISTRICTS,
+      divisions: MAHARASHTRA_DIVISIONS_MAP,
+      coverage: districtCounts,
+      totalCount: Object.values(districtCounts).reduce((a, b) => a + b, 0)
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

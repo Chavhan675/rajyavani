@@ -1,5 +1,211 @@
 import { NewsSourceConfig } from '../types';
 
+export const MAHARASHTRA_36_DISTRICTS = [
+  'मुंबई', 'मुंबई उपनगर', 'ठाणे', 'पालघर', 'रायगड', 'रत्नागिरी', 'सिंधुदुर्ग',
+  'पुणे', 'सातारा', 'सांगली', 'सोलापूर', 'कोल्हापूर', 'अहिल्यानगर',
+  'नाशिक', 'धुळे', 'जळगाव', 'नंदुरबार',
+  'छत्रपती संभाजीनगर', 'जालना', 'बीड', 'लातूर', 'धाराशिव', 'नांदेड', 'परभणी', 'हिंगोली',
+  'अमरावती', 'अकोला', 'बुलढाणा', 'वाशिम', 'यवतमाळ',
+  'नागपूर', 'वर्धा', 'भंडारा', 'गोंदिया', 'चंद्रपूर', 'गडचिरोली'
+];
+
+export const MAHARASHTRA_DIVISIONS_MAP: Record<string, string[]> = {
+  'पश्चिम महाराष्ट्र': ['पुणे', 'सातारा', 'सांगली', 'सोलापूर', 'कोल्हापूर', 'अहिल्यानगर'],
+  'मराठवाडा': ['छत्रपती संभाजीनगर', 'जालना', 'बीड', 'लातूर', 'धाराशिव', 'नांदेड', 'परभणी', 'हिंगोली'],
+  'विदर्भ': ['नागपूर', 'वर्धा', 'भंडारा', 'गोंदिया', 'चंद्रपूर', 'गडचिरोली', 'अमरावती', 'अकोला', 'बुलढाणा', 'वाशिम', 'यवतमाळ'],
+  'उत्तर महाराष्ट्र': ['नाशिक', 'धुळे', 'जळगाव', 'नंदुरबार'],
+  'कोकण': ['मुंबई', 'मुंबई उपनगर', 'ठाणे', 'पालघर', 'रायगड', 'रत्नागिरी', 'सिंधुदुर्ग']
+};
+
+/**
+ * 36 Dedicated District Feeds with optimized Google News RSS queries for rapid local intelligence
+ */
+export const DISTRICT_DEDICATED_FEEDS: Record<string, { query: string; talukas: string[]; division: string }> = {
+  'पुणे': {
+    query: 'पुणे+जिल्हा+OR+पिंपरी+चिंचवड+OR+हवेली+OR+बारामती+OR+जुन्नर+OR+पुणे+मनपा',
+    talukas: ['हवेली', 'पुणे शहर', 'पिंपरी-चिंचवड', 'बारामती', 'जुन्नर', 'आंबेगाव', 'शिरूर', 'दौंड', 'इंदापूर', 'भोर', 'वेल्हे', 'पुरंदर', 'मावळ', 'मुळशी'],
+    division: 'पश्चिम महाराष्ट्र'
+  },
+  'सातारा': {
+    query: 'सातारा+जिल्हा+OR+कराड+OR+वाई+OR+महाबळेश्वर+OR+फलटण+OR+कोयना',
+    talukas: ['सातारा', 'कराड', 'वाई', 'महाबळेश्वर', 'फलटण', 'माण', 'खटाव', 'कोरेगाव', 'पाटण', 'जावळी', 'खंडाळा'],
+    division: 'पश्चिम महाराष्ट्र'
+  },
+  'सांगली': {
+    query: 'सांगली+जिल्हा+OR+मिरज+OR+कुपवाड+OR+इस्लामपूर+OR+तासगाव+OR+वारणा',
+    talukas: ['मिरज', 'तासगाव', 'खानापूर (विटा)', 'वाळवा (इस्लामपूर)', 'शिराळा', 'आटपाडी', 'जत', 'कडेगाव', 'पलूस', 'कवठे महांकाळ'],
+    division: 'पश्चिम महाराष्ट्र'
+  },
+  'सोलापूर': {
+    query: 'सोलापूर+जिल्हा+OR+पंढरपूर+OR+बार्शी+OR+अक्कलकोट+OR+उजनी+धरण',
+    talukas: ['उत्तर सोलापूर', 'दक्षिण सोलापूर', 'बार्शी', 'अक्कलकोट', 'मोहोळ', 'माढा', 'करमाळा', 'पंढरपूर', 'सांगोला', 'माळशिरस', 'मंगळवेढा'],
+    division: 'पश्चिम महाराष्ट्र'
+  },
+  'कोल्हापूर': {
+    query: 'कोल्हापूर+जिल्हा+OR+इचलकरंजी+OR+करवीर+OR+कागल+OR+पंचगंगा',
+    talukas: ['करवीर', 'हातकणंगले', 'शिरोळ', 'कागल', 'गगनबावडा', 'राधानगरी', 'भुदरगड', 'आजरा', 'चंदगड', 'पन्हाळा', 'शाहूवाडी', 'बावडा'],
+    division: 'पश्चिम महाराष्ट्र'
+  },
+  'अहिल्यानगर': {
+    query: 'अहिल्यानगर+जिल्हा+OR+अहमदनगर+OR+शिर्डी+OR+संगमनेर+OR+कोपरगाव',
+    talukas: ['नगर', 'कोपरगाव', 'राहाता (शिर्डी)', 'संगमनेर', 'अकोले', 'श्रीरामपूर', 'नेवासा', 'शेवगाव', 'पाथर्डी', 'पारनेर', 'राहुरी', 'श्रीगोंदा', 'कर्जत', 'जामखेड'],
+    division: 'पश्चिम महाराष्ट्र'
+  },
+  'नाशिक': {
+    query: 'नाशिक+जिल्हा+OR+मालेगाव+OR+निफाड+OR+येवला+OR+दिंडोरी+OR+गोदावरी',
+    talukas: ['नाशिक', 'मालेगाव', 'सिन्नर', 'इगतपुरी', 'दिंडोरी', 'निफाड', 'येवला', 'चांदवड', 'नांदगाव', 'कळवण', 'बागलाण (सटाणा)', 'सुरगाणा', 'पेठ', 'देवळा', 'त्र्यंबकेश्वर'],
+    division: 'उत्तर महाराष्ट्र'
+  },
+  'धुळे': {
+    query: 'धुळे+जिल्हा+OR+शिरपूर+OR+साक्री+OR+शिंदखेडा+OR+धुळे+मनपा',
+    talukas: ['धुळे', 'साक्री', 'शिंदखेडा', 'शिरपूर'],
+    division: 'उत्तर महाराष्ट्र'
+  },
+  'जळगाव': {
+    query: 'जळगाव+जिल्हा+OR+भुसावळ+OR+चाळीसगाव+OR+पाचोरा+OR+अमळनेर+OR+केळी',
+    talukas: ['जळगाव', 'भुसावळ', 'चाळीसगाव', 'पाचोरा', 'अमळनेर', 'चोपडा', 'जामनेर', 'रावेर', 'मुक्ताईनगर', 'यावल', 'एरंडोल', 'धरणगाव', 'पारोळा', 'भडगाव', 'बोदवड'],
+    division: 'उत्तर महाराष्ट्र'
+  },
+  'नंदुरबार': {
+    query: 'नंदुरबार+जिल्हा+OR+नवापूर+OR+शहादा+OR+तळोदा+OR+अक्राणी',
+    talukas: ['नंदुरबार', 'नवापूर', 'शहादा', 'तळोदा', 'अक्कलकुवा', 'धडगाव (अक्राणी)'],
+    division: 'उत्तर महाराष्ट्र'
+  },
+  'छत्रपती संभाजीनगर': {
+    query: 'छत्रपती+संभाजीनगर+OR+औरंगाबाद+जिल्हा+OR+पैठण+OR+वैजापूर+OR+सिल्लोड',
+    talukas: ['छत्रपती संभाजीनगर', 'गंगापूर', 'वैजापूर', 'कन्नड', 'खुलताबाद', 'पैठण', 'सिल्लोड', 'सोयगाव', 'फुलंब्री'],
+    division: 'मराठवाडा'
+  },
+  'जालना': {
+    query: 'जालना+जिल्हा+OR+भोकरदन+OR+परतूर+OR+अंबड+OR+मंठा+OR+मोसंबी',
+    talukas: ['जालना', 'बदनापूर', 'भोकरदन', 'जाफ्राबाद', 'परतूर', 'मंठा', 'अंबड', 'घनसावंगी'],
+    division: 'मराठवाडा'
+  },
+  'बीड': {
+    query: 'बीड+जिल्हा+OR+परळी+OR+अंबाजोगाई+OR+गेवराई+OR+माजलगाव',
+    talukas: ['बीड', 'पाटोदा', 'आष्टी', 'गेवराई', 'माजलगाव', 'अंबाजोगाई', 'केज', 'परळी', 'धारूर', 'वडवणी', 'शिरूर (कासार)'],
+    division: 'मराठवाडा'
+  },
+  'लातूर': {
+    query: 'लातूर+जिल्हा+OR+औदसा+OR+अहमदपूर+OR+निलंगा+OR+उदगीर+OR+सोयाबीन',
+    talukas: ['लातूर', 'औसा', 'अहमदपूर', 'निलंगा', 'उदगीर', 'चाकूर', 'रेणापूर', 'देवणी', 'शिरूर अनंतपाळ', 'जळकोट'],
+    division: 'मराठवाडा'
+  },
+  'धाराशिव': {
+    query: 'धाराशिव+जिल्हा+OR+उस्मानाबाद+OR+तुळजापूर+OR+उमरगा+OR+कळंब',
+    talukas: ['धाराशिव (उस्मानाबाद)', 'तुळजापूर', 'उमरगा', 'लोहारा', 'कळंब', 'भूम', 'परांडा', 'वाशी'],
+    division: 'मराठवाडा'
+  },
+  'नांदेड': {
+    query: 'नांदेड+जिल्हा+OR+मुखेड+OR+देगलूर+OR+किनवट+OR+लोहा+OR+विष्णुपुरी',
+    talukas: ['नांदेड', 'बिलोली', 'मुखेड', 'कंधार', 'लोहा', 'हदगाव', 'भोकर', 'देगलूर', 'किनवट', 'मुदखेड', 'हिमायतनगर', 'माहूर', 'धर्माबाद', 'उमरी', 'नायगाव (खैरगाव)', 'अर्धापूर'],
+    division: 'मराठवाडा'
+  },
+  'परभणी': {
+    query: 'परभणी+जिल्हा+OR+गंगाखेड+OR+जिंतूर+OR+पाथरी+OR+सेलू',
+    talukas: ['परभणी', 'जिंतूर', 'गंगाखेड', 'पालम', 'पूर्णा', 'पाथरी', 'सोनपेठ', 'मानवत', 'सेलू'],
+    division: 'मराठवाडा'
+  },
+  'हिंगोली': {
+    query: 'हिंगोली+जिल्हा+OR+कळमनुरी+OR+वसमत+OR+औंढा+नागनाथ+OR+सेनगाव',
+    talukas: ['हिंगोली', 'कळमनुरी', 'वसमत', 'औंढा नागनाथ', 'सेनगाव'],
+    division: 'मराठवाडा'
+  },
+  'नागपूर': {
+    query: 'नागपूर+जिल्हा+OR+नागपूर+मनपा+OR+कामठी+OR+काटोल+OR+उमरेड+OR+मिहान',
+    talukas: ['नागपूर शहर', 'नागपूर ग्रामीण', 'कामठी', 'हिंगणा', 'काटोल', 'नरखेड', 'सावनेर', 'कळमेश्वर', 'रामटेक', 'पारशिवनी', 'मौदा', 'उमरेड', 'कुही', 'भिवापूर'],
+    division: 'विदर्भ'
+  },
+  'वर्धा': {
+    query: 'वर्धा+जिल्हा+OR+हिंगणघाट+OR+देवळी+OR+आर्वी+OR+सेवाग्राम',
+    talukas: ['वर्धा', 'देवळी', 'सेलूस', 'आर्वी', 'कारंजा', 'आष्टी', 'हिंगणघाट', 'समुद्रपूर'],
+    division: 'विदर्भ'
+  },
+  'भंडारा': {
+    query: 'भंडारा+जिल्हा+OR+तुमसर+OR+साकोली+OR+पवनी+OR+लाखांदूर',
+    talukas: ['भंडारा', 'तुमसर', 'मोहाडी', 'साकोली', 'लाखनी', 'पवनी', 'लाखांदूर'],
+    division: 'विदर्भ'
+  },
+  'गोंदिया': {
+    query: 'गोंदिया+जिल्हा+OR+तिरोडा+OR+गोरेगाव+OR+अर्जुनी+मोरगाव+OR+तांदूळ',
+    talukas: ['गोंदिया', 'तिरोडा', 'गोरेगाव', 'अर्जुनी मोरगाव', 'आमगाव', 'सालेकसा', 'सडक अर्जुनी', 'देवरी'],
+    division: 'विदर्भ'
+  },
+  'चंद्रपूर': {
+    query: 'चंद्रपूर+जिल्हा+OR+बल्लारपूर+OR+वरोरा+OR+भद्रावती+OR+ताडोबा',
+    talukas: ['चंद्रपूर', 'बल्लारपूर', 'भद्रावती', 'वरोरा', 'चिमूर', 'नागभीड', 'ब्रह्मपुरी', 'सिंदेवाही', 'मूल', 'गोंडपिपरी', 'पोंभुर्णा', 'सावली', 'राजुरा', 'कोरपना', 'जिवती'],
+    division: 'विदर्भ'
+  },
+  'गडचिरोली': {
+    query: 'गडचिरोली+जिल्हा+OR+अहेरी+OR+आरमोरी+OR+धानोरा+OR+सुरजागड',
+    talukas: ['गडचिरोली', 'धानोरा', 'चामोर्शी', 'आरमोरी', 'कुरखेडा', 'कोरची', 'अहेरी', 'एटापल्ली', 'भामरागड', 'सिरोंचा', 'मुलचेरा', 'वडसा (देसाईगंज)'],
+    division: 'विदर्भ'
+  },
+  'अमरावती': {
+    query: 'अमरावती+जिल्हा+OR+अचलपूर+OR+वरुड+OR+मोर्शी+OR+मेळघाट+OR+संत+गाडगेबाबा',
+    talukas: ['अमरावती', 'भातकुली', 'नांदगाव खंडेश्वर', 'चांदूर रेल्वे', 'धामणगाव रेल्वे', 'तिवसा', 'मोर्शी', 'वरुड', 'अचलपूर (परतवाडा)', 'चांदूर बाजार', 'दर्यापूर', 'अंजनगाव सुर्जी', 'धारणी (मेळघाट)', 'चिखलदरा'],
+    division: 'विदर्भ'
+  },
+  'अकोला': {
+    query: 'अकोला+जिल्हा+OR+अकोट+OR+बाळापूर+OR+मूर्तिजापूर+OR+कापूस+बाजार',
+    talukas: ['अकोला', 'अकोट', 'तेल्हारा', 'बाळापूर', 'पातूर', 'बार्शीटाकळी', 'मूर्तिजापूर'],
+    division: 'विदर्भ'
+  },
+  'बुलढाणा': {
+    query: 'बुलढाणा+जिल्हा+OR+खामगाव+OR+शेगाव+OR+मलकापूर+OR+लोणार+सरोवर',
+    talukas: ['बुलढाणा', 'चिखली', 'देऊळगाव राजा', 'जळगाव जामोद', 'संग्रामपूर', 'मलकापूर', 'मोताळा', 'नांदुरा', 'खामगाव', 'शेगाव', 'मेहकर', 'सिंदखेड राजा', 'लोणार'],
+    division: 'विदर्भ'
+  },
+  'वाशिम': {
+    query: 'वाशिम+जिल्हा+OR+रिसोड+OR+कारंजा+लाड+OR+मालेगाव+वाशिम+OR+मंगरुळपीर',
+    talukas: ['वाशिम', 'मालेगाव', 'रिसोड', 'मंगरुळपीर', 'कारंजा (लाड)', 'मानोरा'],
+    division: 'विदर्भ'
+  },
+  'यवतमाळ': {
+    query: 'यवतमाळ+जिल्हा+OR+पुसद+OR+दिग्रस+OR+वणी+OR+उमरखेड+OR+दारव्हा',
+    talukas: ['यवतमाळ', 'कळंब', 'बाभूळगाव', 'दारव्हा', 'नेर', 'दिग्रस', 'पुसद', 'उमरखेड', 'महागाव', 'वणी', 'मारेगाव', 'झरी जामणी', 'राळेगाव', 'केळापूर (पांढरकवडा)', 'घाटंजी', 'आर्णी'],
+    division: 'विदर्भ'
+  },
+  'मुंबई': {
+    query: 'मुंबई+शहर+OR+BMC+OR+मंत्रालय+OR+मुंबई+पोलीस+OR+बेस्ट+OR+लोकल',
+    talukas: ['मुंबई शहर (कुलाबा ते माहीम)'],
+    division: 'कोकण'
+  },
+  'मुंबई उपनगर': {
+    query: 'मुंबई+उपनगर+OR+अंधेरी+OR+बोरिवली+OR+कुर्ला+OR+घाटकोपर+OR+वांद्रे',
+    talukas: ['कुर्ला', 'अंधेरी', 'बोरिवली'],
+    division: 'कोकण'
+  },
+  'ठाणे': {
+    query: 'ठाणे+जिल्हा+OR+कल्याण+डोंबिवली+OR+नवी+मुंबई+OR+मीरा+भाईंदर+OR+उल्हासनगर',
+    talukas: ['ठाणे', 'कल्याण', 'मुरबाड', 'भिवंडी', 'शहापूर', 'उल्हासनगर', 'अंबरनाथ'],
+    division: 'कोकण'
+  },
+  'पालघर': {
+    query: 'पालघर+जिल्हा+OR+वसई+विरार+OR+डहाणू+OR+विक्रमगड+OR+तलासरी+OR+वाडा',
+    talukas: ['पालघर', 'वसई', 'डहाणू', 'तलासरी', 'जव्हार', 'मोखाडा', 'वाडा', 'विक्रमगड'],
+    division: 'कोकण'
+  },
+  'रायगड': {
+    query: 'रायगड+जिल्हा+OR+अलिबाग+OR+पनवेल+OR+कर्जत+OR+महाड+OR+पेण+OR+अटल+सेतू',
+    talukas: ['अलिबाग', 'पेण', 'मुरूड', 'पनवेल', 'उरण', 'कर्जत', 'खालापूर', 'माणगाव', 'रोहा', 'सुधागड (पाली)', 'तळा', 'महाड', 'म्हसळा', 'श्रीवर्धन', 'पोलादपूर'],
+    division: 'कोकण'
+  },
+  'रत्नागिरी': {
+    query: 'रत्नागिरी+जिल्हा+OR+चिपळूण+OR+खेड+OR+राजापूर+OR+गुहागर+OR+हापूस+आंबा',
+    talukas: ['रत्नागिरी', 'चिपळूण', 'खेड', 'गुहागर', 'दापोली', 'मंडणगड', 'संगमेश्वर', 'लांजा', 'राजापूर'],
+    division: 'कोकण'
+  },
+  'सिंधुदुर्ग': {
+    query: 'सिंधुदुर्ग+जिल्हा+OR+सावंतवाडी+OR+मालवण+OR+कणकवली+OR+वेंगुर्ला+OR+कुडाळ',
+    talukas: ['कुडाळ', 'मालवण', 'सावंतवाडी', 'कणकवली', 'देवगड', 'वेंगुर्ला', 'दोडामार्ग', 'वैभववाडी'],
+    division: 'कोकण'
+  }
+};
+
+/**
+ * Returns dynamic trusted sources list encompassing state portals + all 36 district channels
+ */
 export const TRUSTED_NEWS_SOURCES: NewsSourceConfig[] = [
   // 1. Official Government & Press Information Bureau
   {
@@ -46,8 +252,6 @@ export const TRUSTED_NEWS_SOURCES: NewsSourceConfig[] = [
     enabled: true,
     status: 'ACTIVE'
   },
-
-  // 2. Agriculture & Farmers (शेती व शेतकरी)
   {
     id: 'src-agri-maha',
     name: 'Maharashtra Agriculture & Krishi Vibhag',
@@ -61,185 +265,28 @@ export const TRUSTED_NEWS_SOURCES: NewsSourceConfig[] = [
     status: 'ACTIVE'
   },
 
-  // 4. District Feeds - Western Maharashtra (पश्चिम महाराष्ट्र)
-  {
-    id: 'src-pune',
-    name: 'Pune District & Division News',
-    nameMarathi: 'पुणे जिल्हा व विभागीय घडामोडी',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=पुणे+जिल्हा+OR+पिंपरी+चिंचवड+OR+पुणे+मनपा&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'पुणे',
-    trustScore: 95,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-satara',
-    name: 'Satara District News',
-    nameMarathi: 'सातारा जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=सातारा+जिल्हा+OR+कराड+OR+महाबळेश्वर&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'सातारा',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-kolhapur',
-    name: 'Kolhapur & Sangli District News',
-    nameMarathi: 'कोल्हापूर व सांगली जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=कोल्हापूर+जिल्हा+OR+सांगली+जिल्हा+OR+पंचगंगा&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'कोल्हापूर',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-solapur',
-    name: 'Solapur District News',
-    nameMarathi: 'सोलापूर जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=सोलापूर+जिल्हा+OR+पंढरपूर+OR+उजनी&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'सोलापूर',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
+  // 2. Generate Dedicated District Feeds for All 36 Maharashtra Districts
+  ...MAHARASHTRA_36_DISTRICTS.map((dist, idx): NewsSourceConfig => {
+    const config = DISTRICT_DEDICATED_FEEDS[dist] || {
+      query: `${encodeURIComponent(dist)}+जिल्हा+OR+स्थानिक+घडामोडी`,
+      talukas: [],
+      division: 'महाराष्ट्र'
+    };
+    return {
+      id: `src-dist-${dist.toLowerCase().replace(/\s+/g, '-')}`,
+      name: `${dist} District Rapid News Intelligence`,
+      nameMarathi: `${dist} जिल्हा व तालुका वृत्त संकलन`,
+      type: 'DISTRICT_COLLECTORATE',
+      url: `https://news.google.com/rss/search?q=${config.query}&hl=mr&gl=IN&ceid=IN:mr`,
+      region: 'DISTRICT',
+      district: dist,
+      trustScore: 95,
+      enabled: true,
+      status: 'ACTIVE'
+    };
+  }),
 
-  // 5. District Feeds - Marathwada (मराठवाडा)
-  {
-    id: 'src-sambhajinagar',
-    name: 'Chhatrapati Sambhajinagar & Jalna News',
-    nameMarathi: 'छत्रपती संभाजीनगर व जालना जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=छत्रपती+संभाजीनगर+OR+औरंगाबाद+OR+जालना&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'छत्रपती संभाजीनगर',
-    trustScore: 95,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-nanded',
-    name: 'Nanded, Hingoli & Parbhani News',
-    nameMarathi: 'नांदेड, हिंगोली व परभणी जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=नांदेड+जिल्हा+OR+परभणी+OR+हिंगोली&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'नांदेड',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-latur-dharashiv-beed',
-    name: 'Latur, Dharashiv & Beed News',
-    nameMarathi: 'लातूर, धाराशिव व बीड जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=लातूर+जिल्हा+OR+धाराशिव+OR+बीड+जिल्हा&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'लातूर',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-
-  // 6. District Feeds - Vidarbha (विदर्भ)
-  {
-    id: 'src-nagpur',
-    name: 'Nagpur & Wardha District News',
-    nameMarathi: 'नागपूर व वर्धा जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=नागपूर+जिल्हा+OR+नागपूर+मनपा+OR+वर्धा&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'नागपूर',
-    trustScore: 95,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-amravati-akola',
-    name: 'Amravati, Akola, Buldhana & Washim News',
-    nameMarathi: 'अमरावती, अकोला, बुलढाणा व वाशिम जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=अमरावती+जिल्हा+OR+अकोला+OR+बुलढाणा+OR+वाशिम&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'अमरावती',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-chandrapur-gadchiroli',
-    name: 'Chandrapur, Gadchiroli, Bhandara & Gondia News',
-    nameMarathi: 'चंद्रपूर, गडचिरोली, भंडारा व गोंदिया जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=चंद्रपूर+OR+गडचिरोली+OR+भंडारा+OR+गोंदिया&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'चंद्रपूर',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-
-  // 7. District Feeds - North Maharashtra & Khandesh (उत्तर महाराष्ट्र व खान्देश)
-  {
-    id: 'src-nashik-ahmednagar',
-    name: 'Nashik & Ahilyanagar (Ahmednagar) News',
-    nameMarathi: 'नाशिक व अहिल्यानगर (अहमदनगर) जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=नाशिक+जिल्हा+OR+अहिल्यानगर+OR+अहमदनगर&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'नाशिक',
-    trustScore: 95,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-jalgaon-dhule-nandurbar',
-    name: 'Jalgaon, Dhule & Nandurbar News',
-    nameMarathi: 'जळगाव, धुळे व नंदुरबार जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=जळगाव+जिल्हा+OR+धुळे+OR+नंदुरबार&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'जळगाव',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-
-  // 8. District Feeds - Konkan & Mumbai Metropolitan (कोकण व मुंबई)
-  {
-    id: 'src-mumbai-thane-palghar',
-    name: 'Mumbai, Thane, Palghar & Raigad News',
-    nameMarathi: 'मुंबई, ठाणे, पालघर व रायगड जिल्हा वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=मुंबई+महापालिका+OR+ठाणे+OR+नवी+मुंबई+OR+पालघर+OR+रायगड&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'मुंबई',
-    trustScore: 96,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'src-ratnagiri-sindhudurg',
-    name: 'Ratnagiri & Sindhudurg Coastal News',
-    nameMarathi: 'रत्नागिरी व सिंधुदुर्ग कोकण किनारपट्टी वार्ता',
-    type: 'DISTRICT_COLLECTORATE',
-    url: 'https://news.google.com/rss/search?q=रत्नागिरी+जिल्हा+OR+सिंधुदुर्ग+OR+कोकण+रेल्वे&hl=mr&gl=IN&ceid=IN:mr',
-    region: 'DISTRICT',
-    district: 'रत्नागिरी',
-    trustScore: 94,
-    enabled: true,
-    status: 'ACTIVE'
-  },
-
-  // 9. India-wide National Developments (राष्ट्रीय घडामोडी)
+  // 3. India-wide National Developments (राष्ट्रीय घडामोडी)
   {
     id: 'src-national-governance',
     name: 'National Governance, Parliament & Supreme Court',
@@ -278,11 +325,10 @@ export const TRUSTED_NEWS_SOURCES: NewsSourceConfig[] = [
   }
 ];
 
-export const MAHARASHTRA_36_DISTRICTS = [
-  'मुंबई', 'मुंबई उपनगर', 'ठाणे', 'पालघर', 'रायगड', 'रत्नागिरी', 'सिंधुदुर्ग',
-  'पुणे', 'सातारा', 'सांगली', 'सोलापूर', 'कोल्हापूर',
-  'नाशिक', 'अहिल्यानगर', 'धुळे', 'जळगाव', 'नंदुरबार',
-  'छत्रपती संभाजीनगर', 'जालना', 'बीड', 'लातूर', 'धाराशिव', 'नांदेड', 'परभणी', 'हिंगोली',
-  'अमरावती', 'अकोला', 'बुलढाणा', 'वाशिम', 'यवतमाळ',
-  'नागपूर', 'वर्धा', 'भंडारा', 'गोंदिया', 'चंद्रपूर', 'गडचिरोली'
-];
+export function getDistrictFeedConfig(districtName: string) {
+  return DISTRICT_DEDICATED_FEEDS[districtName] || null;
+}
+
+export function getDistrictsByDivision(divisionName: string): string[] {
+  return MAHARASHTRA_DIVISIONS_MAP[divisionName] || [];
+}

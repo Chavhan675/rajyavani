@@ -12,7 +12,8 @@ class ArticleCacheStore {
   private memoryCache: Map<string, CacheEntry<any>> = new Map();
   private prefetchedIds: Set<string> = new Set();
   private prefetchedImages: Set<string> = new Set();
-  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+  private prefetchedRoutes: Set<string> = new Set();
+  private readonly DEFAULT_TTL = 10 * 60 * 1000; // 10 minutes
 
   constructor() {
     // Warm up from localStorage if available
@@ -32,6 +33,15 @@ class ArticleCacheStore {
         }
       } catch (e) {
         // Silent
+      }
+
+      // Schedule background idle warm-up of essential assets
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => {
+          this.warmupIdleAssets();
+        });
+      } else {
+        setTimeout(() => this.warmupIdleAssets(), 2000);
       }
     }
   }
@@ -53,6 +63,15 @@ class ArticleCacheStore {
     return this.memoryCache.has(key);
   }
 
+  clear(key?: string): void {
+    if (key) {
+      this.memoryCache.delete(key);
+    } else {
+      this.memoryCache.clear();
+      this.prefetchedIds.clear();
+    }
+  }
+
   /**
    * Prefetch and warm up an article into memory so clicking a link opens in 0ms
    */
@@ -61,16 +80,23 @@ class ArticleCacheStore {
     this.prefetchedIds.add(id);
 
     try {
-      // 1. Try fetching via light API
-      const res = await fetch(`/api/articles`);
+      // 1. Fetch targeted article by ID from ultra-fast server memory cache
+      const res = await fetch(`/api/articles/${encodeURIComponent(id)}?withRelated=true`, {
+        headers: { 'Accept': 'application/json' }
+      });
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.articles)) {
-          json.articles.forEach((art: any) => {
-            if (art.id) {
-              this.set(`article_${art.id}`, art);
-            }
-          });
+        if (json.success && json.article) {
+          this.set(`article_${id}`, json.article);
+          if (json.article.imageUrl) {
+            this.prefetchImage(json.article.imageUrl);
+          }
+          if (Array.isArray(json.relatedArticles)) {
+            this.set(`related_${id}`, json.relatedArticles);
+            json.relatedArticles.forEach((rel: any) => {
+              if (rel.id) this.set(`article_${rel.id}`, rel);
+            });
+          }
         }
       }
     } catch (e) {
@@ -79,14 +105,59 @@ class ArticleCacheStore {
   }
 
   /**
-   * Warm up image in browser cache
+   * Warm up image in browser cache with low priority & async decoding
    */
   prefetchImage(url?: string | null): void {
     if (!url || typeof window === 'undefined' || this.prefetchedImages.has(url)) return;
     this.prefetchedImages.add(url);
-    const img = new window.Image();
-    img.decoding = 'async';
-    img.src = url;
+    try {
+      const img = new window.Image();
+      img.decoding = 'async';
+      img.loading = 'lazy';
+      img.src = url;
+    } catch {}
+  }
+
+  /**
+   * Preload dynamic route chunks ahead of time on hover
+   */
+  preloadRoute(routeName: 'article' | 'district' | 'archive' | 'legal' | 'contact' | 'admin'): void {
+    if (typeof window === 'undefined' || this.prefetchedRoutes.has(routeName)) return;
+    this.prefetchedRoutes.add(routeName);
+
+    try {
+      switch (routeName) {
+        case 'article':
+          import('../pages/ArticlePage');
+          break;
+        case 'district':
+          import('../pages/DistrictPage');
+          break;
+        case 'archive':
+          import('../pages/ArchivePage');
+          break;
+        case 'legal':
+          import('../pages/LegalPage');
+          break;
+        case 'contact':
+          import('../pages/ContactPage');
+          break;
+        case 'admin':
+          import('../pages/AdminPage');
+          break;
+      }
+    } catch {}
+  }
+
+  private warmupIdleAssets(): void {
+    const articles = this.get<any[]>('homepage_articles');
+    if (Array.isArray(articles)) {
+      // Prefetch top 4 articles and their images
+      articles.slice(0, 4).forEach((art) => {
+        if (art.id) this.prefetchArticle(art.id);
+        if (art.imageUrl) this.prefetchImage(art.imageUrl);
+      });
+    }
   }
 }
 

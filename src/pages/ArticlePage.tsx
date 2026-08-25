@@ -52,6 +52,7 @@ export default function ArticlePage() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const fetchArticle = async () => {
       try {
         if (!id) return;
@@ -71,79 +72,163 @@ export default function ArticlePage() {
             publishedAt: new Date(mockMatch.publishedAt).getTime(),
             updatedAt: mockMatch.lastUpdated ? new Date(mockMatch.lastUpdated).getTime() : undefined,
           };
-          setArticle(formatted);
-          articleCache.set(`article_${id}`, formatted);
+          if (isMounted) {
+            setArticle(formatted);
+            articleCache.set(`article_${id}`, formatted);
 
-          const related = mockArticles.filter(m => m.id !== id).slice(0, 3).map(m => ({
-            ...m,
-            category: typeof m.category === 'object' ? m.category.name : m.category,
-            authorName: m.author,
-            publishedAt: new Date(m.publishedAt).getTime(),
-          }));
-          setRelatedArticles(related);
-          setLoading(false);
+            const related = mockArticles.filter(m => m.id !== id).slice(0, 3).map(m => ({
+              ...m,
+              category: typeof m.category === 'object' ? m.category.name : m.category,
+              authorName: m.author,
+              publishedAt: new Date(m.publishedAt).getTime(),
+            }));
+            setRelatedArticles(related);
+            setLoading(false);
+          }
           return;
         }
 
-        // 2. Check memory cache first
+        // 2. Check memory cache first (0ms instant render)
         const cached = articleCache.get<any>(`article_${id}`);
-        if (cached) {
+        const cachedRelated = articleCache.get<any[]>(`related_${id}`);
+        if (cached && isMounted) {
           setArticle(cached);
+          if (cachedRelated) setRelatedArticles(cachedRelated);
           setLoading(false);
         }
 
+        // 3. Fast Server Endpoint (<1ms from memory cache)
+        try {
+          const res = await fetch(`/api/articles/${encodeURIComponent(id)}?withRelated=true`);
+          if (res.ok) {
+            const data = await res.json();
+            if (isMounted && data.success && data.article) {
+              setArticle(data.article);
+              articleCache.set(`article_${id}`, data.article);
+              if (Array.isArray(data.relatedArticles)) {
+                setRelatedArticles(data.relatedArticles);
+                articleCache.set(`related_${id}`, data.relatedArticles);
+              }
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (apiErr) {
+          // Fallback to Firestore SDK
+        }
+
+        // 4. Firestore SDK Direct Fallback
         const docRef = doc(db, 'articles', id);
-        
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().status === 'PUBLISHED') {
           const currentData: any = { id: docSnap.id, ...docSnap.data() };
-          setArticle(currentData);
-          articleCache.set(`article_${id}`, currentData);
-          setLoading(false);
+          if (isMounted) {
+            setArticle(currentData);
+            articleCache.set(`article_${id}`, currentData);
+            setLoading(false);
 
-          // Fetch Related Articles in the same category asynchronously
-          try {
-            const relatedQuery = query(
-              collection(db, 'articles'),
-              where('category', '==', currentData.category || 'महाराष्ट्र'),
-              where('status', '==', 'PUBLISHED'),
-              limit(4)
-            );
-            const relatedSnap = await getDocs(relatedQuery);
-            const relatedList = relatedSnap.docs
-              .map(d => ({ id: d.id, ...d.data() }))
-              .filter(a => a.id !== docSnap.id)
-              .slice(0, 3);
-            setRelatedArticles(relatedList);
-            relatedList.forEach(r => {
-              if (r.id) articleCache.set(`article_${r.id}`, r);
-            });
-          } catch (rErr) {
-            console.warn('Could not fetch related articles', rErr);
+            // Fetch Related Articles
+            try {
+              const relatedQuery = query(
+                collection(db, 'articles'),
+                where('category', '==', currentData.category || 'महाराष्ट्र'),
+                where('status', '==', 'PUBLISHED'),
+                limit(4)
+              );
+              const relatedSnap = await getDocs(relatedQuery);
+              const relatedList = relatedSnap.docs
+                .map(d => ({ id: d.id, ...d.data() }))
+                .filter(a => a.id !== docSnap.id)
+                .slice(0, 3);
+              setRelatedArticles(relatedList);
+              articleCache.set(`related_${id}`, relatedList);
+            } catch (rErr) {
+              console.warn('Could not fetch related articles', rErr);
+            }
           }
-        } else if (!cached) {
+        } else if (!cached && isMounted) {
           setError('बातमी आढळली नाही किंवा अजून प्रसिद्ध झालेली नाही.');
           setLoading(false);
         }
       } catch (err) {
         console.error(err);
-        if (!article) {
+        if (!article && isMounted) {
           setError('बातमी लोड करण्यात अडचण आली.');
         }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchArticle();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
-  if (loading) {
+  if (loading && !article) {
     return (
       <div className="min-h-screen flex flex-col bg-brand-gray/50">
         <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-brand-red" />
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Skeleton Breadcrumb & Badge */}
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-24 bg-gray-200 rounded-full animate-pulse" />
+                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+              </div>
+
+              {/* Skeleton Headline */}
+              <div className="space-y-3">
+                <div className="h-8 bg-gray-200 rounded w-full animate-pulse" />
+                <div className="h-8 bg-gray-200 rounded w-4/5 animate-pulse" />
+              </div>
+
+              {/* Skeleton Meta Bar */}
+              <div className="flex items-center gap-4 py-3 border-y border-gray-200">
+                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-3 w-48 bg-gray-200 rounded animate-pulse" />
+                </div>
+              </div>
+
+              {/* Skeleton Hero Image */}
+              <div className="w-full h-80 sm:h-96 bg-gray-200 rounded-2xl animate-pulse" />
+
+              {/* Skeleton Content Paragraphs */}
+              <div className="space-y-4 pt-4">
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-11/12 animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-9/12 animate-pulse" />
+                <div className="h-24 bg-gray-100 rounded-xl p-4 border border-gray-200 animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-10/12 animate-pulse" />
+              </div>
+            </div>
+
+            {/* Sidebar Skeleton */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-5 border border-gray-200 space-y-4">
+                <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className="w-20 h-16 bg-gray-200 rounded-lg shrink-0 animate-pulse" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 bg-gray-200 rounded w-full animate-pulse" />
+                        <div className="h-3 bg-gray-200 rounded w-4/5 animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </main>
+        <Footer />
       </div>
     );
   }

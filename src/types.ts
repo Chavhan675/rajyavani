@@ -65,9 +65,59 @@ export interface CollectionCycle {
   nationalCount: number;
   districtCoverage: Record<string, number>;
   cycleScheduledTime?: string;
-  triggeredBy: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL' | 'TURBO_FAST_TRACK';
+  triggeredBy: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL' | 'TURBO_FAST_TRACK' | 'MULTI_AI_BALANCER';
   errors?: string[];
   logNotes?: string[];
+}
+
+export type AiEngineId =
+  | 'ENGINE_MAHARASHTRA_GOVERNANCE'
+  | 'ENGINE_DISTRICTS_HYPERLOCAL'
+  | 'ENGINE_AGRICULTURE_MANDI'
+  | 'ENGINE_NATIONAL_PARLIAMENT'
+  | 'ENGINE_CRIME_LAW_SENTINEL'
+  | 'ENGINE_BUSINESS_MARKETS'
+  | 'ENGINE_SPORTS_KRIDA'
+  | 'ENGINE_EDUCATION_CAREERS'
+  | 'ENGINE_TECH_SCIENCE_SPACE'
+  | 'ENGINE_ENTERTAINMENT_CULTURE'
+  | 'ENGINE_HEALTH_ENVIRONMENT'
+  | 'ENGINE_BREAKING_FACTCHECK';
+
+export interface AiEngineConfig {
+  id: AiEngineId;
+  name: string;
+  nameMarathi: string;
+  domain: string;
+  domainMarathi: string;
+  description: string;
+  iconName: string;
+  badgeColor: string;
+  category: string;
+  categorySlug: string;
+  enabled: boolean;
+  priorityWeight: number; // 1 to 10
+  defaultTargetArticles: number;
+  systemPromptRole: string;
+  searchKeywords: string[];
+  rssQuery: string;
+  status: 'ACTIVE' | 'BUSY' | 'IDLE' | 'ERROR';
+  totalArticlesPublished: number;
+  lastRunAt: number | null;
+  avgWordCount: number;
+  healthScore: number; // 0-100
+  lastArticleHeadline?: string;
+}
+
+export interface MultiEngineCycleResult {
+  success: boolean;
+  cycleId: string;
+  timestamp: number;
+  durationSeconds: number;
+  totalArticles: number;
+  engineStats: Record<string, { count: number; status: string; duration: number }>;
+  newArticles: NewsArticle[];
+  errors?: string[];
 }
 
 export interface NewsSourceConfig {

@@ -1,7 +1,16 @@
 import { adminDb } from '../lib/firebase-admin.js';
-import { executeNewsCollectionCycle, CollectionEngineResult } from './newsCollectorEngine.js';
-import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from './trustedSources.js';
+import { 
+  executeNewsCollectionCycle, 
+  executeAllDistrictsRapidCollection,
+  executeDivisionRapidCollection,
+  executeSingleDistrictRapidCollection,
+  CollectionEngineResult,
+  RapidDistrictEngineOptions
+} from './newsCollectorEngine.js';
+import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS, MAHARASHTRA_DIVISIONS_MAP } from './trustedSources.js';
 import { CollectionCycle, NewsArticle } from '../types.js';
+import { getAllAiEnginesTelemetry, runBalancedMultiEngineSweep, executeSingleAiEngine } from './multiAiEngineOrchestrator.js';
+export { getAllAiEnginesTelemetry, runBalancedMultiEngineSweep, executeSingleAiEngine };
 
 interface SchedulerState {
   isRunning: boolean;
@@ -328,6 +337,95 @@ export function getSchedulerStatus() {
     recentCycles: state.cycleHistory.slice(0, 15),
     sourcesCount: TRUSTED_NEWS_SOURCES.length,
     activeSources: TRUSTED_NEWS_SOURCES.filter(s => s.enabled),
-    all36Districts: MAHARASHTRA_36_DISTRICTS
+    all36Districts: MAHARASHTRA_36_DISTRICTS,
+    divisionsMap: MAHARASHTRA_DIVISIONS_MAP,
+    aiEngines: getAllAiEnginesTelemetry()
   };
 }
+
+/**
+ * 🚀 High-Speed Multi-District Sweep Runner
+ * Ingests and saves news across all 36 districts or targeted divisions in parallel with full Firestore persistence.
+ */
+export async function runAllDistrictsRapidSweep(options: RapidDistrictEngineOptions = {}): Promise<CollectionEngineResult & { districtStats?: Record<string, number> }> {
+  if (state.isCycleActive) {
+    console.warn('[CollectionScheduler] ⚠️ Cycle active. Skipping duplicate rapid sweep.');
+    return {
+      success: false,
+      cycle: state.lastCycleRecord || ({} as any),
+      newArticles: [],
+      error: 'सायकल आधीच सुरू आहे.'
+    };
+  }
+
+  state.isCycleActive = true;
+  state.activeProgress = { stage: 'STARTING', percent: 5, details: '३६ जिल्हे हाय-स्पीड संकलन सुरू होत आहे...' };
+
+  try {
+    let existingUrls: string[] = [];
+    let existingTitles: string[] = [];
+    try {
+      const recentSnaps = await adminDb.collection('articles')
+        .orderBy('createdAt', 'desc')
+        .limit(350)
+        .get();
+
+      recentSnaps.forEach(doc => {
+        const d = doc.data();
+        if (d.sourceUrl) existingUrls.push(d.sourceUrl);
+        if (d.title) existingTitles.push(d.title);
+      });
+    } catch (e: any) {
+      console.warn('[CollectionScheduler] Deduplication lookup notice:', e.message);
+    }
+
+    const result = await executeAllDistrictsRapidCollection({
+      ...options,
+      existingArticleUrls: existingUrls,
+      existingTitles: existingTitles,
+      onProgress: (p) => {
+        state.activeProgress = {
+          stage: p.stage,
+          percent: p.percent,
+          details: p.details
+        };
+      }
+    });
+
+    if (result.success && result.newArticles.length > 0) {
+      try {
+        await persistArticlesToFirestore(result.newArticles);
+        await persistCycleRecord(result.cycle);
+      } catch (persistErr: any) {
+        console.error('[CollectionScheduler] Background Firestore persistence error:', persistErr.message);
+      }
+
+      state.lastCycleAt = result.cycle.completedAt || Date.now();
+      state.lastCycleRecord = result.cycle;
+      state.totalArticlesCount += result.newArticles.length;
+      state.totalCyclesCount += 1;
+      state.cycleHistory.unshift(result.cycle);
+      if (state.cycleHistory.length > 50) state.cycleHistory.pop();
+    }
+
+    state.activeProgress = { 
+      stage: 'COMPLETED', 
+      percent: 100, 
+      details: `३६ जिल्हे संकलन यशस्वी! ${result.newArticles.length} नव्या बातम्या (${result.durationSeconds || 0}s मध्ये).` 
+    };
+
+    return result;
+  } catch (err: any) {
+    console.error('[CollectionScheduler] Rapid District Sweep failed:', err);
+    state.activeProgress = { stage: 'FAILED', percent: 100, details: `त्रुटी: ${err.message}` };
+    return {
+      success: false,
+      cycle: ({} as any),
+      newArticles: [],
+      error: err.message
+    };
+  } finally {
+    state.isCycleActive = false;
+  }
+}
+

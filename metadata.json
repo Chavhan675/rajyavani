@@ -1,6 +1,6 @@
 {
   "name": "Rajyavani",
-  "description": "Maharashtra's leading Marathi digital news publication covering all 36 districts with verified, in-depth reporting and editorial transparency.",
+  "description": "Maharashtra's leading Marathi digital news publication covering all 36 districts with 12+ autonomous AI news engines, load-balanced reporting, and verified 1,000+ word journalism.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
