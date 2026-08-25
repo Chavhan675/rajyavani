@@ -37,6 +37,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import AdUnit from '../components/AdUnit';
+import { articleCache } from '../lib/cacheStore';
 
 const QUICK_CATEGORIES = [
   { label: 'सर्व बातम्या (All)', value: 'ALL' },
@@ -62,8 +63,17 @@ export default function ArchivePage() {
   const { category: categoryParam, tag: tagParam, type: typeParam, name: nameParam } = useParams<{ category?: string; tag?: string; type?: string; name?: string }>();
   const [searchParams] = useSearchParams();
 
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 0ms instant initialization from cache
+  const [articles, setArticles] = useState<NewsArticle[]>(() => {
+    const cachedArchive = articleCache.get<NewsArticle[]>('archive_articles');
+    if (cachedArchive && cachedArchive.length > 0) return cachedArchive;
+    const homeCached = articleCache.get<any[]>('homepage_articles');
+    if (homeCached && homeCached.length > 0) return homeCached as any[];
+    return [];
+  });
+  const [loading, setLoading] = useState(() => {
+    return !articleCache.has('archive_articles') && !articleCache.has('homepage_articles');
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('ALL');
   const [selectedTaluka, setSelectedTaluka] = useState('ALL');
@@ -118,7 +128,47 @@ export default function ArchivePage() {
   // Load news articles from Firestore + fallback to mockArticles
   const fetchArchiveArticles = async () => {
     try {
-      setLoading(true);
+      // 1. Try fast server endpoint first
+      try {
+        const res = await fetch('/api/articles?limit=50');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.articles) && data.articles.length > 0) {
+            const mappedList: NewsArticle[] = data.articles.map((d: any) => ({
+              id: d.id,
+              title: d.title || '',
+              summary: d.summary || '',
+              content: d.content || '',
+              imageUrl: d.imageUrl || '',
+              category: d.category || { id: 'c1', name: 'महाराष्ट्र', slug: 'maharashtra' },
+              location: d.location || { state: d.state || 'महाराष्ट्र', district: d.district || '' },
+              publishedAt: d.publishedAt ? (typeof d.publishedAt === 'number' ? new Date(d.publishedAt).toISOString() : d.publishedAt) : new Date().toISOString(),
+              author: d.authorName || d.author || 'राज्यवाणी ब्युरो',
+              lastUpdated: d.updatedAt ? new Date(d.updatedAt).toISOString() : undefined,
+              tags: d.tags || [],
+              isBreaking: d.isBreaking || false,
+              isTrending: d.isTrending || false,
+              aiGenerated: d.aiGenerated !== false,
+              views: d.views || 25,
+              sourceName: d.sourceName || 'राज्यवाणी वृत्त संकलन',
+              sourceUrl: d.sourceUrl,
+              verificationStatus: d.verificationStatus || 'VERIFIED',
+              verificationNotes: d.verificationNotes,
+              state: d.state || 'महाराष्ट्र',
+              district: d.district || ''
+            }));
+            setArticles(mappedList);
+            articleCache.set('archive_articles', mappedList);
+            mappedList.forEach(a => {
+              if (a.id) articleCache.set(`article_${a.id}`, a);
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {}
+
+      // 2. Direct Firestore fallback
       const q = query(collection(db, 'articles'), orderBy('createdAt', 'desc'), firestoreLimit(250));
       const snapshot = await getDocs(q);
       
@@ -152,12 +202,16 @@ export default function ArchivePage() {
 
       if (firestoreList.length > 0) {
         setArticles(firestoreList);
+        articleCache.set('archive_articles', firestoreList);
+        firestoreList.forEach(a => {
+          if (a.id) articleCache.set(`article_${a.id}`, a);
+        });
       } else {
         setArticles(mockArticles);
       }
     } catch (err) {
       console.warn('Archive Firestore fetch notice, using local records:', err);
-      setArticles(mockArticles);
+      if (articles.length === 0) setArticles(mockArticles);
     } finally {
       setLoading(false);
     }
@@ -827,7 +881,16 @@ export default function ArchivePage() {
                         <span>{article.author || 'राज्यवाणी ब्युरो'}</span>
                       </div>
 
-                      <Link to={`/article/${article.id}`}>
+                      <Link 
+                        to={`/article/${article.id}`}
+                        onMouseEnter={() => {
+                          articleCache.prefetchArticle(article.id);
+                          if (article.imageUrl) articleCache.prefetchImage(article.imageUrl);
+                        }}
+                        onTouchStart={() => {
+                          articleCache.prefetchArticle(article.id);
+                        }}
+                      >
                         <h3 className="text-base font-bold text-gray-900 line-clamp-2 hover:text-brand-red transition-colors leading-snug font-serif">
                           {article.title}
                         </h3>

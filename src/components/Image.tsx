@@ -94,6 +94,7 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   size?: 'thumbnail' | 'card' | 'featured' | 'social';
   className?: string;
   priority?: boolean;
+  showLogoBadge?: boolean;
 }
 
 export default function Image({
@@ -104,6 +105,7 @@ export default function Image({
   size = 'card',
   className = '',
   priority = false,
+  showLogoBadge = false,
   ...props
 }: ImageProps) {
   // Fallback stages:
@@ -208,6 +210,18 @@ export default function Image({
         }`}
         {...props}
       />
+
+      {/* Optional Beautiful Brand Watermark Pill Overlay */}
+      {showLogoBadge && isLoaded && (
+        <div className="absolute top-2 right-2 z-20 pointer-events-none select-none">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-400/30 text-white shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" />
+            <span className="text-[10px] font-black font-serif text-amber-200">
+              राज्यवाणी
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

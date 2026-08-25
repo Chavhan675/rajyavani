@@ -1,6 +1,7 @@
 import { Globe, Menu, Search, User, X, MapPin, ChevronDown, LogIn, LogOut, Bot, Bookmark, Settings, Sparkles, PhoneCall, ChevronRight } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import React, { useState, lazy, Suspense } from "react";
+import Logo from "./Logo";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
 import { useAuth } from "../lib/AuthContext";
 
@@ -163,14 +164,7 @@ export default function Header() {
           </button>
 
           {/* Logo & Tagline */}
-          <Link to="/" className="flex flex-col items-center md:items-start group">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-brand-red tracking-tight font-serif group-hover:opacity-95 transition-opacity">
-              राज्यवाणी
-            </h1>
-            <span className="text-[10px] sm:text-xs text-gray-900 font-extrabold tracking-widest uppercase mt-0.5">
-              महाराष्ट्राचा बुलंद आवाज • सत्य, अचूक, निष्पक्ष
-            </span>
-          </Link>
+          <Logo variant="header" />
 
           {/* Actions: Search, Admin, Bookmarks, User */}
           <div className="flex items-center space-x-2 sm:space-x-3">

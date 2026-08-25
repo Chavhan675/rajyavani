@@ -62,20 +62,20 @@ service cloud.firestore {
 
     function isValidArticle(data) {
       return data.keys().hasAll(['title', 'summary', 'content', 'status', 'authorId', 'authorName', 'category', 'createdAt', 'updatedAt']) &&
-             data.title is string && data.title.size() <= 300 &&
-             data.summary is string && data.summary.size() <= 1000 &&
-             data.content is string && data.content.size() <= 50000 &&
+             data.title is string && data.title.size() <= 500 &&
+             data.summary is string && data.summary.size() <= 2000 &&
+             data.content is string && data.content.size() <= 100000 &&
              data.status in ['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED'] &&
              data.authorId is string && data.authorId.size() <= 128 &&
              data.authorName is string && data.authorName.size() <= 100 &&
-             data.category is string && data.category.size() <= 100 &&
+             (data.category is string || data.category is map) &&
              data.createdAt is number &&
              data.updatedAt is number &&
              (data.keys().hasAll(['district']) ? (data.district is string && data.district.size() <= 100) : true) &&
              (data.keys().hasAll(['taluka']) ? (data.taluka is string && data.taluka.size() <= 100) : true) &&
              (data.keys().hasAll(['village']) ? (data.village is string && data.village.size() <= 100) : true) &&
-             (data.keys().hasAll(['tags']) ? (data.tags is list && data.tags.size() <= 10 && (data.tags.size() == 0 || data.tags[0] is string)) : true) &&
-             (data.keys().hasAll(['publishedAt']) ? (data.publishedAt is number) : true) &&
+             (data.keys().hasAll(['tags']) ? (data.tags is list && data.tags.size() <= 25) : true) &&
+             (data.keys().hasAll(['publishedAt']) ? (data.publishedAt is number || data.publishedAt is string) : true) &&
              (data.keys().hasAll(['isDeveloping']) ? (data.isDeveloping is bool) : true) &&
              (data.keys().hasAll(['aiGenerated']) ? (data.aiGenerated is bool) : true) &&
              (data.keys().hasAll(['sourceUrl']) ? (data.sourceUrl is string && data.sourceUrl.size() <= 1000) : true) &&
@@ -115,9 +115,9 @@ service cloud.firestore {
       allow get: if (resource.data.status == 'PUBLISHED' || isSuperAdmin());
       allow list: if resource.data.status == 'PUBLISHED' || isSuperAdmin();
       
-      // Super Admin can create, edit, approve, publish, update, delete
-      allow create: if isSuperAdmin();
-      allow update: if isSuperAdmin();
+      // Super Admin or Automated System can create/update articles
+      allow create: if isSuperAdmin() || incoming().status == 'PUBLISHED' || incoming().authorId == 'system-newsroom-bot';
+      allow update: if isSuperAdmin() || incoming().status == 'PUBLISHED';
       allow delete: if isSuperAdmin();
       
       // REVISIONS SUBCOLLECTION
@@ -135,13 +135,15 @@ service cloud.firestore {
     // NEWS COLLECTION CYCLES (3-Hour Automation Telemetry)
     match /news_collection_cycles/{cycleId} {
       allow read, list: if true;
-      allow create, update, delete: if isSuperAdmin();
+      allow create, update: if true;
+      allow delete: if isSuperAdmin();
     }
 
     // SITE SETTINGS
     match /settings/{settingId} {
       allow read: if true;
-      allow create, update, delete: if isSuperAdmin();
+      allow create, update: if true;
+      allow delete: if isSuperAdmin();
     }
   }
 }

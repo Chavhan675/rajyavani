@@ -5,6 +5,7 @@ import { formatMarathiTime } from "../lib/formatTime";
 import Image from "./Image";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
+import { articleCache } from "../lib/cacheStore";
 
 interface HeroProps {
   articles: NewsArticle[];
@@ -74,6 +75,13 @@ export default function Hero({ articles, loading = false }: HeroProps) {
         {/* Main Feature */}
         <Link 
           to={`/article/${mainArticle.id}`} 
+          onMouseEnter={() => {
+            articleCache.prefetchArticle(mainArticle.id);
+            if (mainArticle.imageUrl) articleCache.prefetchImage(mainArticle.imageUrl);
+          }}
+          onTouchStart={() => {
+            articleCache.prefetchArticle(mainArticle.id);
+          }}
           className="lg:col-span-8 relative group overflow-hidden rounded-xl bg-gray-950 shadow-sm border border-gray-800 cursor-pointer block h-[460px] lg:h-[550px]"
         >
           {isSuperAdmin && (
@@ -166,6 +174,13 @@ export default function Hero({ articles, loading = false }: HeroProps) {
             <Link 
               to={`/article/${article.id}`} 
               key={article.id} 
+              onMouseEnter={() => {
+                articleCache.prefetchArticle(article.id);
+                if (article.imageUrl) articleCache.prefetchImage(article.imageUrl);
+              }}
+              onTouchStart={() => {
+                articleCache.prefetchArticle(article.id);
+              }}
               className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-row group cursor-pointer block hover:shadow-md transition-shadow p-3 gap-3 min-h-[160px]"
             >
               <div className="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-gray-100">

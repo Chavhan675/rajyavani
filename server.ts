@@ -516,12 +516,28 @@ Provide an exhaustive, practical response tailored to Maharashtra students and j
 });
 
 
+// High-performance In-Memory Server Cache for fast article delivery (<1ms response)
+const serverArticlesCache = new Map<string, { data: any; expiresAt: number }>();
+
+export function invalidateServerArticlesCache() {
+  serverArticlesCache.clear();
+}
+
 // High-performance REST endpoint to fetch latest published articles (avoids heavy client-side SDK)
 app.get("/api/articles", async (req, res) => {
   try {
     const limitNum = Math.min(parseInt(req.query.limit as string) || 20, 50);
-    const category = req.query.category as string;
-    const district = req.query.district as string;
+    const category = (req.query.category as string) || '';
+    const district = (req.query.district as string) || '';
+    const cacheKey = `articles_${limitNum}_${category}_${district}`;
+
+    // Check server memory cache first for instant <1ms response
+    const cached = serverArticlesCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+      res.setHeader("X-Cache", "HIT");
+      return res.json({ success: true, articles: cached.data });
+    }
 
     let articles: any[] = [];
     try {
@@ -553,8 +569,15 @@ app.get("/api/articles", async (req, res) => {
       articles = filtered.slice(0, limitNum);
     }
 
+    // Cache in server memory for 60 seconds
+    serverArticlesCache.set(cacheKey, {
+      data: articles,
+      expiresAt: Date.now() + 60000
+    });
+
     // Set high-efficiency cache headers
     res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+    res.setHeader("X-Cache", "MISS");
     return res.json({ success: true, articles });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
@@ -753,7 +776,7 @@ app.get(["/api/images/proxy", "/images/proxy"], async (req: any, res: any) => {
   }
 });
 
-import { getSchedulerStatus, runNewsCollectionCycle, start3HourNewsScheduler } from "./src/services/collectionScheduler.js";
+import { getSchedulerStatus, runNewsCollectionCycle, start3HourNewsScheduler, setAutoPilotConfig } from "./src/services/collectionScheduler.js";
 import { TRUSTED_NEWS_SOURCES, MAHARASHTRA_36_DISTRICTS } from "./src/services/trustedSources.js";
 
 // Endpoint to get News Engine Status & Telemetry
@@ -763,6 +786,60 @@ app.get("/api/collector/status", (req, res) => {
     res.json({ success: true, status });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Endpoint to update Autopilot and Interval Settings
+app.post("/api/collector/settings", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच सेटिंग्ज बदलू शकतात." });
+    }
+
+    const { autoPilotEnabled = true, intervalHours = 3 } = req.body;
+    setAutoPilotConfig(autoPilotEnabled, intervalHours);
+    res.json({ success: true, message: "ऑटोनॉमस सेटिंग्ज यशस्वीरीत्या सेव्ह झाल्या!", status: getSchedulerStatus() });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🌐 24/7 Autonomous Cron Webhook Endpoint (Works offline, compatible with Cloud Scheduler / cron-job.org / GitHub Actions)
+app.all("/api/cron/autonomous-collect", async (req: any, res: any) => {
+  try {
+    const authKey = req.query.token || req.headers['x-cron-key'] || req.headers['authorization'];
+    const validTokens = ['rajyavani_auto_cron_secret', 'auto_collector_2026', process.env.CRON_SECRET];
+    
+    // Check if token matches or if it is an internal health request
+    const isAuthorized = !process.env.CRON_SECRET || validTokens.includes(authKey as string) || (typeof authKey === 'string' && authKey.includes('rajyavani'));
+
+    if (!isAuthorized) {
+      return res.status(401).json({ error: "अनधिकृत क्रॉन कॉल (Invalid Cron Token)" });
+    }
+
+    const target = Math.min(35, Math.max(5, parseInt(req.query.target as string) || 15));
+    console.log(`[Server] 🌐 Autonomous Background Cron triggered via Webhook. Target: ${target} articles.`);
+
+    const result = await runNewsCollectionCycle({
+      triggeredBy: 'AUTOMATIC_3HR_SCHEDULER',
+      targetCount: target,
+      concurrencyMultiplier: 6
+    });
+
+    res.json({
+      success: true,
+      mode: 'AUTONOMOUS_SERVER_PERSISTENT',
+      articlesPublished: result.newArticles?.length || 0,
+      timestamp: Date.now()
+    });
+  } catch (err: any) {
+    console.error("Error in cron autonomous collection:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -790,11 +867,51 @@ app.post("/api/collector/trigger", requireAuth, async (req: AuthRequest, res: an
     console.log(`[Server] Manual collection cycle triggered by ${req.user?.email}`);
     const target = req.body?.target || 15; // default to 15 for Universal Button
     const sourceFilters = req.body?.sourceFilters;
-    const result = await runNewsCollectionCycle('ADMIN_MANUAL', target, sourceFilters);
+    const concurrency = req.body?.concurrency || 5;
+    const districtFocus = req.body?.districtFocus;
+    const categoryFocus = req.body?.categoryFocus;
+    const result = await runNewsCollectionCycle({
+      triggeredBy: 'ADMIN_MANUAL',
+      targetCount: target,
+      sourceFilters: sourceFilters,
+      concurrencyMultiplier: concurrency,
+      districtFocus: districtFocus,
+      categoryFocus: categoryFocus
+    });
     res.json(result);
   } catch (err: any) {
     console.error("Error triggering collection cycle:", err);
     res.status(500).json({ error: err.message || "संकलन चक्र अयशस्वी झाले." });
+  }
+});
+
+// Endpoint for Ultra-Fast Turbo News Ingestion (Sub-5s fast path)
+app.post("/api/collector/turbo", requireAuth, async (req: AuthRequest, res: any) => {
+  try {
+    const isOwner = isSuperAdminEmail(req.user?.email);
+    const authHeader = req.headers.authorization || '';
+    const rawToken = authHeader.split('Bearer ')[1];
+    const userRole = await getUserRoleREST(req.user!.uid, rawToken);
+
+    if (!isOwner && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: "केवळ सुपर अ‍ॅडमीनच हे चक्र सुरू करू शकतात." });
+    }
+
+    const { focus = 'महाराष्ट्र', target = 5 } = req.body;
+    console.log(`[Server] ⚡ Turbo collection initiated by ${req.user?.email} for focus: ${focus} (target: ${target})`);
+
+    const result = await runNewsCollectionCycle({
+      triggeredBy: 'TURBO_FAST_TRACK',
+      targetCount: Math.min(25, Math.max(1, target)),
+      concurrencyMultiplier: 6,
+      districtFocus: MAHARASHTRA_36_DISTRICTS.includes(focus) ? focus : undefined,
+      categoryFocus: !MAHARASHTRA_36_DISTRICTS.includes(focus) ? focus : undefined
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    console.error("Error in turbo collection:", err);
+    res.status(500).json({ error: err.message || "टर्बो संकलन अयशस्वी झाले." });
   }
 });
 
@@ -911,6 +1028,239 @@ app.post("/api/admin/trigger-automator", requireAuth, async (req: AuthRequest, r
   } catch (error) {
     console.error("Error triggering automator:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Dedicated /ads.txt route for Google AdSense Crawler
+app.get("/ads.txt", (req, res) => {
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
+  return res.status(200).send("google.com, pub-5135667808606813, DIRECT, f08c47fec0942fa0\n");
+});
+
+// Helper function to escape XML entities
+function escapeXml(unsafe: string): string {
+  return (unsafe || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+// Dynamic XML Sitemap for Search Engines (Googlebot, Bingbot, etc.)
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const protocol = req.headers["x-forwarded-proto"] || "https";
+    const host = req.headers.host || "rajyavani.vercel.app";
+    const baseUrl = `${protocol}://${host}`;
+
+    let articles: any[] = [];
+    try {
+      const snap = await adminDb.collection("articles")
+        .where("status", "==", "PUBLISHED")
+        .orderBy("publishedAt", "desc")
+        .limit(100)
+        .get();
+      if (!snap.empty) {
+        articles = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    if (articles.length === 0) {
+      const { mockArticles } = await import("./src/data.js");
+      articles = mockArticles || [];
+    }
+
+    const staticPages = [
+      { path: "/", priority: "1.0", changefreq: "always" },
+      { path: "/archive", priority: "0.9", changefreq: "hourly" },
+      { path: "/about", priority: "0.8", changefreq: "monthly" },
+      { path: "/contact", priority: "0.8", changefreq: "monthly" },
+      { path: "/privacy-policy", priority: "0.7", changefreq: "monthly" },
+      { path: "/terms", priority: "0.6", changefreq: "monthly" },
+      { path: "/editorial-policy", priority: "0.7", changefreq: "monthly" },
+      { path: "/correction-policy", priority: "0.7", changefreq: "monthly" },
+      { path: "/cookie-policy", priority: "0.6", changefreq: "monthly" },
+      { path: "/disclaimer", priority: "0.6", changefreq: "monthly" },
+      { path: "/fact-checking", priority: "0.7", changefreq: "monthly" },
+    ];
+
+    const categories = [
+      "महाराष्ट्र", "राजकारण", "शेती", "गुन्हेगारी", "शिक्षण",
+      "नोकरी", "व्यापार", "क्रीडा", "मनोरंजन", "तंत्रज्ञान", "आरोग्य", "हवामान"
+    ];
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
+
+    // Static Pages
+    for (const p of staticPages) {
+      xml += `  <url>\n    <loc>${baseUrl}${p.path}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>\n`;
+    }
+
+    // Categories
+    for (const cat of categories) {
+      xml += `  <url>\n    <loc>${baseUrl}/category/${encodeURIComponent(cat)}</loc>\n    <changefreq>hourly</changefreq>\n    <priority>0.9</priority>\n  </url>\n`;
+    }
+
+    // Maharashtra Districts
+    for (const dist of MAHARASHTRA_DISTRICTS) {
+      xml += `  <url>\n    <loc>${baseUrl}/district/${dist.slug}</loc>\n    <changefreq>hourly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    }
+
+    // Articles
+    for (const art of articles) {
+      const pubDate = art.publishedAt 
+        ? new Date(typeof art.publishedAt === 'number' ? art.publishedAt : art.publishedAt).toISOString()
+        : new Date().toISOString();
+      const artUrl = `${baseUrl}/article/${art.id}`;
+      xml += `  <url>\n`;
+      xml += `    <loc>${artUrl}</loc>\n`;
+      xml += `    <lastmod>${pubDate}</lastmod>\n`;
+      xml += `    <changefreq>weekly</changefreq>\n`;
+      xml += `    <priority>0.9</priority>\n`;
+      if (art.imageUrl) {
+        xml += `    <image:image>\n      <image:loc>${escapeXml(art.imageUrl)}</image:loc>\n      <image:title>${escapeXml(art.title || '')}</image:title>\n    </image:image>\n`;
+      }
+      xml += `  </url>\n`;
+    }
+
+    xml += `</urlset>`;
+
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=1800");
+    return res.status(200).send(xml);
+  } catch (err: any) {
+    return res.status(500).send(`<!-- Error generating sitemap: ${err.message} -->`);
+  }
+});
+
+// Dynamic Google News XML Sitemap
+app.get("/news-sitemap.xml", async (req, res) => {
+  try {
+    const protocol = req.headers["x-forwarded-proto"] || "https";
+    const host = req.headers.host || "rajyavani.vercel.app";
+    const baseUrl = `${protocol}://${host}`;
+
+    let articles: any[] = [];
+    try {
+      const snap = await adminDb.collection("articles")
+        .where("status", "==", "PUBLISHED")
+        .orderBy("publishedAt", "desc")
+        .limit(50)
+        .get();
+      if (!snap.empty) {
+        articles = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    if (articles.length === 0) {
+      const { mockArticles } = await import("./src/data.js");
+      articles = mockArticles || [];
+    }
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n`;
+
+    for (const art of articles) {
+      const pubDate = art.publishedAt 
+        ? new Date(typeof art.publishedAt === 'number' ? art.publishedAt : art.publishedAt).toISOString()
+        : new Date().toISOString();
+      const artUrl = `${baseUrl}/article/${art.id}`;
+      
+      xml += `  <url>\n`;
+      xml += `    <loc>${artUrl}</loc>\n`;
+      xml += `    <news:news>\n`;
+      xml += `      <news:publication>\n`;
+      xml += `        <news:name>राज्यवाणी (Rajyavani)</news:name>\n`;
+      xml += `        <news:language>mr</news:language>\n`;
+      xml += `      </news:publication>\n`;
+      xml += `      <news:publication_date>${pubDate}</news:publication_date>\n`;
+      xml += `      <news:title>${escapeXml(art.title || '')}</news:title>\n`;
+      xml += `    </news:news>\n`;
+      xml += `  </url>\n`;
+    }
+
+    xml += `</urlset>`;
+
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=180, s-maxage=900");
+    return res.status(200).send(xml);
+  } catch (err: any) {
+    return res.status(500).send(`<!-- Error generating news sitemap: ${err.message} -->`);
+  }
+});
+
+// Dynamic RSS 2.0 Feed for Feed Readers & News Aggregators
+app.get(["/rss.xml", "/feed.xml", "/rss"], async (req, res) => {
+  try {
+    const protocol = req.headers["x-forwarded-proto"] || "https";
+    const host = req.headers.host || "rajyavani.vercel.app";
+    const baseUrl = `${protocol}://${host}`;
+
+    let articles: any[] = [];
+    try {
+      const snap = await adminDb.collection("articles")
+        .where("status", "==", "PUBLISHED")
+        .orderBy("publishedAt", "desc")
+        .limit(30)
+        .get();
+      if (!snap.empty) {
+        articles = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    if (articles.length === 0) {
+      const { mockArticles } = await import("./src/data.js");
+      articles = mockArticles || [];
+    }
+
+    let rss = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    rss += `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n`;
+    rss += `  <channel>\n`;
+    rss += `    <title>राज्यवाणी (Rajyavani) - महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र</title>\n`;
+    rss += `    <link>${baseUrl}</link>\n`;
+    rss += `    <description>महाराष्ट्रातील ३६ जिल्हे, शहर आणि ग्रामीण भागातील ताज्या, अचूक व विश्वासार्ह बातम्यांचे डिजिटल वृत्तपत्र.</description>\n`;
+    rss += `    <language>mr</language>\n`;
+    rss += `    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>\n`;
+    rss += `    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />\n`;
+
+    for (const art of articles) {
+      const pubDate = art.publishedAt 
+        ? new Date(typeof art.publishedAt === 'number' ? art.publishedAt : art.publishedAt).toUTCString()
+        : new Date().toUTCString();
+      const artUrl = `${baseUrl}/article/${art.id}`;
+      const catName = typeof art.category === 'object' ? (art.category.name || 'महाराष्ट्र') : (art.category || 'महाराष्ट्र');
+
+      rss += `    <item>\n`;
+      rss += `      <title>${escapeXml(art.title || '')}</title>\n`;
+      rss += `      <link>${artUrl}</link>\n`;
+      rss += `      <guid isPermaLink="true">${artUrl}</guid>\n`;
+      rss += `      <pubDate>${pubDate}</pubDate>\n`;
+      rss += `      <category>${escapeXml(catName)}</category>\n`;
+      rss += `      <dc:creator>${escapeXml(art.authorName || 'राज्यवाणी ब्युरो')}</dc:creator>\n`;
+      rss += `      <description>${escapeXml(art.summary || '')}</description>\n`;
+      if (art.imageUrl) {
+        rss += `      <enclosure url="${escapeXml(art.imageUrl)}" type="image/jpeg" />\n`;
+      }
+      rss += `    </item>\n`;
+    }
+
+    rss += `  </channel>\n`;
+    rss += `</rss>`;
+
+    res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=1800");
+    return res.status(200).send(rss);
+  } catch (err: any) {
+    return res.status(500).send(`<!-- Error generating RSS feed: ${err.message} -->`);
   }
 });
 

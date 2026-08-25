@@ -9,6 +9,7 @@ import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
 import { MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SEO from "../components/SEO";
+import { articleCache } from "../lib/cacheStore";
 
 // Lazy load below-the-fold components to minimize main-thread execution & unused JS
 const DistrictExplorer = lazy(() => import("../components/DistrictExplorer"));
@@ -18,11 +19,16 @@ const CACHE_KEY = 'rajyavani_homepage_cache_v2';
 
 export default function HomePage() {
   const [dbArticles, setDbArticles] = useState<any[]>(() => {
+    // 0ms instant load from memory cache or localStorage
+    const mem = articleCache.get<any[]>('homepage_articles');
+    if (mem && Array.isArray(mem) && mem.length > 0) return mem;
+
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          articleCache.set('homepage_articles', parsed);
           return parsed;
         }
       }
@@ -73,8 +79,29 @@ export default function HomePage() {
         tags: item.tags || []
       });
 
+      // 1. Fast server endpoint first (takes <2ms from memory cache)
       try {
-        // 1. First attempt direct Firestore query via client SDK (works everywhere: Vercel, Cloud Run, Firebase)
+        const res = await fetch('/api/articles?limit=20');
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.success && Array.isArray(data.articles) && data.articles.length > 0) {
+            const mapped = data.articles.map(mapItem);
+            setDbArticles(mapped);
+            articleCache.set('homepage_articles', mapped);
+            mapped.forEach(a => {
+              if (a.id) articleCache.set(`article_${a.id}`, a);
+              if (a.imageUrl) articleCache.prefetchImage(a.imageUrl);
+            });
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
+            } catch {}
+            return;
+          }
+        }
+      } catch {}
+
+      // 2. Direct Firestore fallback
+      try {
         const { collection, query, where, orderBy, limit, getDocs } = await import("firebase/firestore");
         const { db } = await import("../lib/firebase");
         
@@ -93,51 +120,24 @@ export default function HomePage() {
           const mapped = fetched.map(mapItem);
           if (mapped.length > 0) {
             setDbArticles(mapped);
-            try {
-              localStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
-            } catch {}
-            return;
-          }
-        }
-      } catch {
-        // Continue to fallback if Firestore query has an index/permission issue
-      }
-
-      // 2. Fallback to API if available (handles local/server environments)
-      try {
-        const res = await fetch('/api/articles?limit=20');
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.success && Array.isArray(data.articles) && data.articles.length > 0) {
-            const mapped = data.articles.map(mapItem);
-            setDbArticles(mapped);
+            articleCache.set('homepage_articles', mapped);
+            mapped.forEach(a => {
+              if (a.id) articleCache.set(`article_${a.id}`, a);
+              if (a.imageUrl) articleCache.prefetchImage(a.imageUrl);
+            });
             try {
               localStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
             } catch {}
           }
         }
-      } catch {
-        // Gracefully ignore network errors and rely on cached or mock articles
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+      } catch {}
     };
     
-    const isSynthetic = typeof navigator !== 'undefined' && /Lighthouse|PageSpeed|GTmetrix|Chrome-Lighthouse|Googlebot|bot|crawler/i.test(navigator.userAgent || '');
-    if (isSynthetic) return;
-
-    // Fetch in idle callback to avoid blocking initial interactivity & layout paints
-    const timer = setTimeout(() => {
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(fetchArticles, { timeout: 6000 });
-      } else {
-        fetchArticles();
-      }
-    }, 2500);
+    // Immediate background fetch with no artificial delays
+    fetchArticles();
 
     return () => {
       isMounted = false;
-      clearTimeout(timer);
     };
   }, []);
 

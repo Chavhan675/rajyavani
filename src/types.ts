@@ -65,7 +65,7 @@ export interface CollectionCycle {
   nationalCount: number;
   districtCoverage: Record<string, number>;
   cycleScheduledTime?: string;
-  triggeredBy: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL';
+  triggeredBy: 'AUTOMATIC_3HR_SCHEDULER' | 'ADMIN_MANUAL' | 'TURBO_FAST_TRACK';
   errors?: string[];
   logNotes?: string[];
 }

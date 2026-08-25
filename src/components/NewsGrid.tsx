@@ -5,6 +5,7 @@ import { formatMarathiTime } from "../lib/formatTime";
 import Image from "./Image";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
+import { articleCache } from "../lib/cacheStore";
 
 interface NewsGridProps {
   title: string;
@@ -85,6 +86,13 @@ export default function NewsGrid({ title, articles, loading = false, skeletonCou
           <Link 
             to={`/article/${article.id}`} 
             key={article.id} 
+            onMouseEnter={() => {
+              articleCache.prefetchArticle(article.id);
+              if (article.imageUrl) articleCache.prefetchImage(article.imageUrl);
+            }}
+            onTouchStart={() => {
+              articleCache.prefetchArticle(article.id);
+            }}
             style={{ contain: 'layout paint' }}
             className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group cursor-pointer flex flex-col transition-all hover:shadow-md hover:-translate-y-1 block"
           >

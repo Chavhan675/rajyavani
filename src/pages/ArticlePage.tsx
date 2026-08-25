@@ -12,19 +12,31 @@ import { getCategoryFallbackImage } from '../lib/defaultImages';
 import { MapPin, Clock, User, Tag, Share2, AlertTriangle, Loader2, ChevronRight, Home, Sparkles, Newspaper, Bookmark, Trash2 } from 'lucide-react';
 import BookmarkButton from '../components/BookmarkButton';
 import FloatingShareButton from '../components/FloatingShareButton';
+import MarathiAudioPlayer from '../components/MarathiAudioPlayer';
+import ArticlePowerTools from '../components/ArticlePowerTools';
 import { formatMarathiFullDate, formatMarathiDateOnly } from '../lib/formatTime';
 import { useAuth } from '../lib/AuthContext';
+import { articleCache } from '../lib/cacheStore';
 
 export default function ArticlePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isSuperAdmin } = useAuth();
-  const [article, setArticle] = useState<any>(null);
+  
+  // Instant 0ms memory initialization
+  const [article, setArticle] = useState<any>(() => {
+    if (!id) return null;
+    return articleCache.get<any>(`article_${id}`) || null;
+  });
   const [relatedArticles, setRelatedArticles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    if (!id) return true;
+    return !articleCache.has(`article_${id}`);
+  });
   const [error, setError] = useState('');
   const [isExpanding, setIsExpanding] = useState(false);
   const [expandError, setExpandError] = useState<string | null>(null);
+  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this news article?")) {
@@ -43,13 +55,12 @@ export default function ArticlePage() {
     const fetchArticle = async () => {
       try {
         if (!id) return;
-        setLoading(true);
         setError('');
 
         // 1. Check local mock articles first if ID matches
         const mockMatch = mockArticles.find(m => m.id === id);
         if (mockMatch) {
-          setArticle({
+          const formatted = {
             ...mockMatch,
             category: typeof mockMatch.category === 'object' ? mockMatch.category.name : mockMatch.category,
             district: mockMatch.location?.district,
@@ -59,7 +70,9 @@ export default function ArticlePage() {
             isDeveloping: mockMatch.isBreaking,
             publishedAt: new Date(mockMatch.publishedAt).getTime(),
             updatedAt: mockMatch.lastUpdated ? new Date(mockMatch.lastUpdated).getTime() : undefined,
-          });
+          };
+          setArticle(formatted);
+          articleCache.set(`article_${id}`, formatted);
 
           const related = mockArticles.filter(m => m.id !== id).slice(0, 3).map(m => ({
             ...m,
@@ -72,14 +85,23 @@ export default function ArticlePage() {
           return;
         }
 
+        // 2. Check memory cache first
+        const cached = articleCache.get<any>(`article_${id}`);
+        if (cached) {
+          setArticle(cached);
+          setLoading(false);
+        }
+
         const docRef = doc(db, 'articles', id);
         
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().status === 'PUBLISHED') {
           const currentData: any = { id: docSnap.id, ...docSnap.data() };
           setArticle(currentData);
+          articleCache.set(`article_${id}`, currentData);
+          setLoading(false);
 
-          // Fetch Related Articles in the same category
+          // Fetch Related Articles in the same category asynchronously
           try {
             const relatedQuery = query(
               collection(db, 'articles'),
@@ -93,15 +115,21 @@ export default function ArticlePage() {
               .filter(a => a.id !== docSnap.id)
               .slice(0, 3);
             setRelatedArticles(relatedList);
+            relatedList.forEach(r => {
+              if (r.id) articleCache.set(`article_${r.id}`, r);
+            });
           } catch (rErr) {
             console.warn('Could not fetch related articles', rErr);
           }
-        } else {
+        } else if (!cached) {
           setError('बातमी आढळली नाही किंवा अजून प्रसिद्ध झालेली नाही.');
+          setLoading(false);
         }
       } catch (err) {
         console.error(err);
-        setError('बातमी लोड करण्यात अडचण आली.');
+        if (!article) {
+          setError('बातमी लोड करण्यात अडचण आली.');
+        }
       } finally {
         setLoading(false);
       }
@@ -401,6 +429,24 @@ export default function ArticlePage() {
           </button>
         </div>
 
+        {/* Marathi AI Audio News Player */}
+        <MarathiAudioPlayer 
+          title={article.title}
+          summary={article.summary}
+          content={article.content}
+        />
+
+        {/* Reader Power Tools: Stats, 3 Key Takeaways, Font Scaling, Offline Save */}
+        <ArticlePowerTools 
+          articleId={article.id || id || ''}
+          title={article.title}
+          summary={article.summary || ''}
+          content={article.content || ''}
+          category={article.category || 'महाराष्ट्र'}
+          fontSize={fontSize}
+          setFontSize={setFontSize}
+        />
+
         {/* Mid-Article High Visibility Ad Placement */}
         <AdUnit 
           format="in-article" 
@@ -411,7 +457,13 @@ export default function ArticlePage() {
 
         {/* Article Editorial Body */}
         <article 
-          className="article-editorial-content mb-8 text-gray-900" 
+          className={`article-editorial-content mb-8 text-gray-900 ${
+            fontSize === 'large' 
+              ? 'text-lg leading-loose font-normal' 
+              : fontSize === 'xlarge' 
+              ? 'text-xl leading-loose font-medium' 
+              : 'text-base leading-relaxed'
+          }`} 
           dangerouslySetInnerHTML={{ __html: article.content }} 
         />
 

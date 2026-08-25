@@ -36,6 +36,8 @@ import {
   Home
 } from 'lucide-react';
 
+import { articleCache } from '../lib/cacheStore';
+
 export default function DistrictPage() {
   const { slug, name } = useParams<{ slug?: string; name?: string }>();
   const navigate = useNavigate();
@@ -43,8 +45,13 @@ export default function DistrictPage() {
   const districtIdentifier = slug || name || '';
   const currentDistrict = getDistrictBySlug(districtIdentifier) || getDistrictByName(districtIdentifier) || MAHARASHTRA_DISTRICTS[0];
 
-  const [articles, setArticles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 0ms instant cache initialization
+  const [articles, setArticles] = useState<any[]>(() => {
+    return articleCache.get<any[]>(`district_${currentDistrict.slug}`) || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    return !articleCache.has(`district_${currentDistrict.slug}`);
+  });
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [activeDivision, setActiveDivision] = useState<string>('all');
@@ -57,15 +64,59 @@ export default function DistrictPage() {
   useEffect(() => {
     setSelectedTaluka('ALL');
     setVillageSearch('');
+    const cached = articleCache.get<any[]>(`district_${currentDistrict.slug}`);
+    if (cached) {
+      setArticles(cached);
+      setLoading(false);
+    }
   }, [currentDistrict.slug]);
 
   const fetchDistrictArticles = async () => {
-    setLoading(true);
     try {
-      // Query articles for this district
-      // We check multiple aliases of this district
       const targetAliases = currentDistrict.aliases;
-      
+
+      // 1. Try fast cached API endpoint first
+      try {
+        const res = await fetch(`/api/articles?district=${encodeURIComponent(currentDistrict.nameMarathi)}&limit=30`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.articles) && data.articles.length > 0) {
+            const mapped = data.articles.map((item: any) => ({
+              id: item.id,
+              title: item.title,
+              summary: item.summary,
+              content: item.content,
+              imageUrl: item.imageUrl || null,
+              imagePrompt: item.imagePrompt,
+              imageAlt: item.imageAlt || item.title,
+              category: item.category || 'महाराष्ट्र',
+              author: item.authorName || 'जिल्हा विशेष प्रतिनिधी',
+              authorAvatar: item.authorAvatar,
+              publishedAt: new Date(item.publishedAt || Date.now()).toISOString(),
+              lastUpdated: item.updatedAt ? new Date(item.updatedAt).toISOString() : null,
+              readTime: '4 min read',
+              isBreaking: item.isDeveloping || false,
+              aiGenerated: item.aiGenerated || false,
+              location: {
+                state: 'महाराष्ट्र',
+                district: item.district || currentDistrict.nameMarathi,
+                taluka: item.taluka || '',
+                village: item.village || ''
+              },
+              tags: item.tags || []
+            }));
+            setArticles(mapped);
+            articleCache.set(`district_${currentDistrict.slug}`, mapped);
+            mapped.forEach(a => {
+              if (a.id) articleCache.set(`article_${a.id}`, a);
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {}
+
+      // 2. Direct Firestore fallback
       const q = query(
         collection(db, 'articles'),
         where('status', '==', 'PUBLISHED')
@@ -124,18 +175,35 @@ export default function DistrictPage() {
             return mDist.includes(norm) || mText.includes(norm);
           });
         });
-        setArticles(matchingMocks);
+
+        const formattedMocks = (matchingMocks.length > 0 ? matchingMocks : mockArticles.slice(0, 4)).map(m => ({
+          ...m,
+          category: typeof m.category === 'object' ? m.category.name : m.category,
+          author: m.author,
+          location: {
+            ...m.location,
+            district: currentDistrict.nameMarathi
+          }
+        }));
+        setArticles(formattedMocks);
+        articleCache.set(`district_${currentDistrict.slug}`, formattedMocks);
       } else {
         setArticles(mapped);
+        articleCache.set(`district_${currentDistrict.slug}`, mapped);
+        mapped.forEach(a => {
+          if (a.id) articleCache.set(`article_${a.id}`, a);
+        });
       }
-    } catch (e) {
-      console.error('Error fetching district articles:', e);
-      // Fallback to mock articles matching district
-      const matchingMocks = mockArticles.filter(m => {
-        const mDist = (m.location.district || '').toLowerCase();
-        return currentDistrict.aliases.some(alias => mDist.includes(alias.toLowerCase()));
-      });
-      setArticles(matchingMocks);
+    } catch (err) {
+      console.error(err);
+      if (articles.length === 0) {
+        setArticles(mockArticles.slice(0, 4).map(m => ({
+          ...m,
+          category: typeof m.category === 'object' ? m.category.name : m.category,
+          author: m.author,
+          location: { ...m.location, district: currentDistrict.nameMarathi }
+        })));
+      }
     } finally {
       setLoading(false);
     }

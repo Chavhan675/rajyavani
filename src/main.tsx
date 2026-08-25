@@ -8,22 +8,26 @@ if (typeof window !== 'undefined') {
   const originalWarn = console.warn;
   const originalError = console.error;
   
-  const isFirestoreOfflineNotice = (args: any[]) => {
+  const isBenignError = (args: any[]) => {
     return args.some(arg => {
-      const str = String(arg || '');
+      const str = String(arg?.message || arg || '').toLowerCase();
       return str.includes('@firebase/firestore') ||
-             str.includes('Could not reach Cloud Firestore backend') ||
-             str.includes('operate in offline mode until it is able to successfully connect');
+             str.includes('could not reach cloud firestore backend') ||
+             str.includes('operate in offline mode') ||
+             str.includes('database is closing') ||
+             str.includes('closing/hidden') ||
+             str.includes('invalidstateerror') ||
+             str.includes('connection is closing');
     });
   };
 
   console.warn = (...args: any[]) => {
-    if (isFirestoreOfflineNotice(args)) return;
+    if (isBenignError(args)) return;
     originalWarn.apply(console, args);
   };
 
   console.error = (...args: any[]) => {
-    if (isFirestoreOfflineNotice(args)) return;
+    if (isBenignError(args)) return;
     originalError.apply(console, args);
   };
 

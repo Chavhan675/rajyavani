@@ -111,23 +111,46 @@ export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, width, height);
 
-      // Top Brand Bar (Saffron to Red Gradient)
+      // Top Brand Bar (Royal Crimson with Gold Border)
       const grad = ctx.createLinearGradient(0, 0, width, 0);
-      grad.addColorStop(0, '#E63946');
-      grad.addColorStop(0.5, '#F77F00');
-      grad.addColorStop(1, '#D90429');
+      grad.addColorStop(0, '#991B1B');
+      grad.addColorStop(0.3, '#DC2626');
+      grad.addColorStop(0.7, '#EA580C');
+      grad.addColorStop(1, '#D97706');
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, 70);
+      ctx.fillRect(0, 0, width, 76);
+
+      // Gold Accent Line
+      ctx.fillStyle = '#F59E0B';
+      ctx.fillRect(0, 72, width, 4);
+
+      // Draw Logo Emblem Badge on Header
+      ctx.fillStyle = '#7F1D1D';
+      ctx.beginPath();
+      ctx.arc(68, 38, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#FDE68A';
+      ctx.stroke();
+
+      // Devanagari 'रा' inside Emblem
+      ctx.fillStyle = '#FEF3C7';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('रा', 68, 45);
+      ctx.textAlign = 'left';
 
       // Header Brand Text
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 32px sans-serif';
-      ctx.fillText('राज्यवाणी', 40, 48);
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText('राज्यवाणी', 105, 48);
 
-      ctx.font = '18px sans-serif';
-      ctx.fillText('RAJYAVANI.COM | महाराष्ट्राचे विश्वसनीय डिजिटल वृत्तपत्र', 180, 46);
+      ctx.fillStyle = '#FEF3C7';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('DIGITAL NEWS NETWORK | महाराष्ट्राचा बुलंद आवाज', 255, 46);
 
       // Date / Category Badge in header
+      ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'right';
       ctx.fillText(category.toUpperCase(), width - 40, 46);
@@ -238,12 +261,31 @@ export const FloatingShareButton: React.FC<FloatingShareButtonProps> = ({
 
             ctx.drawImage(img, sx, sy, sWidth, sHeight, imgX, imgY, imgWidth, imgHeight);
 
-            // Watermark logo on image corner
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-            ctx.fillRect(imgX + imgWidth - 140, imgY + imgHeight - 38, 130, 30);
+            // Beautiful Pill Watermark on image corner
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.beginPath();
+            ctx.roundRect(imgX + imgWidth - 170, imgY + imgHeight - 44, 155, 34, 17);
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#F59E0B';
+            ctx.stroke();
+
+            // Small red circle with gold dot
+            ctx.fillStyle = '#DC2626';
+            ctx.beginPath();
+            ctx.arc(imgX + imgWidth - 152, imgY + imgHeight - 27, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FEF3C7';
+            ctx.beginPath();
+            ctx.arc(imgX + imgWidth - 152, imgY + imgHeight - 27, 3, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 14px sans-serif';
-            ctx.fillText('राज्यवाणी News', imgX + imgWidth - 130, imgY + imgHeight - 18);
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText('राज्यवाणी', imgX + imgWidth - 138, imgY + imgHeight - 23);
+            ctx.fillStyle = '#FBBF24';
+            ctx.font = '9px sans-serif';
+            ctx.fillText('• VERIFIED', imgX + imgWidth - 85, imgY + imgHeight - 23);
           } catch (e) {
             console.warn('Canvas draw image error', e);
           }

@@ -97,8 +97,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userAgent: typeof window !== 'undefined' ? window.navigator.userAgent.substring(0, 300) : '',
         timestamp: Date.now()
       });
-    } catch (e) {
-      console.warn("Audit logging non-fatal error:", e);
+    } catch (e: any) {
+      const msg = String(e?.message || e || '');
+      if (!msg.toLowerCase().includes('database is closing') &&
+          !msg.toLowerCase().includes('closing/hidden') &&
+          !msg.toLowerCase().includes('invalidstateerror')) {
+        console.warn("Audit logging non-fatal:", e);
+      }
     }
   };
 
@@ -501,24 +506,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       if (user) {
-        await logAuthActivity({
+        // Fire-and-forget audit activity
+        logAuthActivity({
           userId: user.uid,
           email: user.email || '',
           action: 'LOGOUT',
           method: 'PASSWORD',
           success: true
-        });
+        }).catch(() => {});
       }
-      const { auth } = await import('./firebase');
-      const { signOut: firebaseSignOut } = await import('firebase/auth');
-      await firebaseSignOut(auth);
+
+      // Reset client state immediately
+      setUser(null);
+      setUserRole(null);
+      setBookmarks([]);
       try {
         localStorage.removeItem('rajyavani_user_session');
       } catch {}
       setProfileModalOpen(false);
       setBookmarksModalOpen(false);
-    } catch (error) {
-      console.error("Error signing out", error);
+
+      const { auth } = await import('./firebase');
+      const { signOut: firebaseSignOut } = await import('firebase/auth');
+      await firebaseSignOut(auth).catch((authErr: any) => {
+        const msg = String(authErr?.message || authErr || '');
+        if (!msg.toLowerCase().includes('database is closing') && 
+            !msg.toLowerCase().includes('closing/hidden') &&
+            !msg.toLowerCase().includes('invalidstateerror')) {
+          console.warn("Auth signout warning:", authErr);
+        }
+      });
+    } catch (error: any) {
+      const msg = String(error?.message || error || '');
+      if (!msg.toLowerCase().includes('database is closing') && 
+          !msg.toLowerCase().includes('closing/hidden') &&
+          !msg.toLowerCase().includes('invalidstateerror')) {
+        console.warn("Sign out encountered:", error);
+      }
     }
   };
 

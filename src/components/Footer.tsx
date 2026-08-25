@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, ChevronRight } from "lucide-react";
+import Logo from "./Logo";
 import { MAHARASHTRA_DISTRICTS } from "../data/maharashtraDistricts";
 
 export default function Footer() {
@@ -13,19 +14,7 @@ export default function Footer() {
           
           {/* Brand & About Column (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
-            <Link to="/" className="flex items-center space-x-2 mb-4 p-1 -ml-1 rounded-lg hover:opacity-95 transition-opacity">
-              <div className="h-10 w-10 bg-gradient-to-br from-brand-red to-brand-saffron rounded-full flex items-center justify-center shadow-md border border-white/20 shrink-0">
-                <span className="text-white font-bold text-xl">रा</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-extrabold text-white tracking-tight" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                  राज्यवाणी
-                </span>
-                <span className="text-[10px] text-gray-200 font-semibold tracking-widest uppercase">
-                  महाराष्ट्राचा बुलंद डिजिटल आवाज
-                </span>
-              </div>
-            </Link>
+            <Logo variant="footer" className="mb-4" />
             
             <p className="text-gray-200 text-xs sm:text-sm leading-relaxed font-normal">
               राज्यवाणी हे महाराष्ट्राचे आघाडीचे स्वतंत्र डिजिटल वृत्तपत्र आहे. गाव, तालुका, जिल्हा ते राज्यभरातील प्रत्येक घडामोडीची सविस्तर, पडताळलेली आणि निष्पक्ष बातमी वाचकांपर्यंत पोहोचवणे हे आमचे ध्येय आहे.
@@ -129,17 +118,30 @@ export default function Footer() {
                 { name: "दुरुस्ती धोरण (Correction Policy)", path: "/correction-policy" },
                 { name: "कुकी धोरण (Cookie Policy)", path: "/cookie-policy" },
                 { name: "अस्वीकरण (Disclaimer)", path: "/disclaimer" },
+                { name: "साइटमॅप (XML Sitemap)", path: "/sitemap.xml", isExternal: true },
               ].map((policy) => (
                 <li key={policy.path}>
-                  <Link 
-                    to={policy.path} 
-                    className="text-gray-200 hover:text-white transition-colors flex items-center space-x-2 py-2 px-2 rounded-lg hover:bg-white/10 min-h-[44px]"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5 text-brand-red shrink-0" />
-                    <span className={policy.isHighlight ? "font-bold text-amber-400 truncate" : "truncate"}>
-                      {policy.name}
-                    </span>
-                  </Link>
+                  {policy.isExternal ? (
+                    <a 
+                      href={policy.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-200 hover:text-white transition-colors flex items-center space-x-2 py-2 px-2 rounded-lg hover:bg-white/10 min-h-[44px]"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 text-brand-red shrink-0" />
+                      <span className="truncate">{policy.name}</span>
+                    </a>
+                  ) : (
+                    <Link 
+                      to={policy.path} 
+                      className="text-gray-200 hover:text-white transition-colors flex items-center space-x-2 py-2 px-2 rounded-lg hover:bg-white/10 min-h-[44px]"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 text-brand-red shrink-0" />
+                      <span className={policy.isHighlight ? "font-bold text-amber-400 truncate" : "truncate"}>
+                        {policy.name}
+                      </span>
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -174,6 +176,7 @@ export default function Footer() {
             <Link to="/editorial-policy" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Editorial Policy</Link>
             <Link to="/correction-policy" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Correction Policy</Link>
             <Link to="/cookie-policy" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-white rounded-md hover:bg-white/10 transition-colors">Cookie Policy</Link>
+            <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="px-2.5 py-2 min-h-[44px] inline-flex items-center hover:text-amber-400 rounded-md hover:bg-white/10 transition-colors font-medium">Sitemap (XML)</a>
           </div>
         </div>
 
