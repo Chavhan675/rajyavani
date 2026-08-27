@@ -2,6 +2,7 @@ import React from 'react';
 import { ExternalLink, Sparkles, Megaphone, ArrowUpRight, Flame, ShieldCheck, Newspaper, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Image from './Image';
+import { monetagManager } from '../lib/monetagAds';
 
 export interface AdUnitProps {
   format?: 'horizontal' | 'rectangle' | 'vertical' | 'in-article' | 'billboard';
@@ -20,6 +21,9 @@ export default function AdUnit({
   subtitle,
   article
 }: AdUnitProps) {
+  const monetagConfig = monetagManager.getConfig();
+  const effectiveHref = href || (monetagConfig.enabled && monetagConfig.enableDirectLink ? monetagConfig.directLinkUrl : '/contact');
+  const isExternal = Boolean(effectiveHref && (effectiveHref.startsWith('http://') || effectiveHref.startsWith('https://')));
 
   // 1. In-Article Format
   if (format === 'in-article') {
@@ -98,10 +102,51 @@ export default function AdUnit({
               </div>
             </div>
           </div>
+        ) : isExternal ? (
+          /* Standard Direct Sponsor Banner (External / Monetag Direct Link) */
+          <a
+            href={effectiveHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block relative overflow-hidden rounded-3xl border-2 border-amber-300/90 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-yellow-500/10 p-6 sm:p-8 shadow-md hover:shadow-xl hover:border-amber-500 transition-all duration-300 cursor-pointer backdrop-blur-xs"
+          >
+            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-amber-400/20 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-400/30 transition-all" />
+
+            <div className="relative flex flex-col sm:flex-row items-center justify-between gap-5">
+              <div className="flex items-center gap-4 sm:gap-5 text-center sm:text-left">
+                <div className="relative shrink-0">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <Flame className="w-8 h-8" />
+                  </div>
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-orange-500"></span>
+                  </span>
+                </div>
+
+                <div>
+                  <div className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md mb-1.5">
+                    HIGHLIGHT & OPPORTUNITIES
+                  </div>
+                  <h4 className="text-base sm:text-xl font-black text-slate-900 group-hover:text-amber-900 transition-colors leading-tight">
+                    {title || "विशेष संधी आणि घडामोडी (Exclusive Updates)"}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
+                    {subtitle || "आजच्या सर्वोत्तम संधी, योजना व विशेष माहिती जाणून घेण्यासाठी येथे भेट द्या."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-md group-hover:shadow-lg group-hover:from-amber-700 group-hover:to-orange-700 transition-all duration-300">
+                <span>सविस्तर माहिती</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </a>
         ) : (
           /* Standard Direct Sponsor Banner */
           <Link
-            to={href || "/contact"}
+            to={effectiveHref}
             className="group block relative overflow-hidden rounded-3xl border-2 border-amber-300/90 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-yellow-500/10 p-6 sm:p-8 shadow-md hover:shadow-xl hover:border-amber-500 transition-all duration-300 cursor-pointer backdrop-blur-xs"
           >
             <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-amber-400/20 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-400/30 transition-all" />
@@ -186,9 +231,40 @@ export default function AdUnit({
               </Link>
             </div>
           </div>
+        ) : isExternal ? (
+          <a
+            href={effectiveHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative w-full max-w-[360px] min-h-[300px] bg-gradient-to-b from-white via-amber-50/40 to-orange-50/50 border-2 border-amber-200 hover:border-amber-400 rounded-3xl flex flex-col items-center justify-between p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="px-3 py-1 bg-amber-500 text-white rounded-full text-[10px] font-black tracking-wide shadow-xs">
+                EXCLUSIVE
+              </span>
+              <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
+            </div>
+
+            <div className="my-auto flex flex-col items-center py-2">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center mb-3 shadow-md shadow-amber-500/20 group-hover:scale-110 transition-transform">
+                <Megaphone className="w-8 h-8" />
+              </div>
+              <h4 className="text-base font-black text-slate-900 group-hover:text-amber-800 transition-colors">
+                {title || "विशेष जाहिरात व ताज्या संधी"}
+              </h4>
+              <p className="text-xs text-slate-700 font-medium mt-1.5 max-w-[280px] leading-relaxed">
+                {subtitle || "सर्वोत्कृष्ट संधी, नवीन योजना व माहितीसाठी येथे संपर्क करा"}
+              </p>
+            </div>
+
+            <span className="w-full py-3 px-4 bg-slate-900 group-hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm group-hover:shadow-md">
+              <span>अधिक माहिती</span>
+              <ArrowRight className="w-4 h-4" />
+            </span>
+          </a>
         ) : (
           <Link
-            to={href || "/contact"}
+            to={effectiveHref}
             className="group relative w-full max-w-[360px] min-h-[300px] bg-gradient-to-b from-white via-amber-50/40 to-orange-50/50 border-2 border-amber-200 hover:border-amber-400 rounded-3xl flex flex-col items-center justify-between p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
           >
             <div className="flex items-center justify-between w-full">
@@ -294,10 +370,40 @@ export default function AdUnit({
             )}
           </div>
         </div>
+      ) : isExternal ? (
+        /* Standard Horizontal Ad Unit (External / Monetag Direct Link) */
+        <a
+          href={effectiveHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative w-full min-h-[100px] bg-gradient-to-r from-amber-50/90 via-white to-orange-50/90 hover:from-amber-100 hover:via-amber-50 hover:to-orange-100 border-2 border-amber-200/90 hover:border-amber-400 flex flex-col sm:flex-row items-center justify-between px-6 py-5 overflow-hidden rounded-3xl transition-all duration-300 shadow-sm hover:shadow-lg cursor-pointer gap-4"
+        >
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                <span className="px-2.5 py-0.5 bg-amber-100 text-amber-900 text-[10px] font-black rounded-md">FEATURED HIGHLIGHT</span>
+                <h4 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-amber-900 transition-colors">
+                  {title || "विशेष संधी / Trending Opportunities"}
+                </h4>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-700 font-medium">
+                {subtitle || "सर्वोत्कृष्ट संधी, नवीन योजना व महत्त्वाच्या माहितीसाठी येथे संपर्क करा"}
+              </p>
+            </div>
+          </div>
+
+          <div className="shrink-0 flex items-center gap-1.5 px-5 py-2.5 bg-slate-900 group-hover:bg-amber-600 text-white text-xs font-black rounded-xl shadow-xs group-hover:shadow-md transition-all duration-300">
+            <span>अधिक माहिती</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </a>
       ) : (
         /* Standard Horizontal Ad Unit */
         <Link
-          to={href || "/contact"}
+          to={effectiveHref}
           className="group relative w-full min-h-[100px] bg-gradient-to-r from-amber-50/90 via-white to-orange-50/90 hover:from-amber-100 hover:via-amber-50 hover:to-orange-100 border-2 border-amber-200/90 hover:border-amber-400 flex flex-col sm:flex-row items-center justify-between px-6 py-5 overflow-hidden rounded-3xl transition-all duration-300 shadow-sm hover:shadow-lg cursor-pointer gap-4"
         >
           <div className="flex items-center gap-4 text-center sm:text-left">

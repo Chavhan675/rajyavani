@@ -7,19 +7,27 @@ export interface MonetagConfig {
   enabled: boolean;
   multiTagZoneId: string;
   multiTagScriptUrl: string;
+  pushZoneId: string;
+  pushDomain: string;
+  directLinkUrl: string;
   enableInPagePush: boolean;
   enableVignette: boolean;
   enablePopunder: boolean;
+  enableDirectLink: boolean;
   monetagVerification: string;
 }
 
 export const DEFAULT_MONETAG_CONFIG: MonetagConfig = {
   enabled: true,
-  multiTagZoneId: '88888',
-  multiTagScriptUrl: 'https://alwingulla.com/88/tag.min.js',
+  multiTagZoneId: '272255',
+  multiTagScriptUrl: 'https://quge5.com/88/tag.min.js',
+  pushZoneId: '11630586',
+  pushDomain: '5gvci.com',
+  directLinkUrl: 'https://omg10.com/4/11630717',
   enableInPagePush: true,
   enableVignette: true,
   enablePopunder: true,
+  enableDirectLink: true,
   monetagVerification: '99e0dfa12d1b827e85c2ff507cb728c3'
 };
 
@@ -117,6 +125,16 @@ class MonetagAdManager {
       }
     } catch {
       // Non-blocking
+    }
+  }
+
+  /**
+   * Open Monetag smart direct link in new window or tab
+   */
+  public openDirectLink() {
+    if (typeof window === 'undefined' || !this.config.enabled || !this.config.enableDirectLink) return;
+    if (this.config.directLinkUrl) {
+      window.open(this.config.directLinkUrl, '_blank', 'noopener,noreferrer');
     }
   }
 }

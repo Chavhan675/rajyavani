@@ -12,12 +12,14 @@ export default function SiteSettingsTab() {
   const [siteDomain, setSiteDomain] = useState('https://rajyavani.vercel.app');
   const [googleVerification, setGoogleVerification] = useState('-zk1qdzl7JP29O_3EHp5nsjwp4Q9G9WOtBXN4YMmuAA');
   const [monetagVerification, setMonetagVerification] = useState('99e0dfa12d1b827e85c2ff507cb728c3');
-  const [monetagZoneId, setMonetagZoneId] = useState('88888');
-  const [monetagScriptUrl, setMonetagScriptUrl] = useState('https://alwingulla.com/88/tag.min.js');
+  const [monetagZoneId, setMonetagZoneId] = useState('272255');
+  const [monetagScriptUrl, setMonetagScriptUrl] = useState('https://quge5.com/88/tag.min.js');
+  const [monetagDirectLink, setMonetagDirectLink] = useState('https://omg10.com/4/11630717');
   const [enableMonetag, setEnableMonetag] = useState(true);
   const [enableInPagePush, setEnableInPagePush] = useState(true);
   const [enableVignette, setEnableVignette] = useState(true);
   const [enablePopunder, setEnablePopunder] = useState(true);
+  const [enableDirectLink, setEnableDirectLink] = useState(true);
   const [enableAds, setEnableAds] = useState(true);
   const [emergencyBannerText, setEmergencyBannerText] = useState('');
   const [emergencyBannerActive, setEmergencyBannerActive] = useState(false);
@@ -46,10 +48,12 @@ export default function SiteSettingsTab() {
           if (d.monetagVerification) setMonetagVerification(d.monetagVerification);
           if (d.monetagZoneId) setMonetagZoneId(d.monetagZoneId);
           if (d.monetagScriptUrl) setMonetagScriptUrl(d.monetagScriptUrl);
+          if (d.monetagDirectLink) setMonetagDirectLink(d.monetagDirectLink);
           if (d.enableMonetag !== undefined) setEnableMonetag(d.enableMonetag);
           if (d.enableInPagePush !== undefined) setEnableInPagePush(d.enableInPagePush);
           if (d.enableVignette !== undefined) setEnableVignette(d.enableVignette);
           if (d.enablePopunder !== undefined) setEnablePopunder(d.enablePopunder);
+          if (d.enableDirectLink !== undefined) setEnableDirectLink(d.enableDirectLink);
           if (d.enableAds !== undefined) setEnableAds(d.enableAds);
           if (d.emergencyBannerText) setEmergencyBannerText(d.emergencyBannerText);
           if (d.emergencyBannerActive !== undefined) setEmergencyBannerActive(d.emergencyBannerActive);
@@ -113,10 +117,12 @@ export default function SiteSettingsTab() {
         monetagVerification,
         monetagZoneId,
         monetagScriptUrl,
+        monetagDirectLink,
         enableMonetag,
         enableInPagePush,
         enableVignette,
         enablePopunder,
+        enableDirectLink,
         enableAds,
         emergencyBannerText,
         emergencyBannerActive,
@@ -129,9 +135,11 @@ export default function SiteSettingsTab() {
           enabled: enableMonetag,
           multiTagZoneId: monetagZoneId,
           multiTagScriptUrl: monetagScriptUrl,
+          directLinkUrl: monetagDirectLink,
           enableInPagePush,
           enableVignette,
           enablePopunder,
+          enableDirectLink,
           monetagVerification
         }));
       }
@@ -487,6 +495,22 @@ export default function SiteSettingsTab() {
 
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-bold text-gray-800 mb-1">
+                        मॉनेटाग Direct Link (Smart Link URL)
+                      </label>
+                      <input
+                        type="url"
+                        value={monetagDirectLink}
+                        onChange={(e) => setMonetagDirectLink(e.target.value)}
+                        placeholder="https://omg10.com/4/11630717"
+                        className="w-full font-mono text-xs px-3.5 py-2 bg-white border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        डायरेक्ट लिंक (उदा. <code>https://omg10.com/4/11630717</code>) स्पॉन्सर्ड बॅनर्स व क्लिक ॲक्शन्ससाठी वापरली जाते.
+                      </p>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
                         मॉनेटाग Meta Verification Code
                       </label>
                       <input
@@ -503,7 +527,7 @@ export default function SiteSettingsTab() {
                   </div>
 
                   {/* Format toggles */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
                     <div className="p-3 bg-white rounded-xl border border-amber-200 flex items-center justify-between">
                       <div>
                         <span className="text-xs font-bold text-gray-800 block">In-Page Push</span>
@@ -539,6 +563,19 @@ export default function SiteSettingsTab() {
                         type="checkbox"
                         checked={enablePopunder}
                         onChange={(e) => setEnablePopunder(e.target.checked)}
+                        className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-amber-200 flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-gray-800 block">Direct Link</span>
+                        <span className="text-[10px] text-gray-500">स्मार्ट डायरेक्ट लिंक</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={enableDirectLink}
+                        onChange={(e) => setEnableDirectLink(e.target.checked)}
                         className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
                       />
                     </div>
