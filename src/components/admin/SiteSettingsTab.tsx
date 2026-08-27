@@ -11,6 +11,13 @@ export default function SiteSettingsTab() {
   const [contactEmail, setContactEmail] = useState('contact@rajyavani.com');
   const [siteDomain, setSiteDomain] = useState('https://rajyavani.vercel.app');
   const [googleVerification, setGoogleVerification] = useState('-zk1qdzl7JP29O_3EHp5nsjwp4Q9G9WOtBXN4YMmuAA');
+  const [monetagVerification, setMonetagVerification] = useState('99e0dfa12d1b827e85c2ff507cb728c3');
+  const [monetagZoneId, setMonetagZoneId] = useState('88888');
+  const [monetagScriptUrl, setMonetagScriptUrl] = useState('https://alwingulla.com/88/tag.min.js');
+  const [enableMonetag, setEnableMonetag] = useState(true);
+  const [enableInPagePush, setEnableInPagePush] = useState(true);
+  const [enableVignette, setEnableVignette] = useState(true);
+  const [enablePopunder, setEnablePopunder] = useState(true);
   const [enableAds, setEnableAds] = useState(true);
   const [emergencyBannerText, setEmergencyBannerText] = useState('');
   const [emergencyBannerActive, setEmergencyBannerActive] = useState(false);
@@ -36,6 +43,13 @@ export default function SiteSettingsTab() {
           if (d.contactEmail) setContactEmail(d.contactEmail);
           if (d.siteDomain) setSiteDomain(d.siteDomain);
           if (d.googleVerification) setGoogleVerification(d.googleVerification);
+          if (d.monetagVerification) setMonetagVerification(d.monetagVerification);
+          if (d.monetagZoneId) setMonetagZoneId(d.monetagZoneId);
+          if (d.monetagScriptUrl) setMonetagScriptUrl(d.monetagScriptUrl);
+          if (d.enableMonetag !== undefined) setEnableMonetag(d.enableMonetag);
+          if (d.enableInPagePush !== undefined) setEnableInPagePush(d.enableInPagePush);
+          if (d.enableVignette !== undefined) setEnableVignette(d.enableVignette);
+          if (d.enablePopunder !== undefined) setEnablePopunder(d.enablePopunder);
           if (d.enableAds !== undefined) setEnableAds(d.enableAds);
           if (d.emergencyBannerText) setEmergencyBannerText(d.emergencyBannerText);
           if (d.emergencyBannerActive !== undefined) setEmergencyBannerActive(d.emergencyBannerActive);
@@ -96,13 +110,33 @@ export default function SiteSettingsTab() {
         contactEmail,
         siteDomain,
         googleVerification,
+        monetagVerification,
+        monetagZoneId,
+        monetagScriptUrl,
+        enableMonetag,
+        enableInPagePush,
+        enableVignette,
+        enablePopunder,
         enableAds,
         emergencyBannerText,
         emergencyBannerActive,
         updatedAt: Date.now()
       }, { merge: true });
 
-      setStatus({ type: 'success', text: 'सर्व वेबसाइट व SEO सेटिंग्ज यशस्वीरीत्या सेव्ह झाल्या!' });
+      // Update local storage configuration
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('rajyavani_monetag_config', JSON.stringify({
+          enabled: enableMonetag,
+          multiTagZoneId: monetagZoneId,
+          multiTagScriptUrl: monetagScriptUrl,
+          enableInPagePush,
+          enableVignette,
+          enablePopunder,
+          monetagVerification
+        }));
+      }
+
+      setStatus({ type: 'success', text: 'सर्व वेबसाइट, मॉनेटाग (Monetag) व SEO सेटिंग्ज यशस्वीरीत्या सेव्ह झाल्या!' });
     } catch (err: any) {
       console.error(err);
       setStatus({ type: 'error', text: 'सेटिंग्ज सेव्ह करताना त्रुटी आली.' });
@@ -399,16 +433,131 @@ export default function SiteSettingsTab() {
             </div>
           </div>
 
-          {/* Section 4: Monetization / Ads */}
+          {/* Section 4: Monetag Ad Network Integration */}
           <div className="space-y-4 pt-2">
             <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
-              <DollarSign className="w-4 h-4 text-brand-red" /> जाहिरात नियंत्रण (Monetization & Ad Units)
+              <Megaphone className="w-4 h-4 text-amber-600" /> मॉनेटाग जाहिरात व्यवस्थापन (Monetag Ad Network Integration)
+            </h4>
+
+            <div className="p-4 bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white rounded-2xl border border-amber-200/80 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-amber-950 block">मॉनेटाग जाहिराती सुरू ठेवा (Enable Monetag Ads)</span>
+                  <span className="text-[11px] text-amber-800">MultiTag, In-Page Push, Vignette Banner व Popunder जाहिराती</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={enableMonetag} 
+                    onChange={(e) => setEnableMonetag(e.target.checked)}
+                    className="sr-only peer" 
+                  />
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                </label>
+              </div>
+
+              {enableMonetag && (
+                <div className="space-y-4 pt-2 border-t border-amber-200/60">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        मॉनेटाग MultiTag स्क्रिप्ट URL (Script URL)
+                      </label>
+                      <input
+                        type="url"
+                        value={monetagScriptUrl}
+                        onChange={(e) => setMonetagScriptUrl(e.target.value)}
+                        placeholder="https://alwingulla.com/88/tag.min.js"
+                        className="w-full font-mono text-xs px-3.5 py-2 bg-white border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        मॉनेटाग Zone ID / MultiTag ID
+                      </label>
+                      <input
+                        type="text"
+                        value={monetagZoneId}
+                        onChange={(e) => setMonetagZoneId(e.target.value)}
+                        placeholder="88888"
+                        className="w-full font-mono text-xs px-3.5 py-2 bg-white border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        मॉनेटाग Meta Verification Code
+                      </label>
+                      <input
+                        type="text"
+                        value={monetagVerification}
+                        onChange={(e) => setMonetagVerification(e.target.value)}
+                        placeholder="99e0dfa12d1b827e85c2ff507cb728c3"
+                        className="w-full font-mono text-xs px-3.5 py-2 bg-white border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        Monetag Publisher Verification साठी `&lt;meta name="monetag" content="..."&gt;` मध्ये हा कोड आपोआप अपडेट होतो.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Format toggles */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div className="p-3 bg-white rounded-xl border border-amber-200 flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-gray-800 block">In-Page Push</span>
+                        <span className="text-[10px] text-gray-500">नेटिव्ह पुश जाहिरात</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={enableInPagePush}
+                        onChange={(e) => setEnableInPagePush(e.target.checked)}
+                        className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-amber-200 flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-gray-800 block">Vignette Banner</span>
+                        <span className="text-[10px] text-gray-500">इंटरस्टिशियल जाहिरात</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={enableVignette}
+                        onChange={(e) => setEnableVignette(e.target.checked)}
+                        className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-amber-200 flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-gray-800 block">Popunder / OnClick</span>
+                        <span className="text-[10px] text-gray-500">ऑनक्लिक जाहिरात</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={enablePopunder}
+                        onChange={(e) => setEnablePopunder(e.target.checked)}
+                        className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Section 5: General Ads & AdSense */}
+          <div className="space-y-4 pt-2">
+            <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
+              <DollarSign className="w-4 h-4 text-brand-red" /> सामान्य जाहिरात नियंत्रण (General Ads & AdSense)
             </h4>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
               <div>
                 <span className="text-xs font-bold text-gray-800 block">वेबसाइट जाहिराती सुरू ठेवा</span>
-                <span className="text-[11px] text-gray-500">Google AdSense / Custom Banner Ads</span>
+                <span className="text-[11px] text-gray-500">Google AdSense व बॅनर स्लॉट्स</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
