@@ -2,7 +2,6 @@ import React from 'react';
 import { ExternalLink, Sparkles, Megaphone, ArrowUpRight, Flame, ShieldCheck, Newspaper, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Image from './Image';
-import { monetagManager } from '../lib/monetagAds';
 
 export interface AdUnitProps {
   format?: 'horizontal' | 'rectangle' | 'vertical' | 'in-article' | 'billboard';
@@ -16,14 +15,12 @@ export interface AdUnitProps {
 export default function AdUnit({ 
   format = 'horizontal', 
   className = '',
-  href,
+  href = '/contact',
   title,
   subtitle,
   article
 }: AdUnitProps) {
-  const monetagConfig = monetagManager.getConfig();
-  const effectiveHref = href || (monetagConfig.enabled && monetagConfig.enableDirectLink ? monetagConfig.directLinkUrl : '/contact');
-  const isExternal = Boolean(effectiveHref && (effectiveHref.startsWith('http://') || effectiveHref.startsWith('https://')));
+  const isExternal = Boolean(href && (href.startsWith('http://') || href.startsWith('https://')));
 
   // 1. In-Article Format
   if (format === 'in-article') {
@@ -87,7 +84,7 @@ export default function AdUnit({
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 
-                  {href && (
+                  {href && isExternal && (
                     <a
                       href={href}
                       target="_blank"
@@ -103,9 +100,9 @@ export default function AdUnit({
             </div>
           </div>
         ) : isExternal ? (
-          /* Standard Direct Sponsor Banner (External / Monetag Direct Link) */
+          /* Standard Direct Sponsor Banner (External) */
           <a
-            href={effectiveHref}
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             className="group block relative overflow-hidden rounded-3xl border-2 border-amber-300/90 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-yellow-500/10 p-6 sm:p-8 shadow-md hover:shadow-xl hover:border-amber-500 transition-all duration-300 cursor-pointer backdrop-blur-xs"
@@ -146,7 +143,7 @@ export default function AdUnit({
         ) : (
           /* Standard Direct Sponsor Banner */
           <Link
-            to={effectiveHref}
+            to={href || "/contact"}
             className="group block relative overflow-hidden rounded-3xl border-2 border-amber-300/90 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-yellow-500/10 p-6 sm:p-8 shadow-md hover:shadow-xl hover:border-amber-500 transition-all duration-300 cursor-pointer backdrop-blur-xs"
           >
             <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-amber-400/20 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-400/30 transition-all" />
@@ -233,7 +230,7 @@ export default function AdUnit({
           </div>
         ) : isExternal ? (
           <a
-            href={effectiveHref}
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             className="group relative w-full max-w-[360px] min-h-[300px] bg-gradient-to-b from-white via-amber-50/40 to-orange-50/50 border-2 border-amber-200 hover:border-amber-400 rounded-3xl flex flex-col items-center justify-between p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
@@ -264,7 +261,7 @@ export default function AdUnit({
           </a>
         ) : (
           <Link
-            to={effectiveHref}
+            to={href || "/contact"}
             className="group relative w-full max-w-[360px] min-h-[300px] bg-gradient-to-b from-white via-amber-50/40 to-orange-50/50 border-2 border-amber-200 hover:border-amber-400 rounded-3xl flex flex-col items-center justify-between p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
           >
             <div className="flex items-center justify-between w-full">
@@ -357,7 +354,7 @@ export default function AdUnit({
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
 
-            {href && (
+            {href && isExternal && (
               <a
                 href={href}
                 target="_blank"
@@ -371,9 +368,9 @@ export default function AdUnit({
           </div>
         </div>
       ) : isExternal ? (
-        /* Standard Horizontal Ad Unit (External / Monetag Direct Link) */
+        /* Standard Horizontal Ad Unit (External) */
         <a
-          href={effectiveHref}
+          href={href}
           target="_blank"
           rel="noopener noreferrer"
           className="group relative w-full min-h-[100px] bg-gradient-to-r from-amber-50/90 via-white to-orange-50/90 hover:from-amber-100 hover:via-amber-50 hover:to-orange-100 border-2 border-amber-200/90 hover:border-amber-400 flex flex-col sm:flex-row items-center justify-between px-6 py-5 overflow-hidden rounded-3xl transition-all duration-300 shadow-sm hover:shadow-lg cursor-pointer gap-4"
@@ -403,7 +400,7 @@ export default function AdUnit({
       ) : (
         /* Standard Horizontal Ad Unit */
         <Link
-          to={effectiveHref}
+          to={href || "/contact"}
           className="group relative w-full min-h-[100px] bg-gradient-to-r from-amber-50/90 via-white to-orange-50/90 hover:from-amber-100 hover:via-amber-50 hover:to-orange-100 border-2 border-amber-200/90 hover:border-amber-400 flex flex-col sm:flex-row items-center justify-between px-6 py-5 overflow-hidden rounded-3xl transition-all duration-300 shadow-sm hover:shadow-lg cursor-pointer gap-4"
         >
           <div className="flex items-center gap-4 text-center sm:text-left">

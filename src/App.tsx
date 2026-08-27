@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./lib/AuthContext";
 import HomePage from "./pages/HomePage";
 import { articleCache } from "./lib/cacheStore";
-import { monetagManager } from "./lib/monetagAds";
 
 // Code-split secondary pages for optimal bundle sizes and fast initial loads
 const LegalPage = lazy(() => import("./pages/LegalPage"));
@@ -45,19 +44,15 @@ function RouteChangeHandler() {
         page_path: location.pathname + location.search,
       });
     }
-
-    // Trigger Monetag Interstitial / Vignette Transition on article and route visits
-    monetagManager.triggerVignetteTransition();
   }, [location]);
 
-  // Warm up other page route bundles and ad networks after initial mount during idle browser time
+  // Warm up other page route bundles after initial mount during idle browser time
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const timer = setTimeout(() => {
         articleCache.preloadRoute('article');
         articleCache.preloadRoute('district');
         articleCache.preloadRoute('archive');
-        monetagManager.injectMonetagScripts();
       }, 1500);
       return () => clearTimeout(timer);
     }
